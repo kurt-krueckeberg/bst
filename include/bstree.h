@@ -29,6 +29,8 @@ template<typename T> class bstree {
         
         Node(Node&& lhs) = delete;
 
+        // TODO: default dtor--???
+
         std::ostream& print(std::ostream& ostr) const noexcept
         {
             return ostr << key << ", " << std::flush;
@@ -129,13 +131,19 @@ template<typename T> class bstree {
 
   std::size_t height(const std::unique_ptr<Node>& node) const noexcept;
 
+  void destroy_tree(std::unique_ptr<Node>& current) noexcept;
+
  public:
 
     bstree() : root{nullptr}, size{0}
     {
     } 
 
-   ~bstree() = default;
+    // Default dtor can cause stack overflow
+   ~bstree() noexcept  // = default;
+    {
+       destroy_tree(root);
+    } 
 
     bstree(const bstree& lhs) : size{lhs.size}
     {
@@ -289,6 +297,20 @@ template<typename T> bstree<T>& bstree<T>::operator=(const bstree& lhs) noexcept
   size = lhs.size; 
 
   return *this;
+}
+
+template<typename T> void bstree<T>::destroy_tree(std::unique_ptr<Node>& current) noexcept
+{
+   if (current == nullptr) {
+
+      return;
+   }
+
+   destroy_tree(current->left);
+
+   destroy_tree(current->right);
+
+   current.reset();
 }
 
 template<typename T> bool bstree<T>::insert(const T& x) noexcept
