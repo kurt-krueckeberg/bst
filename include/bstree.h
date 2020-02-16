@@ -131,7 +131,7 @@ template<typename T> class bstree {
 
   std::size_t height(const std::unique_ptr<Node>& node) const noexcept;
 
-  void destroy_tree(std::unique_ptr<Node>& current) noexcept;
+  void destroy_subtree(std::unique_ptr<Node>& current) noexcept;
 
  public:
 
@@ -142,7 +142,7 @@ template<typename T> class bstree {
     // Default dtor can cause stack overflow
    ~bstree() noexcept  // = default;
     {
-       destroy_tree(root);
+       destroy_subtree(root);
     } 
 
     bstree(const bstree& lhs) : size{lhs.size}
@@ -299,16 +299,16 @@ template<typename T> bstree<T>& bstree<T>::operator=(const bstree& lhs) noexcept
   return *this;
 }
 
-template<typename T> void bstree<T>::destroy_tree(std::unique_ptr<Node>& current) noexcept
+template<typename T> void bstree<T>::destroy_subtree(std::unique_ptr<Node>& current) noexcept
 {
    if (current == nullptr) {
 
       return;
    }
 
-   destroy_tree(current->left);
+   destroy_subtree(current->left);
 
-   destroy_tree(current->right);
+   destroy_subtree(current->right);
 
    current.reset();
 }
