@@ -15,8 +15,8 @@ int main(int argc, char** argv)
   for (const auto& i : lst) tree.insert(Test{i});
         
   cout << "This is the input tree " << tree << " printed in debug level order:\n";
-  
-  tree.debug_printlevelOrder(cout);
+    
+  tree.debug_print(cout);
 
   cout << "We now start the removal loop\n";
   
@@ -33,12 +33,17 @@ int main(int argc, char** argv)
 
       cout << "Tree after removal of Test{" << key << "}. " << tree; 
       cout << "\nLevel-order print after the removal of Test{" << key << "}\n";
-      
+       
+      auto key_printer = [](const auto& pr) {
+          const auto&[key, value] = pr;
+          cout << key << ", ";
+      };
+     
       tree.printlevelOrder(cout);
 
       cout << flush << "\nDebug print\n";
 
-      tree.debug_printlevelOrder(cout);
+      tree.debug_print(cout);
   }
 
   return 0;

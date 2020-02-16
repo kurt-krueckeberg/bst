@@ -211,7 +211,7 @@ template<typename T> class bstree {
 
     void printlevelOrder(std::ostream& ostr) const noexcept;
 
-    void debug_printlevelOrder(std::ostream& ostr) const noexcept;
+    void debug_print(std::ostream& ostr) const noexcept;
 
     std::size_t height() const noexcept
     {
@@ -495,7 +495,7 @@ template<typename T> inline void  bstree<T>::printlevelOrder(std::ostream& ostr)
   ostr << std::flush;
 }
 
-template<typename T> void bstree<T>::debug_printlevelOrder(std::ostream& ostr) const noexcept
+template<typename T> void bstree<T>::debug_print(std::ostream& ostr) const noexcept
 {
   NodeLevelOrderPrinter tree_printer(*this, &Node::debug_print, ostr);  
   
