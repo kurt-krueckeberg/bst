@@ -29,8 +29,6 @@ template<typename T> class bstree {
         
         Node(Node&& lhs) = delete;
 
-        // TODO: default dtor--???
-
         std::ostream& print(std::ostream& ostr) const noexcept
         {
             return ostr << key << ", " << std::flush;
