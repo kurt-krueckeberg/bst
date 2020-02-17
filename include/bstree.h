@@ -67,13 +67,10 @@ template<typename T> class bstree {
            
        else {
            
-          Node *parent = dest->parent; 
+          src->parent = dest->parent; // Adjust the parent pointer before the move-assignment. 
 
-          // This deletes the Node managed by dest, and transfers ownership of the pointer managed by src to dest.
          
-          dest = std::move(src); 
-       
-          dest->parent = parent; // Set the parent pointer to be the Node that had been the parent of dest (before it was delete immediately above).
+          dest = std::move(src);      // Delete the Node managed by dest, and transfer ownership of the pointer managed by src.
        }
    }
  
