@@ -4,19 +4,63 @@
 #include <initializer_list>
 #include "test.h"
 #include "bstree.h"
+
 using namespace std;
 
 
 int main(int argc, char** argv) 
 {
   std::initializer_list<int> lst = {50, 39, 15, 65, 69, 50, 25, 20, 70, 100, 40, 34, 37, 30, 10, 33, 36, 38, 85, 90, 60, 35, 80, 89};
-  bstree<Test> tree;
 
-  for (const auto& i : lst) tree.insert(Test{i});
-        
+  bstree<int, int> tree;
+
+  /*
+   * bstree<Test, Test> tree;
+
+  for (const auto& i : lst) 
+      tree.insert(Test{i}, Test{i});
+   */
+
+  for (const auto& i : lst) 
+      tree.insert(i, i);
+  
+  cout << tree;
+   
+  auto key_printer = [](const auto& pr) {
+      const auto&[key, value] = pr;
+      cout << key << ", ";
+  };
+  
+  tree.printlevelOrder(cout, key_printer);
+  
+  cout << "floor(37) = " << tree.floor(37) << '\n';
+
+  cout << "ceiling(37) = " << tree.ceiling(37) << '\n';
+ 
+  cout << "floor(41) = " << tree.floor(41) << '\n';
+
+  cout << "ceilling(41) = " << tree.ceiling(41) << '\n';
+
+  tree.printlevelOrder(cout, key_printer);
+
+  for (auto& x : lst) {
+
+     cout << "--------------------------------\n";
+       
+     cout << "tree.remove(" << x << ")\n";
+     if (x == 15) {
+         auto debug = 10;
+         ++debug;
+     }
+     tree.remove(x);
+     tree.printlevelOrder(cout, key_printer);
+  } 
+
+  return 0;
+  /*      
   cout << "This is the input tree " << tree << " printed in debug level order:\n";
-    
-  tree.debug_print(cout);
+  
+  tree.debug_printlevelOrder(cout);
 
   cout << "We now start the removal loop\n";
   
@@ -29,27 +73,24 @@ int main(int argc, char** argv)
           ++debug;
       }
                
-      tree.remove(Test{key});
+      //tree.remove(Test{key});
+      tree.remove(key);
 
       cout << "Tree after removal of Test{" << key << "}. " << tree; 
       cout << "\nLevel-order print after the removal of Test{" << key << "}\n";
-       
-      auto key_printer = [](const auto& pr) {
-          const auto&[key, value] = pr;
-          cout << key << ", ";
-      };
-     
-      tree.printlevelOrder(cout);
+      
+      tree.printlevelOrder(cout, key_printer);
 
       cout << flush << "\nDebug print\n";
 
-      tree.debug_print(cout);
+      tree.debug_printlevelOrder(cout);
   }
 
   return 0;
+*/
+/*
 
-
-    bstree<Test> tree1 = { 5, 15, 7, 17, 3, 13, 4, 14,  2, 12,  6, 16, 9, 19}; 
+    bstree<Test, Test> tree1 = { 5, 15, 7, 17, 3, 13, 4, 14,  2, 12,  6, 16, 9, 19}; 
     
     cout << "tree1 = " << tree1 << '\n' << "Printing tree1 level order:\n";
     
@@ -77,5 +118,6 @@ int main(int argc, char** argv)
    }
    
    return 0;
+ * */
 }
 
