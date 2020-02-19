@@ -89,8 +89,20 @@ template<class Key, class Value> class bstree {
 
         void connectRight(std::unique_ptr<Node>& node) noexcept 
         {
-            left = std::move(node);
+            right = std::move(node);
+            right->parent = this;
+        }  
+
+        void connectLeft(const Node& node) noexcept
+        {
+            left = std::make_unique<Node>(node);    
             left->parent = this;
+        }  
+
+        void connectRight(const Node& node) noexcept 
+        {
+            right = std::make_unique<Node>(node);    
+            right->parent = this;
         }  
 
     private:
@@ -195,7 +207,6 @@ template<class Key, class Value> class bstree {
     }
 
     Node *min(Node *current) const noexcept;
-    //std::unique_ptr<Node>& min(std::unique_ptr<Node>& current) const noexcept;
    
     Node *getSuccessor(const Node *current) const noexcept;
 
@@ -208,10 +219,6 @@ template<class Key, class Value> class bstree {
     bool isBalanced(const Node *pnode) const noexcept;
 
     void move(bstree<Key, Value>&& lhs) noexcept;
-
-    /*-- Changed to return unique_ptr
-    Node *find(Key key, const std::unique_ptr<Node>&) const noexcept;
-     */
 
     std::unique_ptr<Node>& find(Key key, std::unique_ptr<Node>&) const noexcept;
 
@@ -422,19 +429,13 @@ bstree<Key, Value>::Node::Node(const Node& lhs) : __vt{lhs.__vt}, left{nullptr},
    if (lhs.parent == nullptr) // If lhs is the root, then set parent to nullptr.
        parent = nullptr;
 
-   // The make_unique<Node> calls will in turn recursively invoke the constructor again, resulting in the entire tree rooted at
+   // This will recursively invoke the constructor again, resulting in the entire tree rooted at
    // lhs being copied.
-   if (lhs.left  != nullptr) { 
-
-       left = std::make_unique<Node>(*lhs.left);    
-       left->parent = this;
-   }
+   if (lhs.left  != nullptr) 
+       connectLeft(*lhs.left); 
    
-   if (lhs.right != nullptr) {
-
-       right = std::make_unique<Node>(*lhs.right); 
-       right->parent = this;
-   }
+   if (lhs.right != nullptr) 
+       connectRight(*lhs.right); 
 }
 
 template<class Key, class Value> typename bstree<Key, Value>::Node&  bstree<Key, Value>::Node::operator=(const typename bstree<Key, Value>::Node& lhs) noexcept
@@ -447,17 +448,11 @@ template<class Key, class Value> typename bstree<Key, Value>::Node&  bstree<Key,
        parent = nullptr;
 
    // The make_unique<Node> calls below results in the entire tree rooted at lhs being copied.
-   if (lhs.left  != nullptr) { 
-
-       left = std::make_unique<Node>(*lhs.left);    
-       left->parent = this;
-   }
+   if (lhs.left  != nullptr) 
+       connectLeft(*lhs.left); 
    
-   if (lhs.right != nullptr) {
-
-       right = std::make_unique<Node>(*lhs.right); 
-       right->parent = this;
-   }
+   if (lhs.right != nullptr)
+       connectRight(*lhs.right); 
   
    return *this;
 }
@@ -467,10 +462,11 @@ template<class Key, class Value> inline bstree<Key, Value>::bstree(std::initiali
    insert(list);
 }
 
-template<class Key, class Value> inline bstree<Key, Value>::bstree(const bstree<Key, Value>& lhs) noexcept
+template<class Key, class Value> inline bstree<Key, Value>::bstree(const bstree<Key, Value>& lhs) noexcept : size{lhs.size}, root{nullptr}
 { 
+   if (!lhs.root) return;
+        
    root = std::make_unique<Node>(*lhs.root); 
-   size = lhs.size;
 }
 
 template<class Key, class Value> inline void bstree<Key, Value>::move(bstree<Key, Value>&& lhs) noexcept  
@@ -641,19 +637,6 @@ template<class Key, class Value> void bstree<Key, Value>::destroy_subtree(std::u
 
    current.reset();
 }
-/*
- * Algorithm taken from page 290 of Introduction to Algorithms by Cormen, 3rd Edition, et. al.
- */
-/*-- Change to return unique_ptr<Node>
-template<class Key, class Value> typename bstree<Key, Value>::Node *bstree<Key, Value>::find(Key key, const std::unique_ptr<Node>& current) const noexcept
-{
-  if (!current || current->key() == key)
-     return current.get();
-  if (key < current->key())
-     return find(key, current->left);
-  else return find(key, current->right);
-}
-*/
 
 template<class Key, class Value> std::unique_ptr<typename bstree<Key, Value>::Node>& bstree<Key, Value>::find(Key key, std::unique_ptr<Node>& current) const noexcept
 {
@@ -921,71 +904,6 @@ child.
 
     2. Otherwise, y lies within z’s right subtree but is not z’s right child.  In this case, we first replace
        y by its own right child, and then we replace z by y.
-
-In order to move subtrees around within the binary search tree, we define a subroutine TRANSPLANT, which replaces
-one subtree as a child of its parent with another subtree. When TRANSPLANT replaces the subtree rooted at node u
-with the subtree rooted at node v, node u’s parent becomes node v’s parent, and u’s parent ends up having v as its
-appropriate child.
-
-TRANSPLANT (subtree u, subtree v) // Question is u the same as z above? 
-
- if u.p == NIL
-     root = v;
- elseif u == u.p.left
-      u.p.left = v
- else u.p.right = v
- if v != NIL
-    v.p = u.p
-
-
-Lines 1–2 handle the case in which u is the root of T . Otherwise, u is either a left child or a right child of its
-parent. Lines 3–4 take care of updating u.p.left if u is a left child, and line 5 updates u.p.right if u is a right
-child. We allow v to be NIL , and lines 6–7 update v.p if v is non-NIL . Note that TRANSPLANT does not attempt to
-update v.left and v.right; doing so, or not doing so, is the responsibility of TRANSPLANT ’s caller.
-
-
-Questions:
-The node to remove is pnode, found by find(root, key). 
-Q: Is this algorithm the same technique as the 2nd edition, only slightly reworked? Is it the same as the Corrano algorithm?
-
-Carrano C++ cource code is at https://homepage.cs.uri.edu/~thenry/resources/wall-mirrors-5%20src/Doxygen/c10/BST/BST_8cpp-source.html
-Read his book and compare the algorithm to the CLRS algorithm.
-
-Q: Does the Transplant method apply to C++ (where there is no garabag collection, and we have to manually delete the memory)?
-A: We need to fundamentally understand the algorithm annd not blindly  "believe" it does and translate it to C++. The main remove code
-below, for example, does call transplant.
-
-unique_ptr<> methods:
-
- Node *pnode.>release(); // relinquishes ownership
- pnode.swap(pother);     // swaps raw pointers
- move assignment
-
-////////////////////////
-pseudocode
-
-   if (!u->parent)                // case 1: u root is the root
-       root = v; 
-   else if (u == u->parent->left) // case 2: u is left child of its parent
-      u->parent->left = v; 
-   else                           // case 3: u is the right child of its parent
-      u->parent->right = v; 
-   if (v)                         // If v != NIL, update its parent 
-      v->parent = u->parent 
-
-/// Implementation
-
-   if (!u->parent)                // case 1: u root is the root
-       root = std::move(v);      
-   else if (u == u->parent->left) // case 2: u is left child of its parent
-       u->parent->left = v; 
-   else                           // case 3: u is the right child of its parent
-       u->parent->right = v; 
-   if (v)                         // If v != NIL, update its parent 
-      v->parent = u->parent 
-
-
-}
  */
 template<class Key, class Value> bool bstree<Key, Value>::remove(Key key, std::unique_ptr<Node>& root_sub) noexcept // root of subtree
 {
