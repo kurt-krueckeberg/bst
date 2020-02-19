@@ -1,10 +1,6 @@
 #ifndef bst_h_18932492374
 #define bst_h_18932492374
 
-/*
- * This is an implementation that does contain a recursive remove method.
- */
-
 #include <memory>
 #include <utility>
 #include <queue>
@@ -17,7 +13,7 @@
 #include <exception>
 
 
-template<class Key, class Value> class bstree; // forward declarations of template classes.
+template<class Key, class Value> class bstree; // Forward declaration.
 
 template<class Key, class Value> class bstree {
 
@@ -43,12 +39,10 @@ template<class Key, class Value> class bstree {
 
     public:   
         
-        Node()
+        Node() : parent{nullptr}
         {
-            parent = nullptr;
         }
      
-        // The copy constructor 
         Node(const Node& lhs);
         
         constexpr Node(const Key& key, const Value& value, Node *parent_in=nullptr) : __vt{key, value}, parent{parent_in}, left{nullptr}, right{nullptr} 
@@ -59,12 +53,10 @@ template<class Key, class Value> class bstree {
 
         Node(Node&&); // ...but we allow move assignment and move construction.
         /*
-           ~Node() implictily invokes the Node destructor for left and right, which results in the recursive destruction of the entire subtree rooted at *this. However, this can cause the stack to overflow, especially if
-           the Node being destructed is the root. To avoid this, ~bstree() calls destroy_subtree(root), which does a post-order traversal, calling node.reset(). 
-           Th e uniqu_ptr<Node>::reset() will jnvoke the ~Node destructor, which will implicitly invoke the destructor left and right. HOwever, the post-order traversal ensures that left and right will already be nullptr, and thus
-           no infinite recursion can occur.
-           
-              ~Node() = default; 
+          '~Node() = default;' implictily invokes the Node destructor for left and right, which results in the recursive destruction of the entire subtree rooted at *this. However,
+           this can cause stack overflow, especially if the Node being destructed is the root. To avoid this, ~bstree() calls destroy_subtree(root), which does a post-order traversal,
+           calling node.reset(). The unique_ptr<Node>::reset() will invoke the ~Node destructor, which will implicitly invoke the destructor left and right. However, the post-order
+           traversal ensures that left and right will already be nullptr (and thus no infinite recursion can occur).
          */
 
        ~Node() = default;
@@ -108,7 +100,6 @@ template<class Key, class Value> class bstree {
     private:
 
         __value_type<Key, Value> __vt;  // Convenience wrapper for std::pair<const Key, Value>
-                                        // Has necessary constructors and assignment operators.
                               
         std::unique_ptr<Node> left;
         std::unique_ptr<Node> right;
@@ -117,7 +108,7 @@ template<class Key, class Value> class bstree {
 
         constexpr const Key& key() const noexcept 
         {
-           return __vt.__get_value().first; //  'template<typename _Key, typename _Value> struct __value_type' does not have members first and second.
+           return __vt.__get_value().first; 
         } 
 
         constexpr const Value& value() const noexcept 
@@ -235,7 +226,7 @@ template<class Key, class Value> class bstree {
   public:
 /*
 
-Some of the std::map insert methods:
+Some prospective methods found in std::map:
 
     template< class InputIt >
     void insert( InputIt first, InputIt last );
@@ -254,13 +245,8 @@ Some of the std::map insert methods:
 
     template< class InputIt >
     void insert( InputIt first, InputIt last );
-*/
 
-    //++std::pair<iterator,bool> insert( const value_type& value );
-    //++std::pair<iterator,bool> insert( value_type&& value );
-    
-/*
- From std::map insert_or_assign methods
+From std::map insert_or_assign methods
 
     template <class M>
     pair<iterator, bool> insert_or_assign(const key_type& k, M&& obj);
@@ -273,7 +259,6 @@ Some of the std::map insert methods:
 
     template <class M>
     iterator insert_or_assign(const_iterator hint, key_type&& k, M&& obj);
-
 
 */
 
@@ -322,10 +307,8 @@ Some of the std::map insert methods:
         return insert_or_assign(key, value);
     }
 
-    bool insert_or_assign(const key_type& key, const mapped_type& value) noexcept; // TODO: std::pair<cont Key, Value>
+    bool insert_or_assign(const key_type& key, const mapped_type& value) noexcept; 
   
-    // TODO: Add methods that take a pair<const Key, Value>
-
     Value& operator[](const Key& key) noexcept; 
 
     const Value& operator[](const Key& key) const noexcept; 
@@ -337,7 +320,7 @@ Some of the std::map insert methods:
         return remove(key, root);
     } 
  
-    bool remove(Key key, std::unique_ptr<Node>& root) noexcept; // root of current subtree
+    bool remove(Key key, std::unique_ptr<Node>& subtree) noexcept; 
 
     constexpr bool find(Key key) const noexcept
     {
@@ -469,10 +452,7 @@ template<class Key, class Value> inline void bstree<Key, Value>::move(bstree<Key
 
 template<class Key, class Value> bstree<Key, Value>& bstree<Key, Value>::operator=(const bstree<Key, Value>& lhs) noexcept
 {
-  if (this == &lhs)  {
-      
-      return *this;
-  }
+  if (this == &lhs)  return *this;
 
   // This will implicitly delete all Nodes in 'this', and set root to a duplicate tree of Nodes.
   root = std::make_unique<Node>(*lhs.root); 
@@ -797,12 +777,12 @@ template<class Key, class Value> bool bstree<Key, Value>::insert_or_assign(const
 
 /*
 
-Deletion CLRS, 2nd Edition
-============================
+CLRS, 2nd Edition, delete algorithm:
 
-CLRS, 2nd Edition,http://staff.ustc.edu.cn/~csli/graduate/algorithms/book6/chap13.htm 
+http://staff.ustc.edu.cn/~csli/graduate/algorithms/book6/chap13.htm 
 
-Algorithm pseudo code like that below seems to become confusing when you use C++. The pseudo code doesn't translate to, say, use of std::unique_ptr.
+Algorithm pseudo code like that below seems to become confusing when you use C++. The pseudo code doesn't translate to, say,
+the use of std::unique_ptr.
 
 tree-delete(z)
 
@@ -810,42 +790,25 @@ tree-delete(z)
   // its successor, if y has two children.
 
   if z->left == NIL or z->right == NIL // case 1: z has only one child
-
       y =  z
-
   else                                // case 2: z is an internal node 
-
       y = tree-successor(z)
 
   // 2. Set x is to the non-NIL child of y, or to NIL if y has no children.
   if y->left !=  NIL    // If the sucessor is above z, the y->left will not be NIL, or if z              
-
       x = y->left
-
   else
- 
       x = y->right  // y->left was NIL 
-
   if x != NIL
-
      x->parent = y->parent 
-
   if y->parent == NIL
-
       root = x
-
   else if y == y->parent->left
-
       y->parent->left = x
-
   else
-
       y->parent->right =  x
-
   if y != z
-
       z->key = y->key // If y has other fields, copy them, too.
-
    return y
 
 
@@ -923,7 +886,8 @@ template<class Key, class Value> bool bstree<Key, Value>::remove(Key key, std::u
 
           // Because pnode has two children, we know its successor y lies within pnode's right subtree.
 
-          Node *suc = min(pnode->right); // In this case, we swap pnode's underlying pointer with y's underlying pointer, and then we replace pnode by it's right child, which before the 
+          Node *suc = min(pnode->right); // In this case, we swap pnode's underlying pointer with y's underlying pointer, and then we
+                                         // replace pnode by it's right child, which before the 
                                                         // swap was y's right child.
 
           // Get the unique_ptr reference corresponding to the raw pointer
