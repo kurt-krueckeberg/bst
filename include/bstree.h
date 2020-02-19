@@ -242,7 +242,6 @@ template<class Key, class Value> class bstree {
     
     const std::unique_ptr<Node>& get_ceiling(const std::unique_ptr<Node>& current, Key key) const noexcept;
 
-    void transplant(std::unique_ptr<Node>& pnode, std::unique_ptr<Node>& y) noexcept;
   public:
 /*
 
@@ -426,7 +425,7 @@ Some of the std::map insert methods:
 template<class Key, class Value>
 bstree<Key, Value>::Node::Node(const Node& lhs) : __vt{lhs.__vt}, left{nullptr}, right{nullptr}
 {
-   if (lhs.parent == nullptr) // If lhs is the root, then set parent to nullptr.
+   if (!lhs.parent) // If lhs is the root, then set parent to nullptr.
        parent = nullptr;
 
    // This will recursively invoke the constructor again, resulting in the entire tree rooted at
@@ -554,12 +553,6 @@ template<typename Key, typename Value> inline void  bstree<Key, Value>::debug_pr
   ostr << std::flush;
 }
 
-/*
-template<class Key, class Value> bstree<Key, Value>::Node::Node(Key key, const Value& value, Node *ptr2parent)  : parent{ptr2parent}, left{nullptr}, right{nullptr}, \
-        __vt{key, value}
-{
-}
-*/
 template<class Key, class Value> inline bstree<Key, Value>::Node::Node(Node&& node) : __vt{std::move(node.__vt)}, left{std::move(node.left)}, right{std::move(node.right)}, parent{node.ptr2parent} 
 {
 }
@@ -621,6 +614,7 @@ template<class Key, class Value> template<typename Functor> void bstree<Key, Val
 
    f(current->__vt.__get_value()); 
 }
+
 /*
  * Post order node destruction
  */
@@ -703,7 +697,7 @@ template<class Key, class Value> typename bstree<Key, Value>::Node *bstree<Key, 
    return y
  }
  
-  */
+ */
 template<class Key, class Value>  typename bstree<Key, Value>::Node* bstree<Key, Value>::getSuccessor(const typename bstree<Key, Value>::Node *x) const noexcept
 {
   if (!x->right) 
@@ -743,9 +737,6 @@ const typename std::unique_ptr<typename bstree<Key, Value>::Node>& bstree<Key, V
        return pnode;
 }
 
-/*
- * TODO: What is the terminating test for this algorithm? (taken from https://algs4.cs.princeton.edu/32bst/BST.java.html)
- */
 template<class Key, class Value>  
 const typename std::unique_ptr<typename bstree<Key, Value>::Node>& bstree<Key, Value>::get_ceiling(const std::unique_ptr<typename bstree<Key, Value>::Node>& pnode, Key key) const noexcept
 {   
@@ -785,7 +776,7 @@ template<class Key, class Value> bool bstree<Key, Value>::insert_or_assign(const
  
   Node *current = root.get();
  
-  // parent will become the parent of the new node. One of its children (that is nullptr) will become the new node. 
+  // parent will become the parent of the new node. One of its children that is a nullptr will become the new node. 
   while (current) { 
  
       parent = current;
@@ -945,14 +936,11 @@ template<class Key, class Value> bool bstree<Key, Value>::remove(Key key, std::u
           Node *suc = min(pnode->right); // In this case, we swap pnode's underlying pointer with y's underlying pointer, and then we replace pnode by it's right child, which before the 
                                                         // swap was y's right child.
 
+          // Get the unique_ptr reference corresponding to the raw pointer
           std::unique_ptr<Node>& y = suc->parent->left.get() == suc ? suc->parent->left : suc->parent->right;
 
-          /*
-          pnode.swap(y);    // Q: Doesn't y->parent need to be set?
-          pnode = std::move(pnode->right);
-           */
-
           pnode->__vt = std::move(y->__vt); // move-assign successor's values to pnode's values. No pointers change
+
           y = std::move(y->right);          // Replace successor with its right child.
       }
       
@@ -969,44 +957,6 @@ template<class Key, class Value> bool bstree<Key, Value>::remove(Key key, std::u
   --size; 
 
   return true; 
-}
-
-/*
-transplant replaces one subtree rooted at pnode as a child of its parent with another subtree rooted at suc(cessor).
-transplant does not update v.left or v.right <-- Well, I did update them.
- */
-
-template<class Key, class Value> void bstree<Key, Value>::transplant(std::unique_ptr<Node>& pnode, std::unique_ptr<Node>&suc) noexcept
-{
-   // Save for later 
-    Node *parent = pnode->parent;
-
-    auto is_left_child = parent->left == pnode ? true : false;
-
-   // release right child of pnode
-    std::unique_ptr<Node> r{  std::move( pnode->right.release() ) }; 
-
-    r->left.release(); // BUG: Causes suc to dangle because r->left == suc.
-
-    r->connectLeft(suc->right);  // suc->right is x
-
-    suc->connectRight(r);
-
-    // Save pnode's left child. It will become suc left child.
-    std::unique_ptr pnode_left{ std::move(pnode->left) }; 
-
-    if (is_left_child) {
-       
-       parent->connectLeft(suc);
-       
-    }
-    else {
-       parent->connectRight(suc); 
-
-    }
-
-    suc->connectLeft(pnode_left);
-    
 }
 
 template<class Key, class Value> inline int bstree<Key, Value>::height() const noexcept
