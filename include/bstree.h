@@ -51,7 +51,7 @@ template<class Key, class Value> class bstree {
         // The copy constructor 
         Node(const Node& lhs);
         
-        Node(const Key& key, const Value& value, Node *parent_in=nullptr) : __vt{key, value}, parent{parent_in}, left{nullptr}, right{nullptr} 
+        constexpr Node(const Key& key, const Value& value, Node *parent_in=nullptr) : __vt{key, value}, parent{parent_in}, left{nullptr}, right{nullptr} 
         {
         }
       
@@ -73,7 +73,7 @@ template<class Key, class Value> class bstree {
 
         std::ostream& debug_print(std::ostream& ostr) const noexcept;
 
-        friend std::ostream& operator<<(std::ostream& ostr, const Node& node) noexcept
+         constexpr friend std::ostream& operator<<(std::ostream& ostr, const Node& node) noexcept
         { 
             node.print(ostr);
             return ostr;
@@ -81,25 +81,25 @@ template<class Key, class Value> class bstree {
         
         Node& operator=(Node&&) noexcept;
 
-        void connectLeft(std::unique_ptr<Node>& node) noexcept
+        constexpr void connectLeft(std::unique_ptr<Node>& node) noexcept
         {
             left = std::move(node);
             left->parent = this;
         }  
 
-        void connectRight(std::unique_ptr<Node>& node) noexcept 
+        constexpr void connectRight(std::unique_ptr<Node>& node) noexcept 
         {
             right = std::move(node);
             right->parent = this;
         }  
 
-        void connectLeft(const Node& node) noexcept
+        constexpr void connectLeft(const Node& node) noexcept
         {
             left = std::make_unique<Node>(node);    
             left->parent = this;
         }  
 
-        void connectRight(const Node& node) noexcept 
+        constexpr void connectRight(const Node& node) noexcept 
         {
             right = std::make_unique<Node>(node);    
             right->parent = this;
@@ -129,16 +129,6 @@ template<class Key, class Value> class bstree {
         { 
            return __vt.__get_value().second; 
         }
-        /*
-        constexpr const value_type& get_value() const nexcept
-        {
-           return __vt.__get_value();
-        } 
-        constexpr const value_type& get_value() const nexcept
-        {
-           return __vt.__get_value();
-        } 
-        */
     }; 
 
    template<typename Printer> class LevelOrderPrinter {
@@ -201,7 +191,7 @@ template<class Key, class Value> class bstree {
 
     void copy_tree(const bstree<Key, Value>& lhs) noexcept;
 
-    Node *min(std::unique_ptr<Node>& current) const noexcept
+    constexpr Node *min(std::unique_ptr<Node>& current) const noexcept
     {
         return min(current.get());
     }
@@ -224,7 +214,7 @@ template<class Key, class Value> class bstree {
 
     void destroy_subtree(std::unique_ptr<Node>& subtree_root) noexcept;
 
-    Node *get_floor(Key key) const noexcept
+    constexpr Node *get_floor(Key key) const noexcept
     {
       const auto& pnode = get_floor(root, key);
    
@@ -233,7 +223,7 @@ template<class Key, class Value> class bstree {
 
     const std::unique_ptr<Node>& get_floor(const std::unique_ptr<Node>& current, Key key) const noexcept;
     
-    Node *get_ceiling(Key key) const noexcept
+    constexpr Node *get_ceiling(Key key) const noexcept
     {
       const std::unique_ptr<Node>& pnode = get_ceiling(root, key);
       
@@ -294,7 +284,7 @@ Some of the std::map insert methods:
 
     // While the default destructor successfully frees all nodes. A huge recursive call invokes every Node's destructor.
     // will be invoke in one huge recursive call 
-   ~bstree() noexcept
+    ~bstree() noexcept
     {
         destroy_subtree(root);
     } 
@@ -314,7 +304,7 @@ Some of the std::map insert methods:
 
     bstree<Key, Value> clone() const noexcept; 
 
-    bool isEmpty() const noexcept
+    constexpr bool isEmpty() const noexcept
     {
       return (size == 0) ? true : false;
     }
@@ -327,7 +317,7 @@ Some of the std::map insert methods:
 
     void insert(std::initializer_list<value_type>& list) noexcept; 
 
-    bool insert(const key_type& key, const mapped_type& value) noexcept
+    constexpr bool insert(const key_type& key, const mapped_type& value) noexcept
     {
         return insert_or_assign(key, value);
     }
@@ -342,14 +332,14 @@ Some of the std::map insert methods:
 
     // TODO: Add emplace() methods and other methods like std::map have, like insert_or_assign().
 
-    bool remove(Key key) noexcept
+    constexpr bool remove(Key key) noexcept
     {
         return remove(key, root);
     } 
  
     bool remove(Key key, std::unique_ptr<Node>& root) noexcept; // root of current subtree
 
-    bool find(Key key) const noexcept
+    constexpr bool find(Key key) const noexcept
     {
        return find(key, root) ? true : false;
     }
