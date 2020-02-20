@@ -484,11 +484,6 @@ template<class Key, class Value> inline bstree<Key, Value>::bstree(const bstree<
 { 
    if (!lhs.root) return;
     
-
-//TODO:    
-//--   root = std::make_unique<Node>(*lhs.root); 
-   // a. destroy_subtree(root) <--- not need since this is an entirely new tree
-   // b. copy_subtree
    copy_subtree(lhs.root, root);
 }
 
