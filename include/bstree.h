@@ -205,6 +205,8 @@ template<class Key, class Value> class bstree {
 
     void destroy_subtree(std::unique_ptr<Node>& subtree_root) noexcept;
 
+    void copy_subtree(std::unique_ptr<Node>& src, std::unique_ptr<Node>& dest, Node *parent=nullptr) noexcept;
+
     constexpr Node *get_floor(Key key) const noexcept
     {
       const auto& pnode = get_floor(root, key);
@@ -225,9 +227,7 @@ template<class Key, class Value> class bstree {
 
   public:
 /*
-
 Some prospective methods found in std::map:
-
     template< class InputIt >
     void insert( InputIt first, InputIt last );
     
@@ -242,24 +242,17 @@ Some prospective methods found in std::map:
     insert_return_type insert(node_type&& nh);
     
     iterator insert(const_iterator hint, node_type&& nh);
-
     template< class InputIt >
     void insert( InputIt first, InputIt last );
-
 From std::map insert_or_assign methods
-
     template <class M>
     pair<iterator, bool> insert_or_assign(const key_type& k, M&& obj);
-
     template <class M>
     pair<iterator, bool> insert_or_assign(key_type&& k, M&& obj);
-
     template <class M>
     iterator insert_or_assign(const_iterator hint, const key_type& k, M&& obj);
-
     template <class M>
     iterator insert_or_assign(const_iterator hint, key_type&& k, M&& obj);
-
 */
 
     // One other stl typedef.
@@ -592,6 +585,27 @@ template<class Key, class Value> template<typename Functor> void bstree<Key, Val
 }
 
 /*
+ * This does "less" nesting than current Node copy ctor.
+ * TODO: Replace recursive Node copy ctor with copy_subtree
+ * Call destroy_subtree() before calling this method. 
+ * See ~/t4 and ~/t3 code.
+ */
+template<class Key, class Value> void bstree<Key, Value>::copy_subtree(std::unique_ptr<Node>& in, std::unique_ptr<Node>& out, Node *parent) noexcept
+{
+   if (in == nullptr) {
+
+      return;
+   }
+    
+   out = std::make_unique<Node>(in, parent); // TODO: Add two parameter Node ctor, or a new copy ctro with a default parameter.
+
+   copy_subtree(in->left, out.get());
+
+   copy_subtree(in->right, out.get());
+}
+
+
+/*
  * Post order node destruction
  */
 template<class Key, class Value> void bstree<Key, Value>::destroy_subtree(std::unique_ptr<Node>& current) noexcept
@@ -652,9 +666,7 @@ template<class Key, class Value> typename bstree<Key, Value>::Node *bstree<Key, 
  The code for tree-successor is broken into two cases. If the right subtree of node x is nonempty, then the successor of x is just the left-most node in the right subtree, which is found
  by calling min(x->right). On the other hand, if the right subtree of node x is empty and x has a successor y, then y is the lowest ancestor of x whose left child is also an ancestor of x.
  To find y, we simply go up the tree from x until we encounter a node that is the left child of its parent.
-
  Pseudo code 
-
  tree-successor(x)
  {
     if x->right ==  NIL
@@ -782,24 +794,17 @@ template<class Key, class Value> bool bstree<Key, Value>::insert_or_assign(const
 }
 
 /*
-
 CLRS, 2nd Edition, delete algorithm:
-
 http://staff.ustc.edu.cn/~csli/graduate/algorithms/book6/chap13.htm 
-
 Algorithm pseudo code like that below seems to become confusing when you use C++. The pseudo code doesn't translate to, say,
 the use of std::unique_ptr.
-
 tree-delete(z)
-
   // 1. Determine node y to splice out. It is either the input node z (if z has only one child), or
   // its successor, if y has two children.
-
   if z->left == NIL or z->right == NIL // case 1: z has only one child
       y =  z
   else                                // case 2: z is an internal node 
       y = tree-successor(z)
-
   // 2. Set x is to the non-NIL child of y, or to NIL if y has no children.
   if y->left !=  NIL    // If the sucessor is above z, the y->left will not be NIL, or if z              
       x = y->left
@@ -816,42 +821,30 @@ tree-delete(z)
   if y != z
       z->key = y->key // If y has other fields, copy them, too.
    return y
-
-
 Deletion CLRS, 3rd Edition
 ==========================
-
 The overall strategy for deleting a node z from a binary search tree T has three basic cases, but,
 as we shall see, one of the cases is a bit tricky (a sub case of the third case).
-
 1. If z has no children, then we simply remove it by modifying its parent to replace z with NIL as its child.
-
 2. If z has just one child, then we elevate that child to take z’s position in the tree
    by modifying z’s parent to replace z by z’s child.
-
 3. If z has two children, then we find z’s successor y—which must be in z’s right subtree—and have y
    take z’s position in the tree. The rest of z’s original right subtree becomes y’s new right subtree,
    and z’s left subtree becomes y’s new left subtree. This case is the tricky one because, as we shall
    see, it matters whether y is z’s right child.
-
 The procedure for deleting a given node z from a binary search tree T takes as arguments pointers to T and z.
 It organizes its cases a bit differently from the three cases outlined previously by considering the four
 cases shown in Figure 12.4.
-
 1. If z has no left child (part (a) of the figure), then we replace z by its right child, which may or may not
 be NIL . When z’s right child is NIL , this case deals with the situation in which z has no children. When z’s
 right child is non- NIL , this case handles the situation in which z has just one child, which is its right
 child.
-
 2. If z has just one child, which is its left child (part (b) of the figure), then we replace z by its left
    child.
-
 3. Otherwise, z has both a left and a right child. We find z’s successor y, which lies in z’s right subtree
    and has no left child (see Exercise 12.2-5). We want to splice y out of its current location and have it
    replace z in the tree.
-
     1. If y is z’s right child, then we replace z by y, leaving y’s right child alone.
-
     2. Otherwise, y lies within z’s right subtree but is not z’s right child.  In this case, we first replace
        y by its own right child, and then we replace z by y.
  */
