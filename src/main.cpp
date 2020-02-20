@@ -15,59 +15,59 @@ int main(int argc, char** argv)
   std::initializer_list<int> lst = {100, 50, 200, 20, 70, 150, 250, -10, 40, 60, 90, 125, 175, 225, 275, -40, 10, 30, 45, 55, 65, 80, 95, 110, 130, 165, 190, 220, 230, 260, 290,\
     -70, -30, -5, 15, 25, 35, 42, 47, 52, 57, 62, 67, 92, 97, 105, 115, 127, 135, 160, 170, 180, 195, 210, 222, 227, 235, 260, 280 };
 
-  bstree<int, int> tree;
+  bstree<int, int> balanced_tree;
 
   for (const auto& i : lst) 
-      tree.insert(i, i);
+      balanced_tree.insert(i, i);
    
   auto key_printer = [](const auto& pr) {
       const auto&[key, value] = pr;
       cout << key << ", ";
   };
   
-  tree.printlevelOrder(cout, key_printer);
+  balanced_tree.printlevelOrder(cout, key_printer);
 
   return 0;
 
-  cout << "\n--------------\nPrinting tree_copy, a copy of the above tree.\n"; 
+  cout << "\n--------------\nPrinting tree_copy, a copy of the above balanced_tree.\n"; 
 
   int hidden = 0;
 
   auto setter = [&](int& int_ref) { int_ref = ++hidden; }; 
 
-  tree.set_special(setter);
+  balanced_tree.set_special(setter);
 
   auto sp_printer = [&](const pair<const int, int>& pr, const int& int_ref) {
       const auto&[key, value] = pr;
       cout << '(' << int_ref << ") [" << key << "], " << flush; }; 
 
-  tree.visit_special(sp_printer);
+  balanced_tree.visit_special(sp_printer);
 
-  bstree<int, int> tree_copy = tree;
+  bstree<int, int> tree_copy = balanced_tree;
 
   tree_copy.printlevelOrder(cout, key_printer);
   
-  cout << "floor(37) = " << tree.floor(37) << '\n';
+  cout << "floor(37) = " << balanced_tree.floor(37) << '\n';
 
-  cout << "ceiling(37) = " << tree.ceiling(37) << '\n';
+  cout << "ceiling(37) = " << balanced_tree.ceiling(37) << '\n';
  
-  cout << "floor(41) = " << tree.floor(41) << '\n';
+  cout << "floor(41) = " << balanced_tree.floor(41) << '\n';
 
-  cout << "ceilling(41) = " << tree.ceiling(41) << '\n';
+  cout << "ceilling(41) = " << balanced_tree.ceiling(41) << '\n';
 
-  tree.printlevelOrder(cout, key_printer);
+  balanced_tree.printlevelOrder(cout, key_printer);
 
   for (auto& x : lst) {
 
      cout << "--------------------------------\n";
        
-     cout << "tree.remove(" << x << ")\n";
+     cout << "balanced_tree.remove(" << x << ")\n";
      if (x == 15) {
          auto debug = 10;
          ++debug;
      }
-     tree.remove(x);
-     tree.printlevelOrder(cout, key_printer);
+     balanced_tree.remove(x);
+     balanced_tree.printlevelOrder(cout, key_printer);
   } 
 
   return 0;
