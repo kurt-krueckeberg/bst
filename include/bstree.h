@@ -42,8 +42,14 @@ template<class Key, class Value> class bstree {
         Node() : parent{nullptr}
         {
         }
-     
-        Node(const Node& lhs);
+
+        // Due to stack overflow concerns, the default ctor, which would successfully copy the the entire subtree of lhs,
+        // is deleted.
+        Node(const Node& lhs) = delete; 
+
+        Node(const __value_type<Key, Value>& vt, Node *in_parent=nullptr) : __vt{vt}, left{nullptr}, right{nullptr}, parent{in_parent}
+        {
+        }  
         
         constexpr Node(const Key& key, const Value& value, Node *parent_in=nullptr) : __vt{key, value}, parent{parent_in}, left{nullptr}, right{nullptr} 
         {
@@ -205,7 +211,7 @@ template<class Key, class Value> class bstree {
 
     void destroy_subtree(std::unique_ptr<Node>& subtree_root) noexcept;
 
-    void copy_subtree(std::unique_ptr<Node>& src, std::unique_ptr<Node>& dest, Node *parent=nullptr) noexcept;
+    void copy_subtree(const std::unique_ptr<Node>& src, std::unique_ptr<Node>& dest, Node *parent=nullptr) noexcept;
 
     constexpr Node *get_floor(Key key) const noexcept
     {
@@ -393,6 +399,12 @@ From std::map insert_or_assign methods
     }
 };
 
+/*
+
+ The Node copy ctor could be implemented recursively as below, but this results in more recursive calls and possible
+ stack overflow than using a pre-order tree traversal that copies the input node. Therefore the default copy ctor 
+ is deleted.
+ 
 template<class Key, class Value>
 bstree<Key, Value>::Node::Node(const Node& lhs) : __vt{lhs.__vt}, left{nullptr}, right{nullptr}
 {
@@ -401,14 +413,19 @@ bstree<Key, Value>::Node::Node(const Node& lhs) : __vt{lhs.__vt}, left{nullptr},
 
    // This will recursively invoke the constructor again, resulting in the entire tree rooted at
    // lhs being copied.
-   // TODO: This can lead to stack overflow. Better to do pre-order traversal copy.
+
    if (lhs.left) 
        connectLeft(*lhs.left); 
    
    if (lhs.right) 
        connectRight(*lhs.right); 
 }
+*/
 
+/*
+ The Node assignment operatorr could be implemented recursively as below, but this results in more recursive calls (and 
+ possible stack overflow) than using a pre-order tree traversal that copies the input node. 
+ 
 template<class Key, class Value> typename bstree<Key, Value>::Node&  bstree<Key, Value>::Node::operator=(const typename bstree<Key, Value>::Node& lhs) noexcept
 {
    if (&lhs == this) return *this;
@@ -427,6 +444,36 @@ template<class Key, class Value> typename bstree<Key, Value>::Node&  bstree<Key,
   
    return *this;
 }
+*/
+
+/*
+ The Node assignment operatorr could be implemented recursively as below, but this results more recursive calls than using
+ a pre-order tree traversal that copies the input node. 
+ */
+template<class Key, class Value> typename bstree<Key, Value>::Node&  bstree<Key, Value>::Node::operator=(const typename bstree<Key, Value>::Node& lhs) noexcept
+{
+   if (&lhs == this) return *this;
+
+   destroy_subtree(root);
+
+   copy_subtree(lhs, root);
+
+/*
+   __vt = lhs.__vt;
+
+   if (lhs.parent == nullptr) // If we are copying a root pointer, then set parent.
+       parent = nullptr;
+
+   // The make_unique<Node> calls below results in the entire tree rooted at lhs being copied.
+   if (lhs.left) 
+       connectLeft(*lhs.left); 
+   
+   if (lhs.right)
+       connectRight(*lhs.right); 
+*/  
+   return *this;
+}
+
 
 template<class Key, class Value> inline bstree<Key, Value>::bstree(std::initializer_list<value_type>& list)  noexcept : bstree()
 {
@@ -436,8 +483,13 @@ template<class Key, class Value> inline bstree<Key, Value>::bstree(std::initiali
 template<class Key, class Value> inline bstree<Key, Value>::bstree(const bstree<Key, Value>& lhs) noexcept : size{lhs.size}, root{nullptr}
 { 
    if (!lhs.root) return;
-        
-   root = std::make_unique<Node>(*lhs.root); 
+    
+
+//TODO:    
+//--   root = std::make_unique<Node>(*lhs.root); 
+   // a. destroy_subtree(root) <--- not need since this is an entirely new tree
+   // b. copy_subtree
+   copy_subtree(lhs.root, root);
 }
 
 template<class Key, class Value> inline void bstree<Key, Value>::move(bstree<Key, Value>&& lhs) noexcept  
@@ -585,25 +637,23 @@ template<class Key, class Value> template<typename Functor> void bstree<Key, Val
 }
 
 /*
- * This does "less" nesting than current Node copy ctor.
- * TODO: Replace recursive Node copy ctor with copy_subtree
- * Call destroy_subtree() before calling this method. 
- * See ~/t4 and ~/t3 code.
  */
-template<class Key, class Value> void bstree<Key, Value>::copy_subtree(std::unique_ptr<Node>& in, std::unique_ptr<Node>& out, Node *parent) noexcept
+template<class Key, class Value>                    
+void bstree<Key, Value>::copy_subtree(const std::unique_ptr<typename bstree<Key, Value>::Node>& src_node, std::unique_ptr<typename bstree<Key, Value>::Node>& dest_node, typename bstree<Key, Value>::Node *parent) noexcept
 {
-   if (in == nullptr) {
+  if (!src_node) 
 
-      return;
-   }
-    
-   out = std::make_unique<Node>(in, parent); // TODO: Add two parameter Node ctor, or a new copy ctro with a default parameter.
+      dest_node = nullptr;
 
-   copy_subtree(in->left, out.get());
+  else {
 
-   copy_subtree(in->right, out.get());
+      dest_node = std::make_unique<Node>(src_node->__vt, parent);
+
+      copy_subtree(src_node->left, dest_node->left, dest_node.get()); 
+
+      copy_subtree(src_node->right, dest_node->right, dest_node.get()); 
+  }  
 }
-
 
 /*
  * Post order node destruction

@@ -1,1 +1,1 @@
-Implment todo comments in copy_subtree.
+Use a copy_subtree() method instead of a recursive Node ctor.
