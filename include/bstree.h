@@ -174,7 +174,7 @@ template<class Key, class Value> class bstree {
 
     std::unique_ptr<Node> root; 
 
-    int size;
+    std::size_t size;
 
     template<typename Functor> void DoInOrderTraverse(Functor f, const std::unique_ptr<Node>& root) const noexcept;
     template<typename Functor> void DoPostOrderTraverse(Functor f,  const std::unique_ptr<Node>& root) const noexcept;
@@ -299,6 +299,11 @@ From std::map insert_or_assign methods
     const Value& operator[](Key key) const;
 
     Value& operator[](Key key);
+    
+    std::size_t count() const noexcept
+    {
+        return size;
+    }
 
     void insert(std::initializer_list<value_type>& list) noexcept; 
 
@@ -403,10 +408,11 @@ bstree<Key, Value>::Node::Node(const Node& lhs) : __vt{lhs.__vt}, left{nullptr},
 
    // This will recursively invoke the constructor again, resulting in the entire tree rooted at
    // lhs being copied.
-   if (lhs.left  != nullptr) 
+   // TODO: This can lead to stack overflow. Better to do pre-order traversal copy.
+   if (lhs.left) 
        connectLeft(*lhs.left); 
    
-   if (lhs.right != nullptr) 
+   if (lhs.right) 
        connectRight(*lhs.right); 
 }
 
@@ -420,10 +426,10 @@ template<class Key, class Value> typename bstree<Key, Value>::Node&  bstree<Key,
        parent = nullptr;
 
    // The make_unique<Node> calls below results in the entire tree rooted at lhs being copied.
-   if (lhs.left  != nullptr) 
+   if (lhs.left) 
        connectLeft(*lhs.left); 
    
-   if (lhs.right != nullptr)
+   if (lhs.right)
        connectRight(*lhs.right); 
   
    return *this;

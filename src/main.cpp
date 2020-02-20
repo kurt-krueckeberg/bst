@@ -13,16 +13,16 @@ int main(int argc, char** argv)
   std::initializer_list<int> lst = {50, 39, 15, 65, 69, 50, 25, 20, 70, 100, 40, 34, 37, 30, 10, 33, 36, 38, 85, 90, 60, 35, 80, 89};
 
   bstree<int, int> tree;
-  /*
-   * bstree<Test, Test> tree;
-
-  for (const auto& i : lst) 
-      tree.insert(Test{i}, Test{i});
-   */
-
+/*
   for (const auto& i : lst) 
       tree.insert(i, i);
-  
+ */
+  for (auto i = 0; i < 1000; ++i) {
+     
+      tree.insert(i, i);
+      cout << "i = " << i << " tree.count() = " << tree.count() << '\n';
+  }
+ 
   cout << tree;
    
   auto key_printer = [](const auto& pr) {
