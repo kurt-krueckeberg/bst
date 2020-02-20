@@ -106,6 +106,8 @@ template<class Key, class Value> class bstree {
     private:
 
         __value_type<Key, Value> __vt;  // Convenience wrapper for std::pair<const Key, Value>
+
+        int __order;           // This is for education purposes only
                               
         std::unique_ptr<Node> left;
         std::unique_ptr<Node> right;
@@ -280,6 +282,24 @@ From std::map insert_or_assign methods
     bstree(bstree&& lhs) noexcept
     {
         move(std::move(lhs)); 
+    }
+
+    // set_special() is for eductaional purposes
+    // Functor must have 'void operator::()(int& )'  
+    template<typename Functor> void set_special(Functor f, std::unique_ptr<Node>& root) noexcept;
+
+    template<typename Functor> void set_special(Functor f) noexcept
+    {
+       set_special(f, root);
+    }
+
+    // visit_special() is for eductaional purposes
+    // Functor must have 'void operator::()(const pair<const Key, Value>&, int&)'  
+    template<typename Functor> void visit_special(Functor f, std::unique_ptr<Node>& root) noexcept;
+
+    template<typename Functor> void visit_special(Functor f) noexcept
+    {
+       visit_special(f, root);
     }
 
     bstree& operator=(const bstree&) noexcept; 
@@ -579,7 +599,7 @@ template<class Key, class Value> inline bstree<Key, Value>::Node::Node(Node&& no
  */
 template<class Key, class Value> std::unique_ptr<typename bstree<Key, Value>::Node>& bstree<Key, Value>::get_unique_ptr(Node *pnode) noexcept
 {
-  if (pnode->parent == nullptr) { // Is pnode the root? 
+  if (!pnode->parent) { // Is pnode the root? 
 
      return root; 
 
@@ -591,7 +611,7 @@ template<class Key, class Value> std::unique_ptr<typename bstree<Key, Value>::No
 
 template<class Key, class Value> template<typename Functor> void bstree<Key, Value>::DoInOrderTraverse(Functor f, const std::unique_ptr<Node>& current) const noexcept
 {
-   if (current == nullptr) {
+   if (!current) {
 
       return;
    }
@@ -603,9 +623,38 @@ template<class Key, class Value> template<typename Functor> void bstree<Key, Val
    DoInOrderTraverse(f, current->right);
 }
 
+template<class Key, class Value> template<typename Functor> void bstree<Key, Value>::set_special(Functor f, std::unique_ptr<Node>& current) noexcept
+{
+   if (!current) {
+
+      return;
+   }
+
+   f(current->__order); 
+
+   set_special(f, current->left);
+
+   set_special(f, current->right);
+}
+
+template<class Key, class Value> template<typename Functor> void bstree<Key, Value>::visit_special(Functor f, std::unique_ptr<Node>& current) noexcept
+{
+   if (!current) {
+
+      return;
+   }
+
+   visit_special(f, current->left);
+
+   f(current->__vt.__get_value(), current->__order); 
+
+   visit_special(f, current->right);
+}
+
+
 template<class Key, class Value> template<typename Functor> void bstree<Key, Value>::DoPreOrderTraverse(Functor f, const std::unique_ptr<Node>& current) const noexcept
 {
-   if (current == nullptr) {
+   if (!current) {
 
       return;
    }
@@ -619,7 +668,7 @@ template<class Key, class Value> template<typename Functor> void bstree<Key, Val
 
 template<class Key, class Value> template<typename Functor> void bstree<Key, Value>::DoPostOrderTraverse(Functor f, const std::unique_ptr<Node>& current) const noexcept
 {
-   if (current == nullptr) {
+   if (!current) {
 
       return;
    }
@@ -655,7 +704,7 @@ void bstree<Key, Value>::copy_subtree(const std::unique_ptr<typename bstree<Key,
  */
 template<class Key, class Value> void bstree<Key, Value>::destroy_subtree(std::unique_ptr<Node>& current) noexcept
 {
-   if (current == nullptr) {
+   if (!current) {
 
       return;
    }

@@ -28,6 +28,17 @@ int main(int argc, char** argv)
 
   cout << "\n--------------\nPrinting tree_copy, a copy of the above tree.\n"; 
 
+  int hidden = 0;
+
+  auto setter = [&](int& int_ref) { int_ref = ++hidden; }; 
+
+  tree.set_special(setter);
+
+  auto sp_printer = [&](const pair<const int, int>& pr, const int& int_ref) {
+      cout << int_ref << ", " << flush; }; 
+
+  tree.visit_special(sp_printer);
+
   bstree<int, int> tree_copy = tree;
 
   tree_copy.printlevelOrder(cout, key_printer);
