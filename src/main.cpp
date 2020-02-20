@@ -10,8 +10,6 @@ using namespace std;
 
 int main(int argc, char** argv) 
 {
-//  std::initializer_list<int> lst = {50, 39, 15, 65, 69, 50, 25, 20, 70, 100, 40, 34, 37, 30, 10, 33, 36, 38, 85, 90, 60, 35, 80, 89};
-
   std::initializer_list<int> lst = {100, 50, 200, 20, 70, 150, 250, -10, 40, 60, 90, 125, 175, 225, 275, -40, 10, 30, 45, 55, 65, 80, 95, 110, 130, 165, 190, 220, 230, 260, 290,\
     -70, -30, -5, 15, 25, 35, 42, 47, 52, 57, 62, 67, 92, 97, 105, 115, 127, 135, 160, 170, 180, 195, 210, 222, 227, 235, 260, 280 };
 
@@ -27,8 +25,6 @@ int main(int argc, char** argv)
   
   balanced_tree.printlevelOrder(cout, key_printer);
 
-  return 0;
-
   cout << "\n--------------\nPrinting tree_copy, a copy of the above balanced_tree.\n"; 
 
   int hidden = 0;
@@ -41,7 +37,7 @@ int main(int argc, char** argv)
       const auto&[key, value] = pr;
       cout << '(' << int_ref << ") [" << key << "], " << flush; }; 
 
-  balanced_tree.visit_special(sp_printer);
+  balanced_tree.visit_special(sp_printer); //TODO:  Want level order print that prints __d. In general, we want to print __d at will.
 
   bstree<int, int> tree_copy = balanced_tree;
 
