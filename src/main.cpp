@@ -12,7 +12,8 @@ int main(int argc, char** argv)
 {
 //  std::initializer_list<int> lst = {50, 39, 15, 65, 69, 50, 25, 20, 70, 100, 40, 34, 37, 30, 10, 33, 36, 38, 85, 90, 60, 35, 80, 89};
 
-  std::initializer_list<int> lst = {100, 50, 200, 20, 70, 150, 250, -10, 40, 60, 90, 125, 175, 225, 275};
+  std::initializer_list<int> lst = {100, 50, 200, 20, 70, 150, 250, -10, 40, 60, 90, 125, 175, 225, 275, -40, 10, 30, 45, 55, 65, 80, 95, 110, 130, 165, 190, 220, 230, 260, 290,\
+    -70, -30, -5, 15, 25, 35, 42, 47, 52, 57, 62, 67, 92, 97, 105, 115, 127, 135, 160, 170, 180, 195, 210, 222, 227, 235, 260, 280 };
 
   bstree<int, int> tree;
 
@@ -25,6 +26,8 @@ int main(int argc, char** argv)
   };
   
   tree.printlevelOrder(cout, key_printer);
+
+  return 0;
 
   cout << "\n--------------\nPrinting tree_copy, a copy of the above tree.\n"; 
 
