@@ -35,7 +35,8 @@ int main(int argc, char** argv)
   tree.set_special(setter);
 
   auto sp_printer = [&](const pair<const int, int>& pr, const int& int_ref) {
-      cout << int_ref << ", " << flush; }; 
+      const auto&[key, value] = pr;
+      cout << '(' << int_ref << ") [" << key << "], " << flush; }; 
 
   tree.visit_special(sp_printer);
 
