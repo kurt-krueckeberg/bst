@@ -1,6 +1,11 @@
 TODO
 ----
 
+Implement:
+
+1. pre-order, postorder and in-order class iterators
+2. Implement versions that use stacks
+
 Add methods to help analyze Node recursive copy ctor and assignment algorithms vs pre-order copy_tree. See `Time Complexity of Resursive Algorithms: The Master Theorem <https://yourbasic.org/algorithms/time-complexity-recursive-functions/>`_
 and also https://adrianmejia.com/analysis-of-recursive-algorithms/.
 
