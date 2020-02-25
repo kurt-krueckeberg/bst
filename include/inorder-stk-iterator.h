@@ -1,38 +1,45 @@
-// Java version
+class inorder_stak_iterator {
 
-public class BSTIterator {
+     std::stack<node_type *> stack;
+     node_type *pcurrent; // ?
+     value_type& vt;
 
-	Stack<TreeNode> stack;
+  public:
+   // traists here:
+
+   inorder_stak_iterator(TreeNode root) 
+   {
+        auto pnode = root.get();
  
-	public BSTIterator(TreeNode root) 
-        {
-		stack = new Stack<TreeNode>();
+        while (root != null) {
 
-		while (root != null) {
-			stack.push(root);
-			root = root.left;
-		}
-	}
- 
-	public boolean hasNext() {
-		return !stack.isEmpty();
-	}
- 
-	public int next() 
-        {
-		TreeNode node = stack.pop();
+	    stack.push(pnode);
+	    pnode = pnode->left;
+        }
+   }
+   
+   boolean hasNext() 
+   {
+       return !stack.isEmpty();
+   }
+   
+   int increment() 
+   {
+      auto pnode = stack.pop();
+   
+      int result = pnode->_vt.__get_value();??
+   
+      if (node->right) {
+   
+	 pnode = pnode->right;
+   
+	 while (pnode) {
 
-		int result = node.val;
+	     stack.push(pnode);
+	     pnode = node->left;
+	 }
+      }
 
-		if (node.right != null) {
-
-			node = node.right;
-
-			while (node != null) {
-				stack.push(node);
-				node = node.left;
-			}
-		}
-		return result;
-	}
-}
+      return result;
+   }
+};
