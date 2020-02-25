@@ -113,7 +113,7 @@ template<class Key, class Value> class bstree {
         std::unique_ptr<Node> right;
 
         Node *parent;
-
+/*
         constexpr const Key& key() const noexcept 
         {
            return __vt.__get_value().first; 
@@ -127,6 +127,31 @@ template<class Key, class Value> class bstree {
         constexpr Value& value() noexcept 
         { 
            return __vt.__get_value().second; 
+        }
+*/
+        constexpr const value_type&  __get_value() const noexcept
+        {
+	    return __vt.__get_value();
+        }
+
+        constexpr value_type&  __get_value() noexcept
+        {
+	    return __vt.__get_value();
+        }
+
+        constexpr const Key& key() const noexcept 
+        {
+           return __get_value().first; 
+        } 
+
+        constexpr const Value& value() const noexcept 
+        { 
+           return __get_value().second; 
+        }  
+        
+        constexpr Value& value() noexcept 
+        { 
+           return __get_value().second; 
         }
     }; 
 
@@ -172,7 +197,7 @@ template<class Key, class Value> class bstree {
               display_level(ostr, level);       
           }
 
-          do_print(pnode->__vt.__get_value());
+            do_print(pnode->__get_value());
          
           std::cout << '\n' << std::flush;
       }
@@ -618,7 +643,7 @@ template<class Key, class Value> template<typename Functor> void bstree<Key, Val
 
    DoInOrderTraverse(f, current->left);
 
-   f(current->__vt.__get_value()); 
+   f(current->__get_value()); 
 
    DoInOrderTraverse(f, current->right);
 }
@@ -646,7 +671,7 @@ template<class Key, class Value> template<typename Functor> void bstree<Key, Val
 
    visit_special(f, current->left);
 
-   f(current->__vt.__get_value(), current->__order); 
+   f(current->__get_value(), current->__order); 
 
    visit_special(f, current->right);
 }
@@ -659,7 +684,7 @@ template<class Key, class Value> template<typename Functor> void bstree<Key, Val
       return;
    }
 
-   f(current->__vt.__get_value()); 
+   f(current->__get_value()); 
 
    DoPreOrderTraverse(f, current->left);
 
@@ -677,7 +702,7 @@ template<class Key, class Value> template<typename Functor> void bstree<Key, Val
 
    DoPostOrderTraverse(f, current->right);
 
-   f(current->__vt.__get_value()); 
+   f(current->__get_value()); 
 }
 
 /*

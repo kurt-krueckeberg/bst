@@ -1,3 +1,14 @@
+/*
+The recursive in-order algorithm
+
+  void in_order(std::unique_ptr<Node>& current) const noexcept
+  {
+      if (!current) return;
+      in_order(current->left);
+      f(current->__get
+ 
+  }
+*/
 #include <iterator>
 
 // Make this a nested class.
