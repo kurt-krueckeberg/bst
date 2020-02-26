@@ -113,22 +113,7 @@ template<class Key, class Value> class bstree {
         std::unique_ptr<Node> right;
 
         Node *parent;
-/*
-        constexpr const Key& key() const noexcept 
-        {
-           return __vt.__get_value().first; 
-        } 
 
-        constexpr const Value& value() const noexcept 
-        { 
-           return __vt.__get_value().second; 
-        }  
-        
-        constexpr Value& value() noexcept 
-        { 
-           return __vt.__get_value().second; 
-        }
-*/
         constexpr const value_type&  __get_value() const noexcept
         {
 	    return __vt.__get_value();
@@ -212,6 +197,8 @@ template<class Key, class Value> class bstree {
     template<typename Functor> void DoInOrderTraverse(Functor f, const std::unique_ptr<Node>& root) const noexcept;
     template<typename Functor> void DoPostOrderTraverse(Functor f,  const std::unique_ptr<Node>& root) const noexcept;
     template<typename Functor> void DoPreOrderTraverse(Functor f, const std::unique_ptr<Node>& root) const noexcept;
+
+    template<typename Functor> void DoInOrderIterative(Functor f, const std::unique_ptr<Node>& root) const noexcept;
 
     void copy_tree(const bstree<Key, Value>& lhs) noexcept;
 
@@ -409,6 +396,12 @@ From std::map insert_or_assign methods
     template<typename Functor> void inOrderTraverse(Functor f) const noexcept
     { 
       return DoInOrderTraverse(f, root); 
+    }
+
+    // Depth-first traversals
+    template<typename Functor> void inOrderIterative(Functor f) const noexcept
+    { 
+      return DoInOrderIterative(f, root); 
     }
 
     template<typename Functor> void preOrderTraverse(Functor f) const noexcept  
@@ -634,12 +627,11 @@ template<class Key, class Value> std::unique_ptr<typename bstree<Key, Value>::No
   }
 }
 
-template<class Key, class Value> template<typename Functor> void bstree<Key, Value>::DoInOrderTraverse(Functor f, const std::unique_ptr<Node>& current) const noexcept
+template<class Key, class Value>
+template<typename Functor>
+void bstree<Key, Value>::DoInOrderTraverse(Functor f, const std::unique_ptr<Node>& current) const noexcept
 {
-   if (!current) {
-
-      return;
-   }
+   if (!current) return;
 
    DoInOrderTraverse(f, current->left);
 
@@ -648,12 +640,41 @@ template<class Key, class Value> template<typename Functor> void bstree<Key, Val
    DoInOrderTraverse(f, current->right);
 }
 
-template<class Key, class Value> template<typename Functor> void bstree<Key, Value>::set_special(Functor f, std::unique_ptr<Node>& current) noexcept
+template<class Key, class Value>
+template<typename Functor>
+void bstree<Key, Value>::DoInOrderIterative(Functor f, const std::unique_ptr<Node>& current) const noexcept
 {
-   if (!current) {
+   if (!current) return;
+   
+   std::stack<const node_type *> stack;
 
-      return;
+   const Node *pnode = current.get();
+   
+   while(!stack.empty() || pnode != nullptr) {
+   
+       if (pnode != nullptr) { // If not null, push all pnode's left children until a null child is encountered.
+   
+           stack.push(pnode);
+   
+           pnode = pnode->left.get();
+   
+       } else {  // Is pnode is null (and the stack is not empty), remove parent of pnode by poping stack.
+           
+           pnode = stack.top();
+           stack.pop();
+   
+           f(pnode->__get_value()); // dereference raw const pointer
+   
+           pnode = pnode->right.get(); // Start the process over with the right subtree
+       }
    }
+}
+
+template<class Key, class Value>
+template<typename Functor>
+void bstree<Key, Value>::set_special(Functor f, std::unique_ptr<Node>& current) noexcept
+{
+   if (!current) return;
 
    f(current->__order); 
 
@@ -662,12 +683,11 @@ template<class Key, class Value> template<typename Functor> void bstree<Key, Val
    set_special(f, current->right);
 }
 
-template<class Key, class Value> template<typename Functor> void bstree<Key, Value>::visit_special(Functor f, std::unique_ptr<Node>& current) noexcept
+template<class Key, class Value>
+template<typename Functor>
+void bstree<Key, Value>::visit_special(Functor f, std::unique_ptr<Node>& current) noexcept
 {
-   if (!current) {
-
-      return;
-   }
+   if (!current) return;
 
    visit_special(f, current->left);
 
@@ -677,12 +697,11 @@ template<class Key, class Value> template<typename Functor> void bstree<Key, Val
 }
 
 
-template<class Key, class Value> template<typename Functor> void bstree<Key, Value>::DoPreOrderTraverse(Functor f, const std::unique_ptr<Node>& current) const noexcept
+template<class Key, class Value>
+template<typename Functor>
+void bstree<Key, Value>::DoPreOrderTraverse(Functor f, const std::unique_ptr<Node>& current) const noexcept
 {
-   if (!current) {
-
-      return;
-   }
+   if (!current) return;
 
    f(current->__get_value()); 
 
@@ -691,12 +710,11 @@ template<class Key, class Value> template<typename Functor> void bstree<Key, Val
    DoPreOrderTraverse(f, current->right);
 }
 
-template<class Key, class Value> template<typename Functor> void bstree<Key, Value>::DoPostOrderTraverse(Functor f, const std::unique_ptr<Node>& current) const noexcept
+template<class Key, class Value>
+template<typename Functor>
+void bstree<Key, Value>::DoPostOrderTraverse(Functor f, const std::unique_ptr<Node>& current) const noexcept
 {
-   if (!current) {
-
-      return;
-   }
+   if (!current) return;
 
    DoPostOrderTraverse(f, current->left);
 
@@ -705,8 +723,6 @@ template<class Key, class Value> template<typename Functor> void bstree<Key, Val
    f(current->__get_value()); 
 }
 
-/*
- */
 template<class Key, class Value>                    
 void bstree<Key, Value>::copy_subtree(const std::unique_ptr<typename bstree<Key, Value>::Node>& src_node, std::unique_ptr<typename bstree<Key, Value>::Node>& dest_node, typename bstree<Key, Value>::Node *parent) noexcept
 {

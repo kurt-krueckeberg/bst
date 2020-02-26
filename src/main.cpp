@@ -17,13 +17,15 @@ int main(int argc, char** argv)
 
   for (const auto& i : lst) 
       balanced_tree.insert(i, i);
-   
+  
   auto key_printer = [](const auto& pr) {
       const auto&[key, value] = pr;
       cout << key << ", ";
   };
-  
-  balanced_tree.printlevelOrder(cout, key_printer);
+
+  balanced_tree.inOrderIterative(key_printer);
+
+  balanced_tree.printlevelOrder(cout, key_printer); // BUG <-- Why pass cout, when key_printer never uses this parameter!
 
   cout << "\n--------------\nPrinting tree_copy, a copy of the above balanced_tree.\n"; 
 

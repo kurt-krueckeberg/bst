@@ -1,13 +1,54 @@
 /*
 The recursive in-order algorithm
 
-  void in_order(std::unique_ptr<Node>& current) const noexcept
-  {
-      if (!current) return;
-      in_order(current->left);
-      f(current->__get
- 
-  }
+.. code-block:: cpp
+
+     void in_order(std::unique_ptr<Node>& current) const noexcept
+     {
+         if (!current) return;
+   
+         in_order(current->left);
+   
+         f(current->__get_value());
+   
+         in_order(current->right);
+     }
+
+repeatedly invokes itself passing current's left child until it is nullptr when it returns. It then visits the parent. Next it repeats this process (of recursing down the left child) with the the right child.
+
+This can be converted to an iterative algorithm using a stack
+void inOrder(struct Node *root) 
+{ 
+    stack<Node *> s; 
+    Node *curr = root; 
+  
+    while (curr != NULL || s.empty() == false) 
+    { 
+        // Reach the left most Node of the 
+        // curr Node
+        while (curr !=  NULL) 
+        { 
+            // Place pointer to a tree node on 
+            // the stack before traversing 
+            // the node's left subtree 
+            s.push(curr); 
+            curr = curr->left; 
+        } 
+  
+        // Current must be NULL at this point 
+        curr = s.top(); 
+        s.pop(); 
+  
+        cout << curr->data << " "; 
+  
+        // We have visited the node and its 
+        // left subtree.  Now, it's right 
+        // subtree's turn 
+        curr = curr->right; 
+  
+    }
+} 
+
 */
 #include <iterator>
 
