@@ -13,60 +13,66 @@ int main(int argc, char** argv)
   std::initializer_list<int> lst = {100, 50, 200, 20, 70, 150, 250, -10, 40, 60, 90, 125, 175, 225, 275, -40, 10, 30, 45, 55, 65, 80, 95, 110, 130, 165, 190, 220, 230, 260, 290,\
     -70, -30, -5, 15, 25, 35, 42, 47, 52, 57, 62, 67, 92, 97, 105, 115, 127, 135, 160, 170, 180, 195, 210, 222, 227, 235, 260, 280 };
 
-  bstree<int, int> balanced_tree;
+  bstree<int, int> bal_tree;
 
   for (const auto& i : lst) 
-      balanced_tree.insert(i, i);
+      bal_tree.insert(i, i);
   
   auto key_printer = [](const auto& pr) {
       const auto&[key, value] = pr;
       cout << key << ", ";
   };
 
-  balanced_tree.inOrderIterative(key_printer);
+  bal_tree.inOrderIterative(key_printer);
+
+  cout << "\nUsing range loop\n";
   
+  for (const auto& vt : bal_tree) {
+        const auto&[key, value] = vt;
+        cout << key << ", " << flush;  
+  } 
 
-  balanced_tree.printlevelOrder(cout, key_printer); // BUG <-- Why pass cout, when key_printer never uses this parameter!
+  bal_tree.printlevelOrder(cout, key_printer); // BUG <-- Why pass cout, when key_printer never uses this parameter!
 
-  cout << "\n--------------\nPrinting tree_copy, a copy of the above balanced_tree.\n"; 
+  cout << "\n--------------\nPrinting tree_copy, a copy of the above bal_tree.\n"; 
 
   int hidden = 0;
 
   auto setter = [&](int& int_ref) { int_ref = ++hidden; }; 
 
-  balanced_tree.set_special(setter);
+  bal_tree.set_special(setter);
 
   auto sp_printer = [&](const pair<const int, int>& pr, const int& int_ref) {
       const auto&[key, value] = pr;
       cout << '(' << int_ref << ") [" << key << "], " << flush; }; 
 
-  balanced_tree.visit_special(sp_printer); //TODO:  Want level order print that prints __d. In general, we want to print __d at will.
+  bal_tree.visit_special(sp_printer); //TODO:  Want level order print that prints __d. In general, we want to print __d at will.
 
-  bstree<int, int> tree_copy = balanced_tree;
+  bstree<int, int> tree_copy = bal_tree;
 
   tree_copy.printlevelOrder(cout, key_printer);
   
-  cout << "floor(37) = " << balanced_tree.floor(37) << '\n';
+  cout << "floor(37) = " << bal_tree.floor(37) << '\n';
 
-  cout << "ceiling(37) = " << balanced_tree.ceiling(37) << '\n';
+  cout << "ceiling(37) = " << bal_tree.ceiling(37) << '\n';
  
-  cout << "floor(41) = " << balanced_tree.floor(41) << '\n';
+  cout << "floor(41) = " << bal_tree.floor(41) << '\n';
 
-  cout << "ceilling(41) = " << balanced_tree.ceiling(41) << '\n';
+  cout << "ceilling(41) = " << bal_tree.ceiling(41) << '\n';
 
-  balanced_tree.printlevelOrder(cout, key_printer);
+  bal_tree.printlevelOrder(cout, key_printer);
 
   for (auto& x : lst) {
 
      cout << "--------------------------------\n";
        
-     cout << "balanced_tree.remove(" << x << ")\n";
+     cout << "bal_tree.remove(" << x << ")\n";
      if (x == 15) {
          auto debug = 10;
          ++debug;
      }
-     balanced_tree.remove(x);
-     balanced_tree.printlevelOrder(cout, key_printer);
+     bal_tree.remove(x);
+     bal_tree.printlevelOrder(cout, key_printer);
   } 
 
   return 0;

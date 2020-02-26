@@ -440,9 +440,9 @@ From std::map insert_or_assign methods
     
        using node_type = bstree<Key, Value>::node_type;
     
-       std::stack<const node_type*> stack; 
+       std::stack<node_type*> stack; 
     
-       const node_type *current;
+       node_type *current;
     
        const bstree<Key, Value>& tree;
     
@@ -460,7 +460,7 @@ From std::map insert_or_assign methods
        
           if (current->right)  { // Next, go right, if we can, and.... 
        
-             const Node *pnode = current->right.get();
+             Node *pnode = current->right.get();
        
              while (pnode != nullptr)  { 
     
@@ -489,7 +489,7 @@ From std::map insert_or_assign methods
     
        explicit inorder_stack_iterator(bstree<Key, Value>& lhs) : tree{lhs}
        {
-          const Node *pnode = root.get();
+          Node *pnode = tree.root.get();
        
           while (pnode) { // Go to min(root), pushing all nodes onto stack.
        
@@ -536,12 +536,12 @@ From std::map insert_or_assign methods
        
        struct sentinel {}; // Use for determining "at the end" in 'bool operator==(const inorder_stack_iterator&) const' below
     
-       bool operator==(inorder_stack_iterator::sentinel& sent) const noexcept
+       bool operator==(const inorder_stack_iterator::sentinel& sent) const noexcept
        {
           return stack.empty(); // We are done iterating when the stack becomes empty.
        }
        
-       bool operator!=(const inorder_stack_iterator& lhs) const noexcept
+       bool operator!=(const inorder_stack_iterator::sentinel& lhs) const noexcept
        {
          return !operator==(lhs);    
        }
