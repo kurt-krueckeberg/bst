@@ -24,6 +24,7 @@ int main(int argc, char** argv)
   };
 
   balanced_tree.inOrderIterative(key_printer);
+  
 
   balanced_tree.printlevelOrder(cout, key_printer); // BUG <-- Why pass cout, when key_printer never uses this parameter!
 

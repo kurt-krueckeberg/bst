@@ -11,7 +11,7 @@
 #include "value-type.h"
 #include <iostream>  
 #include <exception>
-
+#include <iterator>
 
 template<class Key, class Value> class bstree; // Forward declaration.
 
@@ -435,7 +435,137 @@ From std::map insert_or_assign methods
        std::cout << "}\n" << std::flush;
        return ostr;
     }
+
+    class inorder_stack_iterator {  // This not efficient to copy due to the stack container inside it.
+    
+       using node_type = bstree<Key, Value>::node_type;
+    
+       std::stack<const node_type*> stack; 
+    
+       const node_type *current;
+    
+       const bstree<Key, Value>& tree;
+    
+       inorder_stack_iterator& increment() noexcept // Go to next node.
+       {
+          if (stack.empty()) {
+    
+            current = nullptr; 
+            return *this;
+          }
+    
+          current = stack.top();
+    
+          stack.pop();
+       
+          if (current->right)  { // Next, go right, if we can, and.... 
+       
+             const Node *pnode = current->right.get();
+       
+             while (pnode != nullptr)  { 
+    
+     	        stack.push(pnode);         //....push the right node onto the stack.
+    
+      	        pnode = pnode->left.get(); // Then go as far left as we can, pushing all nodes onto stack.
+             }
+          }
+    
+          return *this;
+       }
+     
+       bool has_next() const noexcept 
+       {
+          return !stack.empty();
+       }
+    
+      public:
+    
+       using difference_type  = std::ptrdiff_t; 
+       using value_type       = bstree<Key, Value>::value_type; 
+       using reference        = value_type&; 
+       using pointer          = value_type*;
+           
+       using iterator_category = std::forward_iterator_tag; 
+    
+       explicit inorder_stack_iterator(bstree<Key, Value>& lhs) : tree{lhs}
+       {
+          const Node *pnode = root.get();
+       
+          while (pnode) { // Go to min(root), pushing all nodes onto stack.
+       
+	     stack.push(pnode);
+	     pnode = pnode->left.get();
+          }
+       }
+       
+       inorder_stack_iterator(const inorder_stack_iterator& lhs) : current{lhs.current}, stack{lhs.stack}, tree{lhs.tree}
+       {
+       }
+       
+       //--++inorder_stack_iterator() : current{nullptr}, stack{}, tree{lhs.tree}
+       
+       inorder_stack_iterator(inorder_stack_iterator&& lhs) : current{lhs.current}, stack{std::move(lhs.stack)}, tree{lhs.tree}
+       {
+           lhs.current = nullptr;
+       }
+    
+       inorder_stack_iterator& operator++() noexcept 
+       {
+          increment();
+          return *this;
+       } 
+       
+       inorder_stack_iterator operator++(int) noexcept
+       {
+          inorder_stack_iterator tmp(*this);
+    
+          increment();
+    
+          return tmp;
+       } 
+         
+       reference operator*() const noexcept 
+       { 
+           return current->__get_value();
+       } 
+       
+       pointer operator->() const noexcept
+       { 
+          return &(operator*()); 
+       } 
+       
+       struct sentinel {}; // Use for determining "at the end" in 'bool operator==(const inorder_stack_iterator&) const' below
+    
+       bool operator==(inorder_stack_iterator::sentinel& sent) const noexcept
+       {
+          return stack.empty(); // We are done iterating when the stack becomes empty.
+       }
+       
+       bool operator!=(const inorder_stack_iterator& lhs) const noexcept
+       {
+         return !operator==(lhs);    
+       }
+    };
+    
+    inorder_stack_iterator begin() noexcept
+    {
+       inorder_stack_iterator iter{*this}; 
+       return iter; 
+    }
+    
+    inorder_stack_iterator::sentinel end() noexcept // TODO: Can I use a sentinel? a C++17 feature.
+    {
+        typename inorder_stack_iterator::sentinel sent;
+        return sent;
+    }
 };
+
+// pprovided for symmetry
+template<typename Key, typename Value>
+inline bool operator==(const typename bstree<Key, Value>::inorder_stack_iterator::sentinel& sent, const typename bstree<Key, Value>::inorder_stack_iterator& iter)  noexcept
+{
+     return iter == sent;    
+}    
 
 /*
 
