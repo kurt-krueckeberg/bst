@@ -1,9 +1,11 @@
 /* 
  * Converted Pre-order Java iterator. This is NOT an in-order iterator!!
  *
- * From Carneige Mellon 'Binary Trees' lecture: https://www.cs.cmu.edu/~adamchik/15-121/lectures/Trees/trees.html
+ * The Binary Trees lecture is at:
+ * 
+ * https://www.cs.cmu.edu/~adamchik/15-121/lectures/Trees/trees.html
  *
- * with accompanying source: https://www.cs.cmu.edu/~adamchik/15-121/lectures/Trees/code/BST.java
+ * The BST code with the Pre-order iterator class was taken from:
  */
 class preorder_iterator {
 

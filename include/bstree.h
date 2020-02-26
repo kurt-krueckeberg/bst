@@ -502,8 +502,6 @@ From std::map insert_or_assign methods
        {
        }
        
-       //--++inorder_stack_iterator() : current{nullptr}, stack{}, tree{lhs.tree}
-       
        inorder_stack_iterator(inorder_stack_iterator&& lhs) : current{lhs.current}, stack{std::move(lhs.stack)}, tree{lhs.tree}
        {
            lhs.current = nullptr;
