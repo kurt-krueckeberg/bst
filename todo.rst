@@ -1,8 +1,7 @@
 TODO
 ----
 
-Sort through include/sources.rst and determine whether the nested iterator in bstree.h contains a pre-order or in-order iterator.
-Completed, test and debug both in-order and pre-order iterators.
+The nested inorder_stack-iterator seems to be working. Examine include/sources.rst and implement and test a preorder_stack_iterator and postorder_stack_iterator.
  
 Implement stand-alone iterative versions, too. 
 

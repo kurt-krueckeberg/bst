@@ -458,26 +458,21 @@ From std::map insert_or_assign methods
     
           stack.pop();
        
-          if (current->right)  { // Next, go right, if we can, and.... 
-       
-             Node *pnode = current->right.get();
-       
-             while (pnode != nullptr)  { 
-    
-     	        stack.push(pnode);         //....push the right node onto the stack.
-    
-      	        pnode = pnode->left.get(); // Then go as far left as we can, pushing all nodes onto stack.
-             }
-          }
+          push_leftmost(current->right.get()); // Next, go right, if we can, and push the left-most nodes.
     
           return *this;
        }
-     
-       bool has_next() const noexcept 
+
+       void push_leftmost(Node *pnode)
        {
-          return !stack.empty();
-       }
+           while (pnode != nullptr)  { 
     
+     	       stack.push(pnode);         //....push the right node onto the stack.
+    
+      	       pnode = pnode->left.get(); // Then go as far left as we can, pushing all nodes onto stack.
+           }
+       }
+
       public:
     
        using difference_type  = std::ptrdiff_t; 
@@ -489,13 +484,9 @@ From std::map insert_or_assign methods
     
        explicit inorder_stack_iterator(bstree<Key, Value>& lhs) : tree{lhs}
        {
-          Node *pnode = tree.root.get();
-       
-          while (pnode) { // Go to min(root), pushing all nodes onto stack.
-       
-	     stack.push(pnode);
-	     pnode = pnode->left.get();
-          }
+          push_leftmost(tree.root.get());
+
+          increment();  // go to first Node
        }
        
        inorder_stack_iterator(const inorder_stack_iterator& lhs) : current{lhs.current}, stack{lhs.stack}, tree{lhs.tree}
