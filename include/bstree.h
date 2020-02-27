@@ -535,6 +535,17 @@ From std::map insert_or_assign methods
          return !operator==(lhs);    
        }
     };
+    inorder_stack_iterator begin() noexcept
+    {
+       inorder_stack_iterator iter{*this}; 
+       return iter; 
+    }
+    
+    inorder_stack_iterator::sentinel end() noexcept // TODO: Can I use a sentinel? a C++17 feature.
+    {
+        typename inorder_stack_iterator::sentinel sent;
+        return sent;
+    }
     // preorder stack-based iterator
      /* 
      * Converted Pre-order Java iterator. This is NOT an in-order iterator!!
@@ -558,6 +569,7 @@ From std::map insert_or_assign methods
        preorder_stack_iterator& increment() noexcept 
        {
           Node *current = stack.top();
+          //stack.pop();
           
           if (current->left)       // If left not nullptr, push it onto stack.  
           
@@ -597,7 +609,7 @@ From std::map insert_or_assign methods
        {
           if (tree.root) {
     
-              stack.push(root);
+              stack.push(tree.root.get());
               increment();  // Go to first node to retrieve
           }
        }
@@ -631,7 +643,7 @@ From std::map insert_or_assign methods
     
        bool operator==(const sentinel& sent) const noexcept
        {
-          return !stack.empty();
+          return stack.empty();
        }
     
        bool operator!=(const sentinel& sent) const noexcept
@@ -644,15 +656,16 @@ From std::map insert_or_assign methods
            return current->__get_value();
        }
     };  
-    inorder_stack_iterator begin() noexcept
+    
+    preorder_stack_iterator pre_begin() noexcept
     {
-       inorder_stack_iterator iter{*this}; 
+       preorder_stack_iterator iter{*this}; 
        return iter; 
     }
     
-    inorder_stack_iterator::sentinel end() noexcept // TODO: Can I use a sentinel? a C++17 feature.
+    preorder_stack_iterator::sentinel pre_end() noexcept // TODO: Can I use a sentinel? a C++17 feature.
     {
-        typename inorder_stack_iterator::sentinel sent;
+        typename preorder_stack_iterator::sentinel sent;
         return sent;
     }
 };

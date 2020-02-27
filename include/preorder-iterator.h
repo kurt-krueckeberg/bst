@@ -23,24 +23,24 @@ class preorder_stack_iterator {
       
       if (current->left)       // If left not nullptr, push it onto stack.  
       
-         stack.push(current->left.get());
+          stack.push(current->left.get());
       
       else {
       
-         Node *tmp = stack.top();
+          Node *tmp = stack.top();
 
-         stack.pop(); 
+          stack.pop(); 
       
-         while (!tmp->right) {  // While tmp->right is nullptr
+          while (!tmp->right) {  // While tmp->right is nullptr
       
-            if (stack.empty()) 
-                 return *this;  // current->__get_value();
+             if (stack.empty()) 
+                  return *this;  // current is properly set
       
-            tmp = stack.top();
-            stack.pop();  
-         }
+             tmp = stack.top();
+             stack.pop();  
+          }
       
-         stack.push(tmp->right.get());
+          stack.push(tmp->right.get());
       }
       
       return *this;  

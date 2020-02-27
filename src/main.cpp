@@ -22,7 +22,9 @@ int main(int argc, char** argv)
       const auto&[key, value] = pr;
       cout << key << ", ";
   };
-
+  
+  cout << "bal_tree.inOrderIterative(key_printer) = \n";
+  
   bal_tree.inOrderIterative(key_printer);
 
   cout << "\nUsing range loop\n";
@@ -33,6 +35,22 @@ int main(int argc, char** argv)
   } 
 
   bal_tree.printlevelOrder(cout, key_printer); // BUG <-- Why pass cout, when key_printer never uses this parameter!
+  
+  cout << "bal_tree::preorder_stack_iterator loop: for(iter =..; iter != iter_end; ++iter) = \n";
+  
+  auto preiter = bal_tree.pre_begin();
+  auto preend = bal_tree.pre_end();
+  
+  for (;preiter != preend; ++preiter) {
+      
+      const auto&[key, value] = *preiter;  // BUG: Only prints one value, the root, repeatedly.
+      cout << key << ",\n" << flush;  
+  }
+  
+  cout << '\n';
+  
+  bal_tree.inOrderIterative(key_printer);
+
 
   cout << "\n--------------\nPrinting tree_copy, a copy of the above bal_tree.\n"; 
 

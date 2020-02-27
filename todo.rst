@@ -1,7 +1,9 @@
 TODO
 ----
 
-Test preorder_stack_iterator and create and test postorder_stack_iterator.
+BUG: preorder_stack_iterator only prints the root key/value repeatedly.
+
+Create and test postorder_stack_iterator.
  
 Implement stand-alone iterative versions of pre-order and post-order, too. 
 
