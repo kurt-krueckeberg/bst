@@ -200,7 +200,7 @@ template<class Key, class Value> class bstree {
 
     template<typename Functor> void DoInOrderIterative(Functor f, const std::unique_ptr<Node>& root) const noexcept;
     template<typename Functor> void DoPostOrderIterative(Functor f, const std::unique_ptr<Node>& root) const noexcept;
-    //template<typename Functor> void DoPreOrderIterative(Functor f, const std::unique_ptr<Node>& root) const noexcept;
+    template<typename Functor> void DoPreOrderIterative(Functor f, const std::unique_ptr<Node>& root) const noexcept;
 
     void copy_tree(const bstree<Key, Value>& lhs) noexcept;
 
@@ -409,12 +409,11 @@ From std::map insert_or_assign methods
     { 
       return DoInOrderIterative(f, root); 
     }
-    /*
+    
     template<typename Functor> void preOrderIterative(Functor f) const noexcept
     { 
       return DoPreOrderIterative(f, root); 
     }
-    */
 
     template<typename Functor> void postOrderIterative(Functor f) const noexcept
     { 
@@ -952,7 +951,57 @@ void bstree<Key, Value>::DoInOrderIterative(Functor f, const std::unique_ptr<Nod
        }
    }
 }
+template<class Key, class Value>
+template<typename Functor>
+void bstree<Key, Value>::DoPreOrderIterative(Functor f, const std::unique_ptr<Node>& lhs) const noexcept
+{
+   if (!lhs) return;
+  
+    std::stack<const node_type *> stack; 
+    stack.push(root.get()); 
+  
+    /*
+      Pop all items one by one, and do the following for every popped item:
+ 
+       a) invoke f 
+       b) push its right child 
+       c) push its left child 
 
+    Note: the right child is pushed first so that left is processed first 
+     */
+    while (!stack.empty()) { 
+
+        // Pop the top item from stack and print it 
+        const node_type *node = stack.top(); 
+        stack.pop(); 
+
+        f(node->__get_value()); 
+
+        // Push right and left children of the popped node to stack 
+        if (node->right) 
+            stack.push(node->right.get()); 
+
+        if (node->left) 
+            stack.push(node->left.get()); 
+    } 
+}
+/*
+
+Implementations using two stacks:
+
+  https://www.geeksforgeeks.org/iterative-postorder-traversal/
+
+Implementation using one stack:
+
+  https://www.techiedelight.com/postorder-tree-traversal-iterative-recursive/
+
+  https://algorithmsandme.com/iterative-postorder-traversal/
+
+  https://www.geeksforgeeks.org/iterative-postorder-traversal-using-stack/
+
+  https://stackoverflow.com/questions/54635756/iterative-postorder-traversal-of-a-binary-tree-with-a-single-stack-how-to-appro       <-- Python
+
+*/
 template<class Key, class Value>
 template<typename Functor>
 void bstree<Key, Value>::DoPostOrderIterative(Functor f, const std::unique_ptr<Node>& lhs) const noexcept
@@ -1020,7 +1069,6 @@ void bstree<Key, Value>::visit_special(Functor f, std::unique_ptr<Node>& current
 
    visit_special(f, current->right);
 }
-
 
 template<class Key, class Value>
 template<typename Functor>
