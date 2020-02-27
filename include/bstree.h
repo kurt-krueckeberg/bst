@@ -199,6 +199,8 @@ template<class Key, class Value> class bstree {
     template<typename Functor> void DoPreOrderTraverse(Functor f, const std::unique_ptr<Node>& root) const noexcept;
 
     template<typename Functor> void DoInOrderIterative(Functor f, const std::unique_ptr<Node>& root) const noexcept;
+    template<typename Functor> void DoPostOrderIterative(Functor f, const std::unique_ptr<Node>& root) const noexcept;
+    //template<typename Functor> void DoPreOrderIterative(Functor f, const std::unique_ptr<Node>& root) const noexcept;
 
     void copy_tree(const bstree<Key, Value>& lhs) noexcept;
 
@@ -406,6 +408,17 @@ From std::map insert_or_assign methods
     template<typename Functor> void inOrderIterative(Functor f) const noexcept
     { 
       return DoInOrderIterative(f, root); 
+    }
+    /*
+    template<typename Functor> void preOrderIterative(Functor f) const noexcept
+    { 
+      return DoPreOrderIterative(f, root); 
+    }
+    */
+
+    template<typename Functor> void postOrderIterative(Functor f) const noexcept
+    { 
+      return DoPostOrderIterative(f, root); 
     }
 
     template<typename Functor> void preOrderTraverse(Functor f) const noexcept  
@@ -912,13 +925,13 @@ void bstree<Key, Value>::DoInOrderTraverse(Functor f, const std::unique_ptr<Node
 
 template<class Key, class Value>
 template<typename Functor>
-void bstree<Key, Value>::DoInOrderIterative(Functor f, const std::unique_ptr<Node>& current) const noexcept
+void bstree<Key, Value>::DoInOrderIterative(Functor f, const std::unique_ptr<Node>& lhs) const noexcept
 {
-   if (!current) return;
+   if (!lhs) return;
    
    std::stack<const node_type *> stack;
 
-   const Node *pnode = current.get();
+   const Node *pnode = lhs.get();
    
    while(!stack.empty() || pnode != nullptr) {
    
@@ -937,6 +950,48 @@ void bstree<Key, Value>::DoInOrderIterative(Functor f, const std::unique_ptr<Nod
    
            pnode = pnode->right.get(); // Start the process over with the right subtree
        }
+   }
+}
+
+template<class Key, class Value>
+template<typename Functor>
+void bstree<Key, Value>::DoPostOrderIterative(Functor f, const std::unique_ptr<Node>& lhs) const noexcept
+{
+   if (!lhs) return;
+   
+   std::stack<const node_type *> stack;
+
+   stack.push(lhs.get()); 
+   
+   // BUG: The logic is wrong. Think through what has to be done.
+   while (!stack.empty()) {
+
+         const Node *tmp = stack.top();
+
+         
+         
+         // push left subtree  
+          const Node * y = tmp;
+         while (y->left) {
+
+            stack.push(y->left.get());
+
+            y = y->left.get();
+         } 
+         // push right subtree  
+         y = tmp;
+         while (y->right) {
+
+            stack.push(y->right.get());
+
+            y = y->right.get();
+         } 
+
+         // Get item at top of stack
+         const Node *current = stack.top();
+         stack.pop(); 
+           
+         f(current->__get_value());  
    }
 }
 

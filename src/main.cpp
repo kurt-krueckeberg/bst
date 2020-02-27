@@ -10,6 +10,28 @@ using namespace std;
 
 int main(int argc, char** argv) 
 {
+  bstree<int, int> test_tree;
+
+  std::initializer_list<int> test_lst = {7, 1, 10, 0, 3, 8, 12, 9, 2, 5, 4, 6};
+
+  for (const auto& i : test_lst) 
+      test_tree.insert(i, i);
+
+  auto key_printer = [](const auto& pr) {
+      const auto&[key, value] = pr;
+      cout << key << ", ";
+  };
+  
+  cout << "test_tree.inOrderIterative(key_printer) = ";
+
+  test_tree.inOrderIterative(key_printer);
+
+  cout << flush << "\ntest_tree.postOrderIterative(key_printer) = " ;
+  
+  test_tree.postOrderIterative(key_printer);
+  
+  cout << '\n' << flush;
+
   std::initializer_list<int> lst = {100, 50, 200, 20, 70, 150, 250, -10, 40, 60, 90, 125, 175, 225, 275, -40, 10, 30, 45, 55, 65, 80, 95, 110, 130, 165, 190, 220, 230, 260, 290,\
     -70, -30, -5, 15, 25, 35, 42, 47, 52, 57, 62, 67, 92, 97, 105, 115, 127, 135, 160, 170, 180, 195, 210, 222, 227, 235, 260, 280 };
 
@@ -18,15 +40,9 @@ int main(int argc, char** argv)
   for (const auto& i : lst) 
       bal_tree.insert(i, i);
   
-  auto key_printer = [](const auto& pr) {
-      const auto&[key, value] = pr;
-      cout << key << ", ";
-  };
-  
   cout << "bal_tree.inOrderIterative(key_printer) = \n";
   
   bal_tree.inOrderIterative(key_printer);
-
   cout << "\nUsing range loop\n";
   
   for (const auto& vt : bal_tree) {
