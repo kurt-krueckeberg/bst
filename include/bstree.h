@@ -566,8 +566,24 @@ From std::map insert_or_assign methods
     
        const bstree<Key, Value>& tree;
     
-       preorder_stack_iterator& increment() noexcept 
+       preorder_stack_iterator& increment() 
        {
+          if (stack.empty())
+                throw std::logic_error("No such element"); //TODO: logic_error?
+        
+           current = stack.top();
+
+           stack.pop();
+
+           if (current->right)
+               stack.push(current->right.get());
+
+           if (current->left) 
+               stack.push(current->left.get());
+        
+           return *this;
+        
+         /* Alternate implementation
           current = stack.top();
           
           if (current->left)       // If left not nullptr, push it onto stack.  
@@ -593,6 +609,7 @@ From std::map insert_or_assign methods
           }
           
           return *this;  
+          */ 
        }  
     
      public:
@@ -623,13 +640,13 @@ From std::map insert_or_assign methods
        }
        // TODO: Are assignment operators required?
        
-       preorder_stack_iterator& operator++() noexcept 
+       preorder_stack_iterator& operator++() 
        {
           increment();
           return *this;
        } 
        
-       preorder_stack_iterator operator++(int) noexcept
+       preorder_stack_iterator operator++(int) 
        {
           preorder_stack_iterator tmp(*this);
        
