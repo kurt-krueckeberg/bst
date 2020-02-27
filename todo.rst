@@ -1,9 +1,9 @@
 TODO
 ----
 
-The nested inorder_stack-iterator seems to be working. Examine include/sources.rst and implement and test a preorder_stack_iterator and postorder_stack_iterator.
+Test preorder_stack_iterator and create and test postorder_stack_iterator.
  
-Implement stand-alone iterative versions, too. 
+Implement stand-alone iterative versions of pre-order and post-order, too. 
 
 Finish code to accurate set the recursion depth for ~bstree() and ~Node(), or use the debugger to follow the ~Node() calls to see how deep the recursion goes.
 
