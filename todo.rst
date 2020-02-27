@@ -1,7 +1,7 @@
 TODO
 ----
 
-BUG: preorder_stack_iterator only prints the root key/value repeatedly.
+Test preorder_stack_iterator.
 
 Create and test postorder_stack_iterator.
  

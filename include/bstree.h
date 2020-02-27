@@ -497,7 +497,7 @@ From std::map insert_or_assign methods
        {
            lhs.current = nullptr;
        }
-    
+       // TODO: Are assignment operators required?
        inorder_stack_iterator& operator++() noexcept 
        {
           increment();
@@ -568,8 +568,7 @@ From std::map insert_or_assign methods
     
        preorder_stack_iterator& increment() noexcept 
        {
-          Node *current = stack.top();
-          //stack.pop();
+          current = stack.top();
           
           if (current->left)       // If left not nullptr, push it onto stack.  
           
@@ -610,10 +609,20 @@ From std::map insert_or_assign methods
           if (tree.root) {
     
               stack.push(tree.root.get());
-              increment();  // Go to first node to retrieve
+              increment();  // Set current
           }
        }
-     
+        
+       preorder_stack_iterator(const preorder_stack_iterator& lhs) : current{lhs.current}, stack{lhs.stack}, tree{lhs.tree}
+       {
+       }
+       
+       preorder_stack_iterator(preorder_stack_iterator&& lhs) : current{lhs.current}, stack{std::move(lhs.stack)}, tree{lhs.tree}
+       {
+           lhs.current = nullptr;
+       }
+       // TODO: Are assignment operators required?
+       
        preorder_stack_iterator& operator++() noexcept 
        {
           increment();
