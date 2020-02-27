@@ -1,11 +1,7 @@
 TODO
 ----
 
-Test preorder_stack_iterator.
-
-Create and test postorder_stack_iterator.
- 
-Implement stand-alone iterative versions of pre-order and post-order, too. 
+Complete testing of preorder_stack_iterator and implement and test a postorder_stack_iterator. Also implement stand-alone iterative versions of pre-order and post-order, too. 
 
 Finish code to accurate set the recursion depth for ~bstree() and ~Node(), or use the debugger to follow the ~Node() calls to see how deep the recursion goes.
 

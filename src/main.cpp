@@ -34,7 +34,8 @@ int main(int argc, char** argv)
         cout << key << ", " << flush;  
   } 
 
-  bal_tree.printlevelOrder(cout, key_printer); // BUG <-- Why pass cout, when key_printer never uses this parameter!
+//  bal_tree.printlevelOrder(cout, key_printer); // BUG <-- Why pass cout, when key_printer never uses this parameter! Providing only levelOrderTraverse() is sufficient.
+    bal_tree.levelOrderTraverse(key_printer); // BUG <-- Why pass cout, when key_printer never uses this parameter! Providing only levelOrderTraverse() is sufficient.
   
   cout << "bal_tree::preorder_stack_iterator loop: for(iter =..; iter != iter_end; ++iter) = \n";
   
@@ -43,7 +44,7 @@ int main(int argc, char** argv)
   
   for (;preiter != preend; ++preiter) {
       
-      const auto&[key, value] = *preiter;  // BUG: Only prints one value, the root, repeatedly.
+      const auto&[key, value] = *preiter;  
       cout << key << ",\n" << flush;  
   }
   
@@ -68,7 +69,7 @@ int main(int argc, char** argv)
 
   bstree<int, int> tree_copy = bal_tree;
 
-  tree_copy.printlevelOrder(cout, key_printer);
+  tree_copy.levelOrderTraverse(key_printer);
   
   cout << "floor(37) = " << bal_tree.floor(37) << '\n';
 
@@ -78,7 +79,12 @@ int main(int argc, char** argv)
 
   cout << "ceilling(41) = " << bal_tree.ceiling(41) << '\n';
 
-  bal_tree.printlevelOrder(cout, key_printer);
+  bal_tree.levelOrderTraverse(key_printer);
+  
+  cout << "\nbal_tree.postOrderTraverse(key_printer) = \n";
+  
+  bal_tree.postOrderTraverse(key_printer);
+  cout << '\n' << flush;
 
   for (auto& x : lst) {
 
@@ -90,14 +96,14 @@ int main(int argc, char** argv)
          ++debug;
      }
      bal_tree.remove(x);
-     bal_tree.printlevelOrder(cout, key_printer);
+     bal_tree.levelOrderTraverse(key_printer);
   } 
 
   return 0;
   /*      
   cout << "This is the input tree " << tree << " printed in debug level order:\n";
   
-  tree.debug_printlevelOrder(cout);
+  tree.levelOrderTraverse(???);
 
   cout << "We now start the removal loop\n";
   
@@ -116,11 +122,10 @@ int main(int argc, char** argv)
       cout << "Tree after removal of Test{" << key << "}. " << tree; 
       cout << "\nLevel-order print after the removal of Test{" << key << "}\n";
       
-      tree.printlevelOrder(cout, key_printer);
+      tree.levelOrderTravese(key_printer);
 
       cout << flush << "\nDebug print\n";
 
-      tree.debug_printlevelOrder(cout);
   }
 
   return 0;
@@ -131,17 +136,17 @@ int main(int argc, char** argv)
     
     cout << "tree1 = " << tree1 << '\n' << "Printing tree1 level order:\n";
     
-    tree1.printlevelOrder(cout);
+    tree1.levelOrderTraverse(key_printer);
         
     bstree<Test> tree2 = { Test{15}, Test{25}, Test{17}, Test{27}, Test{13}, Test{23}, Test{14}, Test{24},  Test{12}, Test{41},  Test{16}, Test{6}, Test{19}, Test{20}}; 
     
     cout << "\ntree2 = " << tree2 << "\nPrinting tree2 level order:\n";
     
     tree2 = tree1; 
-    tree2.printlevelOrder(cout);
+    tree2.levelOrderTraverse(key_printer);
     
    cout << "\nAfter 'tree2 = tree1', tree2 = " << tree2 << "\nPrinting tree2 level order:\n" << flush;
-   tree2.printlevelOrder(cout);
+   tree2.levelOrderTraverse(key_printer);
    
    vector<int> vec = {-5, -15, -7, -17, -3, -13, -4, -14,  -2, -12,  -6, -16, -9, -19}; 
    for (const auto& ref : vec) {
@@ -150,7 +155,7 @@ int main(int argc, char** argv)
 
      cout << "After removing " << ref << " from tree2, tree2 = \n";
      
-     tree2.printlevelOrder(cout);
+     tree2.levelOrderTraverse(key_printer);
      cout << flush;
    }
    
