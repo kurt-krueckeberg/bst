@@ -932,21 +932,26 @@ void bstree<Key, Value>::DoInOrderIterative(Functor f, const std::unique_ptr<Nod
 
    const Node *y = root_in.get();
 
-   while (y || !stack.empty()) {
-    
+   while (y || !stack.empty()) { /* Note: We need to check both y and whether the stack is empty, for consider a tree in which each node (including the root) has one right child and no left child.
+                                    Then the inner while loop will only push one node (at a time) which will then be popped and visited, then y will be set to y->right.  The stack will be empty, but
+                                    the next node to visit, y, will not be null.
+                                    On the other hand, after the line y = y->right.get(), y will become null whenever its parent is a leaf node that was just been visited. In this case, the stack will
+                                    not be null, unless y's parent was the right most node in the tree. 
+                                   
+                                  */
       while (y) { // put y and its left-most descendents onto the stack
       
          stack.push(y);
          y = y->left.get();
       } 
 
-      const Node *current = stack.top();
+      y = stack.top();
 
       stack.pop();
 
-      f(current->__get_value());  
+      f(y->__get_value());  
       
-      y = current->right.get(); // repeat the process with current's right child.
+      y = y->right.get(); // repeat the process with current's right child.
    }
 }
 
