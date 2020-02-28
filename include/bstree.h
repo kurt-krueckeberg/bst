@@ -924,33 +924,32 @@ void bstree<Key, Value>::DoInOrderTraverse(Functor f, const std::unique_ptr<Node
 
 template<class Key, class Value>
 template<typename Functor>
-void bstree<Key, Value>::DoInOrderIterative(Functor f, const std::unique_ptr<Node>& lhs) const noexcept
+void bstree<Key, Value>::DoInOrderIterative(Functor f, const std::unique_ptr<Node>& root_in) const noexcept
 {
-   if (!lhs) return;
+   if (!root_in) return;
    
    std::stack<const node_type *> stack;
 
-   const Node *pnode = lhs.get();
-   
-   while(!stack.empty() || pnode != nullptr) {
-   
-       if (pnode != nullptr) { // If not null, push all pnode's left children until a null child is encountered.
-   
-           stack.push(pnode);
-   
-           pnode = pnode->left.get();
-   
-       } else {  // Is pnode is null (and the stack is not empty), remove parent of pnode by poping stack.
-           
-           pnode = stack.top();
-           stack.pop();
-   
-           f(pnode->__get_value()); // dereference raw const pointer
-   
-           pnode = pnode->right.get(); // Start the process over with the right subtree
-       }
+   const Node *y = root_in.get();
+
+   while (y || !stack.empty()) {
+    
+      while (y) { // put y and its left-most descendents onto the stack
+      
+         stack.push(y);
+         y = y->left.get();
+      } 
+
+      const Node *current = stack.top();
+
+      stack.pop();
+
+      f(current->__get_value());  
+      
+      y = current->right.get(); // repeat the process with current's right child.
    }
 }
+
 template<class Key, class Value>
 template<typename Functor>
 void bstree<Key, Value>::DoPreOrderIterative(Functor f, const std::unique_ptr<Node>& lhs) const noexcept
