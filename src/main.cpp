@@ -17,12 +17,21 @@ int main(int argc, char** argv)
   for (const auto& i : test_lst) 
       test_tree.insert(i, i);
 
+  cout << "test_tree.inOrderTrace(key_printer) = ";
+
+  auto trace_printer = [](const auto& pr) {
+      const auto&[key, value] = pr;
+      cout << "\tf(const pair<const key, value>& pr), with key = " << key;
+  };
+
+  test_tree.inOrderTrace(trace_printer);
+
   auto key_printer = [](const auto& pr) {
       const auto&[key, value] = pr;
       cout << key << ", ";
   };
-  
-  cout << "test_tree.inOrderIterative(key_printer) = ";
+
+  cout << "\ntest_tree.inOrderIterative(key_printer) = ";
 
   test_tree.inOrderIterative(key_printer);
 

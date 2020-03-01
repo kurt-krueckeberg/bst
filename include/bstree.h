@@ -197,6 +197,8 @@ template<class Key, class Value> class bstree {
     template<typename Functor> void inOrderTraverse(Functor f, const std::unique_ptr<Node>& root) const noexcept;
     template<typename Functor> void postOrderTraverse(Functor f,  const std::unique_ptr<Node>& root) const noexcept;
     template<typename Functor> void preOrderTraverse(Functor f, const std::unique_ptr<Node>& root) const noexcept;
+    
+    template<typename Functor> void inOrderTrace(Functor f, const std::unique_ptr<Node>& current, int depth=1) const noexcept;
 
     template<typename Functor> void inOrderIterative(Functor f, const std::unique_ptr<Node>& root) const noexcept;
     template<typename Functor> void postOrderIterative(Functor f, const std::unique_ptr<Node>& root) const noexcept;
@@ -402,6 +404,11 @@ From std::map insert_or_assign methods
     template<typename Functor> void inOrderTraverse(Functor f) const noexcept
     { 
       return inOrderTraverse(f, root); 
+    }
+
+    template<typename Functor> void inOrderTrace(Functor f) const noexcept
+    { 
+      return inOrderTrace(f, root); 
     }
 
     // Depth-first traversals
@@ -920,6 +927,28 @@ void bstree<Key, Value>::inOrderTraverse(Functor f, const std::unique_ptr<Node>&
    f(current->__get_value()); 
 
    inOrderTraverse(f, current->right);
+}
+
+template<class Key, class Value> template<typename Functor> void bstree<Key, Value>::inOrderTrace(Functor f, const std::unique_ptr<Node>& current, int depth) const noexcept
+{
+   // Display recursion info.
+   std::cout << "\ninOrderTrace. depth = " << depth;
+
+   if (!current) // nullptr
+      std::cout << ". nullptr " << std::endl;
+   else 
+      std::cout << ". key = " << current->key() << std::flush;
+
+   if (!current) {
+
+      return;
+   }
+
+   inOrderTrace(f, current->left, depth + 1);
+
+   f(current->__get_value()); 
+
+   inOrderTrace(f, current->right, depth + 1);
 }
 
 template<class Key, class Value>
