@@ -31,11 +31,11 @@ int main(int argc, char** argv)
 
   test_tree.printlevelOrder(key_printer); 
 
-  return 0;
-
   cout << "test_tree.inOrderTrace(key_printer) = ";
 
   test_tree.inOrderTrace(trace_printer);
+
+  return 0;
 
   cout << "\ntest_tree.inOrderIterative(key_printer) = ";
 
