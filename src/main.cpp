@@ -19,7 +19,7 @@ int main(int argc, char** argv)
 
   auto trace_printer = [](const auto& pr) {
       const auto&[key, value] = pr;
-      cout << "\tf(" << key << ')';
+      cout << "\tvisited: " << key;
   };
 
   auto key_printer = [](const auto& pr) {

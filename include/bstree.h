@@ -5,6 +5,7 @@
 #include <utility>
 #include <queue>
 #include <stack>
+#include <list>
 #include <algorithm>
 #include <stdlib.h>
 #include <initializer_list>
@@ -151,16 +152,7 @@ template<class Key, class Value> class bstree {
 
       void display_level(int level) const noexcept
       {
-        std::cout << "\n" << "current level = " <<  level << '\n'; 
-         
-        // Provide some basic spacing to tree appearance.
-        /*
-        std::size_t num = height_ - level + 1;
-      
-        std::string str( num, ' ');
-      
-        ostr << str; 
-         */ 
+         std::cout << "\n" << "current level = " <<  level << '\n'; 
       }
       
       public: 
@@ -182,7 +174,8 @@ template<class Key, class Value> class bstree {
               display_level(level);       
           }
 
-            do_print(pnode->__get_value());
+          //--do_print(pnode->__get_value());
+          std::cout << std::setw(3) << std::right << pnode->key();
          
           std::cout << '\n' << std::flush;
       }
@@ -198,7 +191,7 @@ template<class Key, class Value> class bstree {
     template<typename Functor> void postOrderTraverse(Functor f,  const std::unique_ptr<Node>& root) const noexcept;
     template<typename Functor> void preOrderTraverse(Functor f, const std::unique_ptr<Node>& root) const noexcept;
     
-    template<typename Functor> void inOrderTrace(Functor f, const std::unique_ptr<Node>& current, int depth=1) const noexcept;
+    template<typename Functor> void inOrderTrace(Functor f, const std::unique_ptr<Node>& current, std::list<int>& list, int depth=1) const noexcept;
 
     template<typename Functor> void inOrderIterative(Functor f, const std::unique_ptr<Node>& root) const noexcept;
     template<typename Functor> void postOrderIterative(Functor f, const std::unique_ptr<Node>& root) const noexcept;
@@ -408,7 +401,8 @@ From std::map insert_or_assign methods
 
     template<typename Functor> void inOrderTrace(Functor f) const noexcept
     { 
-      return inOrderTrace(f, root); 
+      std::list<int> list;
+      return inOrderTrace(f, root, list); 
     }
 
     // Depth-first traversals
@@ -928,10 +922,9 @@ void bstree<Key, Value>::inOrderTraverse(Functor f, const std::unique_ptr<Node>&
 
    inOrderTraverse(f, current->right);
 }
-
-template<class Key, class Value> template<typename Functor> void bstree<Key, Value>::inOrderTrace(Functor f, const std::unique_ptr<Node>& current, int depth) const noexcept
+/*
+template<class Key, class Value> template<typename Functor> void bstree<Key, Value>::display_recursion(const std::unique_ptr<Node>& current, std::list<int>& list, int depth) const noexcept
 {
-   // Display recursion info.
    std::cout << '\n';
    if (depth > 1)
       std::cout << std::setw(depth - 1) << ' ';
@@ -942,17 +935,32 @@ template<class Key, class Value> template<typename Functor> void bstree<Key, Val
       std::cout << ". Return" << std::endl;
    else 
       std::cout << ". key = " << current->key() << std::flush;
-
+}
+*/
+template<class Key, class Value> template<typename Functor> void bstree<Key, Value>::inOrderTrace(Functor f, const std::unique_ptr<Node>& current, std::list<int>& list, int depth) const noexcept
+{
    if (!current) {
 
       return;
    }
 
-   inOrderTrace(f, current->left, depth + 1);
+   list.push_back(current->key());
 
+   inOrderTrace(f, current->left, list, depth + 1);
+
+   std::cout << "\nThe 'stack' is:\n";
+   for (auto riter = list.rbegin(); riter != list.rend(); ++riter) {
+
+      // Print out the simulated "stack". USe code above.
+      std::cout << '\t' << std::setw(4) << *riter << std::endl;
+   }
+   
    f(current->__get_value()); 
+   
+   list.pop_back();
 
-   inOrderTrace(f, current->right, depth + 1);
+ 
+   inOrderTrace(f, current->right, list, depth + 1);
 }
 
 template<class Key, class Value>
