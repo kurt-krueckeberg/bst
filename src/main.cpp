@@ -21,7 +21,7 @@ int main(int argc, char** argv)
 
   auto trace_printer = [](const auto& pr) {
       const auto&[key, value] = pr;
-      cout << "\tf(const pair<const key, value>& pr), with key = " << key;
+      cout << "\tf(" << key << ')';
   };
 
   test_tree.inOrderTrace(trace_printer);

@@ -937,7 +937,7 @@ template<class Key, class Value> template<typename Functor> void bstree<Key, Val
    if (depth > 1)
       std::cout << std::setw(depth - 1) << ' ';
 
-   std::cout << "inOrderTrace. depth = " << depth;
+   std::cout << "depth = " << depth;
 
    if (!current) // nullptr
       std::cout << ". Return" << std::endl;
