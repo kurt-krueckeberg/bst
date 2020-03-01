@@ -143,16 +143,15 @@ template<class Key, class Value> class bstree {
 
    template<typename Printer> class LevelOrderPrinter {
    
-      std::ostream& ostr;
       int current_level;
       int height_;
       Printer do_print;
        
       std::ostream& (Node::*pmf)(std::ostream&) const noexcept;
 
-      void display_level(std::ostream& ostr, int level) const noexcept
+      void display_level(int level) const noexcept
       {
-        ostr << "\n" << "current level = " <<  level << '\n'; 
+        std::cout << "\n" << "current level = " <<  level << '\n'; 
          
         // Provide some basic spacing to tree appearance.
         /*
@@ -166,12 +165,12 @@ template<class Key, class Value> class bstree {
       
       public: 
       
-      LevelOrderPrinter (const bstree<Key, Value>& tree, std::ostream& ostr_in, Printer p):  ostr{ostr_in}, current_level{0}, do_print{p}
+      LevelOrderPrinter (const bstree<Key, Value>& tree, Printer p):  current_level{0}, do_print{p}
       { 
           height_ = tree.height(); 
       }
 
-      LevelOrderPrinter (const LevelOrderPrinter& lhs): ostr{lhs.ostr}, current_level{lhs.current_level}, height_{lhs.height_}, do_print{lhs.do_print} {}
+      LevelOrderPrinter (const LevelOrderPrinter& lhs) : current_level{lhs.current_level}, height_{lhs.height_}, do_print{lhs.do_print} {}
       
       void operator ()(const Node *pnode, int level)
       { 
@@ -180,7 +179,7 @@ template<class Key, class Value> class bstree {
          
               current_level = level;
          
-              display_level(ostr, level);       
+              display_level(level);       
           }
 
             do_print(pnode->__get_value());
@@ -438,7 +437,7 @@ From std::map insert_or_assign methods
       return postOrderTraverse(f, root); 
     }
 
-    template<typename PrintFunctor> void  printlevelOrder(std::ostream& ostr, PrintFunctor pf) const noexcept;
+    template<typename PrintFunctor> void  printlevelOrder(PrintFunctor pf) const noexcept;
 
     void debug_print(std::ostream& ostr) const noexcept;
 
@@ -879,13 +878,13 @@ template<class Key, class Value> std::ostream& bstree<Key, Value>::Node::debug_p
 
 template<typename Key, typename Value> 
 template<typename PrintFunctor>
-void  bstree<Key, Value>::printlevelOrder(std::ostream& ostr, PrintFunctor print_functor) const noexcept
+void  bstree<Key, Value>::printlevelOrder(PrintFunctor print_functor) const noexcept
 {
-  LevelOrderPrinter<PrintFunctor> tree_printer(*this, ostr, print_functor);  
+  LevelOrderPrinter<PrintFunctor> tree_printer(*this, print_functor);  
   
-  levelOrderTraverse(tree_printer);
+  node_levelOrderTraverse(tree_printer);
   
-  ostr << std::flush;
+  std::cout << std::flush;
 }
 
 template<typename Key, typename Value> inline void  bstree<Key, Value>::debug_print(std::ostream& ostr) const noexcept
@@ -1575,6 +1574,7 @@ template<class Key, class Value> template<typename Functor> void bstree<Key, Val
         queue.pop(); 
    }
 }
+
 // Breadth-first traversal. Useful for display the tree (with a functor that knows how to pad with spaces based on level).
 template<class Key, class Value> template<typename Functor> void bstree<Key, Value>::node_levelOrderTraverse(Functor f) const noexcept
 {

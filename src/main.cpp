@@ -27,17 +27,17 @@ int main(int argc, char** argv)
       cout << key << ", ";
   };
 
-  cout << "test_tree.levelOrderTraverse(key_printer) = " << flush;
+  cout << "test_tree.printlevelOrder(key_printer) = " << flush;
 
-  test_tree.levelOrderTraverse(key_printer); 
+  test_tree.printlevelOrder(key_printer); 
+
+  return 0;
 
   cout << "test_tree.inOrderTrace(key_printer) = ";
 
   test_tree.inOrderTrace(trace_printer);
 
   cout << "\ntest_tree.inOrderIterative(key_printer) = ";
-
-  return 0;
 
   test_tree.inOrderIterative(key_printer);
 
