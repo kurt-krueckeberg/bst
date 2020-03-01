@@ -922,21 +922,7 @@ void bstree<Key, Value>::inOrderTraverse(Functor f, const std::unique_ptr<Node>&
 
    inOrderTraverse(f, current->right);
 }
-/*
-template<class Key, class Value> template<typename Functor> void bstree<Key, Value>::display_recursion(const std::unique_ptr<Node>& current, std::list<int>& list, int depth) const noexcept
-{
-   std::cout << '\n';
-   if (depth > 1)
-      std::cout << std::setw(depth - 1) << ' ';
 
-   std::cout << "depth = " << depth;
-
-   if (!current) // nullptr
-      std::cout << ". Return" << std::endl;
-   else 
-      std::cout << ". key = " << current->key() << std::flush;
-}
-*/
 template<class Key, class Value> template<typename Functor> void bstree<Key, Value>::inOrderTrace(Functor f, const std::unique_ptr<Node>& current, std::list<int>& list, int depth) const noexcept
 {
    if (!current) {
@@ -948,7 +934,7 @@ template<class Key, class Value> template<typename Functor> void bstree<Key, Val
 
    inOrderTrace(f, current->left, list, depth + 1);
 
-   std::cout << "\nThe 'stack' is:\n";
+   std::cout << "\nThe stack is:\n";
    for (auto riter = list.rbegin(); riter != list.rend(); ++riter) {
 
       // Print out the simulated "stack". USe code above.
