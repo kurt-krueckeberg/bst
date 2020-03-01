@@ -10,6 +10,7 @@
 #include <initializer_list>
 #include "value-type.h"
 #include <iostream>  
+#include <iomanip>
 #include <exception>
 #include <iterator>
 
@@ -932,10 +933,14 @@ void bstree<Key, Value>::inOrderTraverse(Functor f, const std::unique_ptr<Node>&
 template<class Key, class Value> template<typename Functor> void bstree<Key, Value>::inOrderTrace(Functor f, const std::unique_ptr<Node>& current, int depth) const noexcept
 {
    // Display recursion info.
-   std::cout << "\ninOrderTrace. depth = " << depth;
+   std::cout << '\n';
+   if (depth > 1)
+      std::cout << std::setw(depth - 1) << ' ';
+
+   std::cout << "inOrderTrace. depth = " << depth;
 
    if (!current) // nullptr
-      std::cout << ". nullptr " << std::endl;
+      std::cout << ". Recusion Ends, returning " << std::endl;
    else 
       std::cout << ". key = " << current->key() << std::flush;
 
