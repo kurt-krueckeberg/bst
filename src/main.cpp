@@ -12,26 +12,32 @@ int main(int argc, char** argv)
 {
   bstree<int, int> test_tree;
 
-  std::initializer_list<int> test_lst = {7, 1, 10, 0, 3, 8, 12, 9, 2, 5, 4, 6};
+  std::initializer_list<int> test_lst = {7, 1, 30, 0, 3, 8, 50, 20, 9, 2, 5, 4, 6, -10, -5, 40, 60, 55, 65, 54, -20};
 
   for (const auto& i : test_lst) 
       test_tree.insert(i, i);
-
-  cout << "test_tree.inOrderTrace(key_printer) = ";
 
   auto trace_printer = [](const auto& pr) {
       const auto&[key, value] = pr;
       cout << "\tf(" << key << ')';
   };
 
-  test_tree.inOrderTrace(trace_printer);
-
   auto key_printer = [](const auto& pr) {
       const auto&[key, value] = pr;
       cout << key << ", ";
   };
 
+  cout << "test_tree.levelOrderTraverse(key_printer) = " << flush;
+
+  test_tree.levelOrderTraverse(key_printer); 
+
+  cout << "test_tree.inOrderTrace(key_printer) = ";
+
+  test_tree.inOrderTrace(trace_printer);
+
   cout << "\ntest_tree.inOrderIterative(key_printer) = ";
+
+  return 0;
 
   test_tree.inOrderIterative(key_printer);
 
