@@ -940,7 +940,7 @@ template<class Key, class Value> template<typename Functor> void bstree<Key, Val
    std::cout << "inOrderTrace. depth = " << depth;
 
    if (!current) // nullptr
-      std::cout << ". Recusion Ends, returning " << std::endl;
+      std::cout << ". Return" << std::endl;
    else 
       std::cout << ". key = " << current->key() << std::flush;
 
