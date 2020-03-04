@@ -1,7 +1,7 @@
 TODO
 ----
 
-Implement and test stand-alone iterative method for post-order and pre-order traversals. Implement and test a postorder_stack_iterator. 
+Implement iterative version of copy_subtree(). Implement and test a postorder_stack_iterator. 
 
 BUG in DoPostOrderIterative(). Infinitie loop.
 

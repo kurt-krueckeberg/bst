@@ -19,7 +19,8 @@ int main(int argc, char** argv)
 
   auto trace_printer = [](const auto& pr) {
       const auto&[key, value] = pr;
-      cout << "\tPopped and visited: " << key;
+      //cout << "\tPopped and visited: " << key;
+      cout << "  " << key << "  ";
   };
 
   auto key_printer = [](const auto& pr) {

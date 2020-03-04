@@ -933,20 +933,20 @@ template<class Key, class Value> template<typename Functor> void bstree<Key, Val
    list.push_back(current->key());
 
    inOrderTrace(f, current->left, list, depth + 1);
-
-   std::cout << "\nThe stack is:\n";
-   for (auto riter = list.rbegin(); riter != list.rend(); ++riter) {
-
+   
+   std::cout << '[';
+   for (auto riter = list.rbegin(); riter != list.rend(); ++riter)
+       
       // Print out the simulated "stack". USe code above.
-      std::cout << '\t' << std::setw(4) << *riter << std::endl;
-   }
+      std::cout << *riter << ", ";    //std::cout << '\t' << std::setw(4) << *riter << std::endl;
+      
+   std::cout << ']' << std::endl;
    
    f(current->__get_value()); 
+    
+   inOrderTrace(f, current->right, list, depth + 1);
    
    list.pop_back();
-
- 
-   inOrderTrace(f, current->right, list, depth + 1);
 }
 
 template<class Key, class Value>
@@ -1126,22 +1126,59 @@ void bstree<Key, Value>::postOrderTraverse(Functor f, const std::unique_ptr<Node
 
    f(current->__get_value()); 
 }
-
+/*
+ * Iterative version of pre
+ */
 template<class Key, class Value>                    
-void bstree<Key, Value>::copy_subtree(const std::unique_ptr<typename bstree<Key, Value>::Node>& src_node, std::unique_ptr<typename bstree<Key, Value>::Node>& dest_node, typename bstree<Key, Value>::Node *parent) noexcept
+void bstree<Key, Value>::copy_subtree(const std::unique_ptr<typename bstree<Key, Value>::Node>& out_root, std::unique_ptr<typename bstree<Key, Value>::Node>& lhs_root, typename bstree<Key, Value>::Node *parent) noexcept
 {
-  if (!src_node) 
+  auto copy_node = [] (const Node psrc_node,  Node *pdest_node, Node *parent {
 
-      dest_node = nullptr;
+      dest_node = std::make_unique<Node>(psrc_node->__vt, parent); // TODO: Resolve raw pointer vs reference ???
 
-  else {
+  };
 
-      dest_node = std::make_unique<Node>(src_node->__vt, parent);
+  if (!lhs_root) {
+       src_node = nullptr; 
+       return; // nothing more to copy
+  }
+  
+  std::stack<std::pair<const node_type *, node_type *> stack; // const src node first, dest node second
 
-      copy_subtree(src_node->left, dest_node->left, dest_node.get()); 
+  stack.push( std::make_pair(lhs_root.get(), out_root.get()) ); 
+  
+    /*
+      Pop all items one by one, and do the following for every popped item:
+ 
+       a) invoke f 
+       b) push its right child 
+       c) push its left child 
 
-      copy_subtree(src_node->right, dest_node->right, dest_node.get()); 
-  }  
+    Note: the right child is pushed first so that left is processed first 
+     */
+
+  Node *parent = nullptr; // parent of root_in is nullptr
+
+  // TODO: How do we determine the dest_node when it might be left or if might be right?
+  // A: We code also push the dest node onto the stack.
+  while (!stack.empty()) { 
+
+      // Pop the top item from stack and print it 
+      auto [src_node,  dest_node] = stack.top(); 
+      stack.pop(); 
+
+      copy_node(src_node, dest_node, parent); // TODO: dest_node is a raw pointer not a unique_ptr. 
+
+        // Push right and left non-null children of the popped node to stack 
+
+      parent = dest_node;
+ 
+      if (src_node->right) 
+          stack.push(node->right.get()); 
+
+      if (src_node->left) 
+          stack.push(src_node->left.get()); 
+  } 
 }
 
 /*
