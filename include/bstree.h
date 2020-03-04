@@ -197,7 +197,7 @@ template<class Key, class Value> class bstree {
 
     template<typename Functor> void postOrderIterative(Functor f, const std::unique_ptr<Node>& root) const noexcept;
 
-    template<typename Functor> void postOrderIterative(Functor f, std::unique_ptr<Node>& root) noexcept; // private method. Mainly used to do post-order tree destruction
+    template<typename Functor> void __postOrderIterative(Functor f, std::unique_ptr<Node>& root) noexcept; // private method. Mainly used to do post-order tree destruction
     template<typename Functor> void preOrderIterative(Functor f, const std::unique_ptr<Node>&) const noexcept;
 
     void copy_tree(const bstree<Key, Value>& lhs) noexcept;
@@ -223,7 +223,7 @@ template<class Key, class Value> class bstree {
 
     std::unique_ptr<Node>& find(Key key, std::unique_ptr<Node>&) const noexcept;
 
-    void copy_subtree(const std::unique_ptr<Node>& src)/*, std::unique_ptr<Node>& dest, Node *parent=nullptr)*/ noexcept;
+    void copy_tree(const std::unique_ptr<Node>& src) noexcept;
 
     constexpr Node *get_floor(Key key) const noexcept
     {
@@ -286,7 +286,7 @@ From std::map insert_or_assign methods
           node.reset();
        };
     
-       postOrderIterative(f, root);
+       __postOrderIterative(f, root);
     } 
 
     bstree(std::initializer_list<value_type>& list) noexcept; 
@@ -766,9 +766,9 @@ template<class Key, class Value> typename bstree<Key, Value>::Node&  bstree<Key,
       node.reset();
    };
 
-   postOrderIterative(f, root);
+   __postOrderIterative(f, root);
 
-   copy_subtree(lhs, root);
+   copy_tree(root);
 
 /*
    __vt = lhs.__vt;
@@ -796,7 +796,7 @@ template<class Key, class Value> inline bstree<Key, Value>::bstree(const bstree<
 { 
    if (!lhs.root) return;
     
-   copy_subtree(lhs.root);
+   copy_tree(lhs.root);
 }
 
 template<class Key, class Value> inline void bstree<Key, Value>::move(bstree<Key, Value>&& lhs) noexcept  
@@ -812,10 +812,13 @@ template<class Key, class Value> bstree<Key, Value>& bstree<Key, Value>::operato
 {
   if (this == &lhs)  return *this;
   
-  // This will implicitly delete all Nodes in 'this', and set root to a duplicate tree of Nodes.
-  //--root = std::make_unique<Node>(*lhs.root); 
-  // TODO: This tree must be deleted, either here or in copy_subtree()
-  copy_subtree(lhs.root);
+  auto f = [] (std::unique_ptr<Node>& uptr) {
+      uptr.reset();
+  };
+  
+  postOrderIterative(f);
+  
+  copy_tree(lhs.root);
  
   size = lhs.size; 
 
@@ -1029,7 +1032,7 @@ post order iterative implementations
 */
 template<class Key, class Value>
 template<typename Functor>
-void bstree<Key, Value>::postOrderIterative(Functor f, std::unique_ptr<Node>& root_in) noexcept
+void bstree<Key, Value>::__postOrderIterative(Functor f, std::unique_ptr<Node>& root_in) noexcept
 {
     // Check for empty tree 
     if (!root_in) 
@@ -1136,7 +1139,7 @@ void bstree<Key, Value>::postOrderIterative(Functor f, const std::unique_ptr<Nod
         
             if (!__current->parent) // __current is the root.get()
 
-                f(root);
+                f(root->__get_value());
  
             else {
 
