@@ -36,6 +36,8 @@ int main(int argc, char** argv)
 
   test_tree.inOrderTrace(trace_printer);
 
+  bstree<int, int> t2;
+  t2 = test_tree;
   return 0;
 
   cout << "\ntest_tree.inOrderIterative(key_printer) = ";

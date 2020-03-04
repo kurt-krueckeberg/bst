@@ -1,7 +1,8 @@
 TODO
 ----
 
-Implement iterative version of copy_subtree(). Implement and test a postorder_stack_iterator. 
+An iterative version of copy_subtree(in_root) must first the current tree, this->root and all its children. How can we do this in pre-order iterative fashion without the Node destructor, ~Node, simultaneously
+invoking recursive destruction of its left and right when ~unique_ptr<Node>() is called for Node::left and Node::right? 
 
 BUG in DoPostOrderIterative(). Infinitie loop.
 
