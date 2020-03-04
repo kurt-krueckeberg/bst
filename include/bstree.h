@@ -47,8 +47,10 @@ template<class Key, class Value> class bstree {
 
         // Due to stack overflow concerns, the default ctor, which would successfully copy the the entire subtree of lhs,
         // is deleted.
-        Node(const Node& lhs) = delete; 
-
+        Node(const Node& lhs) : __vt{lhs.__vt}, left{nullptr}, right{nullptr} // = delete; 
+        {
+        }
+        
         Node(const __value_type<Key, Value>& vt, Node *in_parent=nullptr) : __vt{vt}, left{nullptr}, right{nullptr}, parent{in_parent}
         {
         }  
@@ -95,7 +97,7 @@ template<class Key, class Value> class bstree {
 
         constexpr void connectLeft(const Node& node) noexcept
         {
-            left = std::make_unique<Node>(node);    
+            left = std::make_unique<Node>(node);  
             left->parent = this;
         }  
 
@@ -199,8 +201,6 @@ template<class Key, class Value> class bstree {
 
     template<typename Functor> void __postOrderIterative(Functor f, std::unique_ptr<Node>& root) noexcept; // private method. Mainly used to do post-order tree destruction
     template<typename Functor> void preOrderIterative(Functor f, const std::unique_ptr<Node>&) const noexcept;
-
-    void copy_tree(const bstree<Key, Value>& lhs) noexcept;
 
     constexpr Node *min(std::unique_ptr<Node>& current) const noexcept
     {
@@ -768,7 +768,7 @@ template<class Key, class Value> typename bstree<Key, Value>::Node&  bstree<Key,
 
    __postOrderIterative(f, root);
 
-   copy_tree(root);
+   copy_tree(lhs.root);
 
 /*
    __vt = lhs.__vt;
@@ -816,7 +816,7 @@ template<class Key, class Value> bstree<Key, Value>& bstree<Key, Value>::operato
       uptr.reset();
   };
   
-  postOrderIterative(f);
+  __postOrderIterative(f, root);
   
   copy_tree(lhs.root);
  
@@ -976,6 +976,63 @@ template<class Key, class Value> template<typename Functor> void bstree<Key, Val
    inOrderTrace(f, current->right, list, depth + 1);
    
    list.pop_back();
+}
+
+//TODO: Test
+template<class Key, class Value>
+void bstree<Key, Value>::copy_tree(const std::unique_ptr<typename bstree<Key, Value>::Node>& root_in) noexcept
+{
+   if (!root_in) { 
+        root = nullptr;
+        return;
+   } 
+  
+   std::stack<const node_type *> stack; 
+   stack.push(root_in.get()); 
+  
+   /*
+     Pop all items one by one, and do the following for every popped item:
+ 
+      a) invoke f 
+      b) push its right child 
+      c) push its left child 
+
+   Note: the right child is pushed first so that left is processed first 
+    */
+   Node *prior_node = nullptr;
+   while (!stack.empty()) { 
+
+       auto pnode = stack.top();
+       stack.pop(); 
+
+       std::unique_ptr<Node> new_node = std::make_unique<Node>(*pnode); 
+
+       if (!prior_node)
+           root = std::move(new_node);
+
+       else { 
+       
+           bool is_left_child = pnode->parent->left.get() == pnode ? true : false; 
+   
+           if (is_left_child) { 
+
+               prior_node->connectLeft(new_node);    
+               prior_node = prior_node->left.get(); 
+
+           } else  {
+
+               prior_node->connectRight(new_node);    
+               prior_node = prior_node->right.get(); 
+           }
+       }
+
+       // Push right and left non-null children of the popped node to stack 
+       if (pnode->right) 
+           stack.push(pnode->right.get()); 
+
+       if (pnode->left) 
+           stack.push(pnode->left.get()); 
+   } 
 }
 
 template<class Key, class Value>

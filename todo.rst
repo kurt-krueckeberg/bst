@@ -1,7 +1,7 @@
 TODO
 ----
 
-Get code to compile. Testt postOrderIterative().  
+Test copy_tree(root_in). Test postOrderIterative() and __postOrderIterative().  
 
 Finish code to accurate set the recursion depth for ~bstree() and ~Node(), or use the debugger to follow the ~Node() calls to see how deep the recursion goes.
 
