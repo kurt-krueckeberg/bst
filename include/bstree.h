@@ -196,10 +196,9 @@ template<class Key, class Value> class bstree {
     template<typename Functor> void inOrderIterative(Functor f, const std::unique_ptr<Node>& root) const noexcept;
 
     template<typename Functor> void postOrderIterative(Functor f, const std::unique_ptr<Node>& root) const noexcept;
+
+    template<typename Functor> void postOrderIterative(Functor f, std::unique_ptr<Node>& root) noexcept; // private method. Mainly used to do post-order tree destruction
     template<typename Functor> void preOrderIterative(Functor f, const std::unique_ptr<Node>&) const noexcept;
-
-    template<typename Functor> void preOrderIterative(Functor f, std::unique_ptr<Node>&) noexcept; // This private method allows modification of the nodes of the tree.
-
 
     void copy_tree(const bstree<Key, Value>& lhs) noexcept;
 
@@ -223,8 +222,6 @@ template<class Key, class Value> class bstree {
     void move(bstree<Key, Value>&& lhs) noexcept;
 
     std::unique_ptr<Node>& find(Key key, std::unique_ptr<Node>&) const noexcept;
-
-    void destroy_subtree(std::unique_ptr<Node>& subtree_root) noexcept;
 
     void copy_subtree(const std::unique_ptr<Node>& src)/*, std::unique_ptr<Node>& dest, Node *parent=nullptr)*/ noexcept;
 
@@ -285,7 +282,11 @@ From std::map insert_or_assign methods
     // will be invoke in one huge recursive call 
     ~bstree() noexcept
     {
-        destroy_subtree(root);
+       auto f = [] (std::unique_ptr<Node>& node) {
+          node.reset();
+       };
+    
+       postOrderIterative(f, root);
     } 
 
     bstree(std::initializer_list<value_type>& list) noexcept; 
@@ -295,24 +296,6 @@ From std::map insert_or_assign methods
     bstree(bstree&& lhs) noexcept
     {
         move(std::move(lhs)); 
-    }
-
-    // set_special() is for eductaional purposes
-    // Functor must have 'void operator::()(int& )'  
-    template<typename Functor> void set_special(Functor f, std::unique_ptr<Node>& root) noexcept;
-
-    template<typename Functor> void set_special(Functor f) noexcept
-    {
-       set_special(f, root);
-    }
-
-    // visit_special() is for eductaional purposes
-    // Functor must have 'void operator::()(const pair<const Key, Value>&, int&)'  
-    template<typename Functor> void visit_special(Functor f, std::unique_ptr<Node>& root) noexcept;
-
-    template<typename Functor> void visit_special(Functor f) noexcept
-    {
-       visit_special(f, root);
     }
 
     bstree& operator=(const bstree&) noexcept; 
@@ -779,7 +762,11 @@ template<class Key, class Value> typename bstree<Key, Value>::Node&  bstree<Key,
 {
    if (&lhs == this) return *this;
 
-   destroy_subtree(root);
+   auto f = [] (std::unique_ptr<Node>& node) {
+      node.reset();
+   };
+
+   postOrderIterative(f, root);
 
    copy_subtree(lhs, root);
 
@@ -990,41 +977,6 @@ template<class Key, class Value> template<typename Functor> void bstree<Key, Val
 
 template<class Key, class Value>
 template<typename Functor>
-void bstree<Key, Value>::preOrderIterative(Functor f, std::unique_ptr<Node>& in_root) noexcept
-{
-   if (!in_root) return;
-  
-    std::stack<std::unique_ptr<Node&>> stack; 
-    stack.push(in_root); 
-  
-    /*
-      Pop all items one by one, and do the following for every popped item:
- 
-       a) invoke f 
-       b) push its right child 
-       c) push its left child 
-
-    Note: the right child is pushed first so that left is processed first 
-     */
-    while (!stack.empty()) { 
-
-        // Pop the top item from stack and print it 
-        std::unique_ptr<Node>& node = stack.top(); 
-        stack.pop(); 
-
-        f(node); 
-
-        // Push right and left non-null children of the popped node to stack 
-        if (node->right) 
-            stack.push(node->right); 
-
-        if (node->left) 
-            stack.push(node->left); 
-    } 
-}
-
-template<class Key, class Value>
-template<typename Functor>
 void bstree<Key, Value>::preOrderIterative(Functor f, const std::unique_ptr<Node>& lhs) const noexcept
 {
    if (!lhs) return;
@@ -1058,12 +1010,13 @@ void bstree<Key, Value>::preOrderIterative(Functor f, const std::unique_ptr<Node
     } 
 }
 /*
+post order iterative implementations
 
-Implementations using two stacks:
+1. implementation using two stacks:
 
   https://www.geeksforgeeks.org/iterative-postorder-traversal/
 
-Implementation using one stack:
+2. implementation using one stack:
 
   https://www.techiedelight.com/postorder-tree-traversal-iterative-recursive/
 
@@ -1074,49 +1027,130 @@ Implementation using one stack:
   https://stackoverflow.com/questions/54635756/iterative-postorder-traversal-of-a-binary-tree-with-a-single-stack-how-to-appro       <-- Python
 
 */
-/*
 template<class Key, class Value>
 template<typename Functor>
-void bstree<Key, Value>::postOrderIterative(Functor f, const std::unique_ptr<Node>& lhs) const noexcept
+void bstree<Key, Value>::postOrderIterative(Functor f, std::unique_ptr<Node>& root_in) noexcept
 {
-   if (!lhs) return;
-   
-   std::stack<const node_type *> stack;
+    // Check for empty tree 
+    if (!root_in) 
+        return; 
+      
+    std::stack<Node *> stack;
 
-   stack.push(lhs.get()); 
-   
-   // BUG: The logic is wrong. Think through what has to be done.
-   while (!stack.empty()) {
+    Node *__current = root_in.get();
 
-         const Node *tmp = stack.top();
+    do { 
 
-         
-         
-         // push left subtree  
-          const Node * y = tmp;
-         while (y->left) {
+        // Move to leftmost node 
+        while (__current) { 
 
-            stack.push(y->left.get());
+            // Push __current's right child and then __current to stack. 
+            if (__current->right) 
+                stack.push(__current->right.get()); 
 
-            y = y->left.get();
-         } 
-         // push right subtree  
-         y = tmp;
-         while (y->right) {
+            stack.push(__current); 
+  
+            // Set __current as __current's left child   
+            __current = __current->left.get(); 
+        } 
+  
+        // Pop an item from stack and set it as __current     
+        __current = stack.top(); 
+        stack.pop(); 
+  
+        // If the popped item has a right child and the right child is not 
+        // processed yet, then make sure right child is processed before __current. 
+        if (__current->right && stack.top() == __current->right.get())  { 
 
-            stack.push(y->right.get());
+            stack.pop();  // remove right child from stack 
 
-            y = y->right.get();
-         } 
+            stack.push(__current);  // push __current back to stack 
 
-         // Get item at top of stack
-         const Node *current = stack.top();
-         stack.pop(); 
-           
-         f(current->__get_value());  
-   }
+            __current = __current->right.get(); // change __current so that the right  
+                                          // child is processed next 
+
+        } else {  // Else invoke f, passing in the __current's data and set __current as NULL 
+        
+            if (!__current->parent) // __current is the root.get()
+
+                f(root);
+ 
+            else {
+
+                // Using __current->parent, get unique_ptr<Node> reference.
+                Node *parent = __current->parent;
+                std::unique_ptr<Node>& current = parent->left.get() == __current ? parent->left : parent->right;
+
+                f(current); 
+
+            }
+
+            __current = nullptr; 
+        } 
+    } while (!stack.empty()); 
 }
-*/
+
+template<class Key, class Value>
+template<typename Functor>
+void bstree<Key, Value>::postOrderIterative(Functor f, const std::unique_ptr<Node>& root_in) const noexcept
+{
+    // Check for empty tree 
+    if (!root_in) 
+        return; 
+      
+    std::stack<Node *> stack;
+
+    Node *__current = root_in.get();
+
+    do { 
+
+        // Move to leftmost node 
+        while (__current) { 
+
+            // Push __current's right child and then __current to stack. 
+            if (__current->right) 
+                stack.push(__current->right.get()); 
+
+            stack.push(__current); 
+  
+            // Set __current as __current's left child   
+            __current = __current->left.get(); 
+        } 
+  
+        // Pop an item from stack and set it as __current     
+        __current = stack.top(); 
+        stack.pop(); 
+  
+        // If the popped item has a right child and the right child is not 
+        // processed yet, then make sure right child is processed before __current. 
+        if (__current->right && stack.top() == __current->right.get())  { 
+
+            stack.pop();  // remove right child from stack 
+
+            stack.push(__current);  // push __current back to stack 
+
+            __current = __current->right.get(); // change __current so that the right  
+                                          // child is processed next 
+
+        } else {  // Else invoke f, passing in the __current's data and set __current as NULL 
+        
+            if (!__current->parent) // __current is the root.get()
+
+                f(root);
+ 
+            else {
+
+                // Using __current->parent, get unique_ptr<Node> reference.
+                Node *parent = __current;
+                std::unique_ptr<Node>& current = parent->left.get() == __current ? parent->left : parent->right;
+
+                f(current->__get_value()); 
+            }
+
+            __current = nullptr; 
+        } 
+    } while (!stack.empty()); 
+}
 
 template<class Key, class Value>
 template<typename Functor>
@@ -1142,77 +1176,6 @@ void bstree<Key, Value>::postOrderTraverse(Functor f, const std::unique_ptr<Node
    postOrderTraverse(f, current->right);
 
    f(current->__get_value()); 
-}
-/*
- * Iterative version of pre
- */
-template<class Key, class Value>                    
-void bstree<Key, Value>::copy_subtree(const std::unique_ptr<typename bstree<Key, Value>::Node>& in_root) /*--, std::unique_ptr<typename bstree<Key, Value>::Node>& out_root, typename bstree<Key, Value>::Node *parent) */ noexcept
-{
- 
-  // TODO: Destroy current tree
-  auto f = [](auto& node) { node.reset(); };
-
-  preOrderIterative(f, root);
-  
-  if (!in_root) {
-      
-       root = nullptr; 
-       return; // nothing more to copy
-  }
-    
-  std::stack<std::pair<const std::unique_ptr<Node>&,  std::unique_ptr<Node>&> > stk;
-    
-  stk.push( std::pair<const std::unique_ptr<Node>&,  std::unique_ptr<Node>&>(in_root, root) ); 
-
-  auto copy_node = [] (const std::unique_ptr<Node>& src_node, std::unique_ptr<Node> &dest_node) {
-
-      if (!src_node) 
-         dest_node = nullptr;   
-      else {
-
-         std::unique_ptr<Node> tmp = std::make_unique<Node>(src_node->__vt, src_node->parent); 
-         dest_node = std::move(tmp);
-      }
-  };
- 
-  while (!stk.empty()) { 
-
-      // Pop the top item from stack and print it 
-      auto& [src_node,  dest_node] = stk.top(); 
-      stk.pop(); 
-
-      copy_node(src_node, dest_node); // TODO: dest_node is a raw pointer not a unique_ptr. 
-
-      // Push right and left non-null children of the popped node to stack 
-
-      if (src_node->right) {
- 
-          stk.push( std::pair<const std::unique_ptr<Node>&,  std::unique_ptr<Node>&>(src_node->right, dest_node->right) ); 
-      } 
-
-      // Push left last, so it is popped first
-      if (src_node->left) {
-          stk.push( std::pair<const std::unique_ptr<Node>&,  std::unique_ptr<Node>&>(src_node->left, dest_node->left) );
-      }
-  } 
-}
-
-/*
- * Post order node destruction
- */
-template<class Key, class Value> void bstree<Key, Value>::destroy_subtree(std::unique_ptr<Node>& current) noexcept
-{
-   if (!current) {
-
-      return;
-   }
-
-   destroy_subtree(current->left);
-
-   destroy_subtree(current->right);
-
-   current.reset();
 }
 
 template<class Key, class Value> std::unique_ptr<typename bstree<Key, Value>::Node>& bstree<Key, Value>::find(Key key, std::unique_ptr<Node>& current) const noexcept

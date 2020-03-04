@@ -91,16 +91,6 @@ int main(int argc, char** argv)
 
   int hidden = 0;
 
-  auto setter = [&](int& int_ref) { int_ref = ++hidden; }; 
-
-  bal_tree.set_special(setter);
-
-  auto sp_printer = [&](const pair<const int, int>& pr, const int& int_ref) {
-      const auto&[key, value] = pr;
-      cout << '(' << int_ref << ") [" << key << "], " << flush; }; 
-
-  bal_tree.visit_special(sp_printer); //TODO:  Want level order print that prints __d. In general, we want to print __d at will.
-
   bstree<int, int> tree_copy = bal_tree;
 
   tree_copy.levelOrderTraverse(key_printer);
