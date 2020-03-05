@@ -1232,11 +1232,15 @@ void bstree<Key, Value>::__postOrderIterative(Functor f, std::unique_ptr<Node>& 
     } while (!stack.empty()); 
 }
 */
+/*
+ This code seems to work.
+ Pseudocode from https://en.wikipedia.org/wiki/Tree_traversal
+ */
 template<class Key, class Value>
 template<typename Functor>
 void bstree<Key, Value>::postOrderIterative(Functor f, const std::unique_ptr<Node>& root_in) const
 {
-///////////////////
+
 /* Two stack version
     // create an empty input and push root node
     std::input<Node *> input;
