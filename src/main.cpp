@@ -43,9 +43,18 @@ int main(int argc, char** argv)
   
   cout << '\n' << flush;
   
+  std::initializer_list<int> lst = {100, 50, 200, 20, 70, 150, 250, -10, 40, 60, 90, 125, 175, 225, 275, -40, 10, 30, 45, 55, 65, 80, 95, 110, 130, 165, 190, 220, 230, 260, 290,\
+    -70, -30, -5, 15, 25, 35, 42, 47, 52, 57, 62, 67, 92, 97, 105, 115, 127, 135, 160, 170, 180, 195, 210, 222, 227, 235, 260, 280 };
+
   bstree<int, int> t2;
+
+  for (auto& x : lst) 
+      t2.insert(x, x);
   
   t2 = test_tree;
+  
+  // TODO: Print out t2
+  
   return 0;
 
   cout << "\ntest_tree.inOrderIterative(key_printer) = ";
@@ -58,9 +67,7 @@ int main(int argc, char** argv)
   
   cout << '\n' << flush;
 
-  std::initializer_list<int> lst = {100, 50, 200, 20, 70, 150, 250, -10, 40, 60, 90, 125, 175, 225, 275, -40, 10, 30, 45, 55, 65, 80, 95, 110, 130, 165, 190, 220, 230, 260, 290,\
-    -70, -30, -5, 15, 25, 35, 42, 47, 52, 57, 62, 67, 92, 97, 105, 115, 127, 135, 160, 170, 180, 195, 210, 222, 227, 235, 260, 280 };
-
+  
   bstree<int, int> bal_tree;
 
   for (const auto& i : lst) 
@@ -94,7 +101,6 @@ int main(int argc, char** argv)
   
   bal_tree.inOrderIterative(key_printer);
 
-
   cout << "\n--------------\nPrinting tree_copy, a copy of the above bal_tree.\n"; 
 
   int hidden = 0;
@@ -116,6 +122,7 @@ int main(int argc, char** argv)
   cout << "\nbal_tree.postOrderTraverse(key_printer) = \n";
   
   bal_tree.postOrderTraverse(key_printer);
+  
   cout << '\n' << flush;
 
   for (auto& x : lst) {

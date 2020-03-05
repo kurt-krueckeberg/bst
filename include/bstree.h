@@ -773,7 +773,7 @@ template<class Key, class Value> typename bstree<Key, Value>::Node&  bstree<Key,
       node.reset();
    };
 
-   __postOrderIterative(f, root);
+   postOrderIterative(f, root);
 
    copy_tree(lhs.root);
 
