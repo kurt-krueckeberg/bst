@@ -1124,9 +1124,9 @@ void bstree<Key, Value>::postOrderIterative(Visitor visit, std::unique_ptr<Node>
 {
   Node *pnode = ptr.get();
 
-  std::stack<Node *> stack; 
+  std::stack<const Node *> stack; 
 
-  Node *lastNodeVisited{nullptr};
+  const Node *lastNodeVisited{nullptr};
 
   while (!stack.empty() || pnode) {
 
@@ -1137,7 +1137,7 @@ void bstree<Key, Value>::postOrderIterative(Visitor visit, std::unique_ptr<Node>
 
     } else {
 
-      Node *peekNode = stack.top();
+      const Node *peekNode = stack.top();
 
       // if right child exists and traversing pnode
       // from left child, then move right
