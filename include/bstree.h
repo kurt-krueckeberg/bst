@@ -1081,21 +1081,26 @@ post order iterative implementations
 
 1. implementation using two stacks:
 
-  https://www.geeksforgeeks.org/iterative-postorder-traversal/
+  In Java:
 
-2. implementation using one stack:
+  https://www.geeksforgeeks.org/iterative-postorder-traversal/
+  https://algorithmsandme.com/iterative-postorder-traversal/
+
+  In C++:
 
   https://www.techiedelight.com/postorder-tree-traversal-iterative-recursive/
 
-  https://algorithmsandme.com/iterative-postorder-traversal/
+2. implementation using one stack:
+
+  In C:
 
   https://www.geeksforgeeks.org/iterative-postorder-traversal-using-stack/
 
-  https://stackoverflow.com/questions/54635756/iterative-postorder-traversal-of-a-binary-tree-with-a-single-stack-how-to-appro       <-- Python
--------------------------
-More thoroughly discussed and commented
+  In Python. Throroughly discussed:
 
-   https://www.java67.com/2017/05/binary-tree-post-order-traversal-in-java-without-recursion.html
+  https://stackoverflow.com/questions/54635756/iterative-postorder-traversal-of-a-binary-tree-with-a-single-stack-how-to-appro       
+
+  https://www.java67.com/2017/05/binary-tree-post-order-traversal-in-java-without-recursion.html
 
 */
 template<class Key, class Value>
@@ -1165,6 +1170,41 @@ template<class Key, class Value>
 template<typename Functor>
 void bstree<Key, Value>::postOrderIterative(Functor f, const std::unique_ptr<Node>& root_in) const
 {
+///////////////////
+/* Two stack version
+    // create an empty input and push root node
+    std::input<Node *> input;
+
+    input.push(root);
+    
+    // create another input to store post-order traversal
+    input<Node *t> output;
+    
+    // run till input is not empty
+    while (!input.empty()) {
+
+       // we pop a node from the input and push the data to outputput input
+       Node *curr = input.top();
+       input.pop();
+   
+       output.push(curr);
+   
+       // push left and right child of popped node to the input
+       if (curr->left)
+	   input.push(curr->left.get());
+   
+       if (curr->right)
+	   input.push(curr->right.get());
+    }
+    
+    // print post-order traversal
+    while (!output.empty()) {
+
+       f(output.top());
+       output.pop();
+    }
+*/
+/////////////////////
     // Check for empty tree 
     if (!root_in) 
         return; 
