@@ -383,11 +383,13 @@ From std::map insert_or_assign methods
     // Depth-first traversals
     template<typename Functor> void inOrderTraverse(Functor f) const noexcept
     { 
+      if (!root) return; // nothing to iterate over  
       return inOrderTraverse(f, root); 
     }
 
     template<typename Functor> void inOrderTrace(Functor f) const noexcept
     { 
+      if (!root) return; // nothing to iterate over  
       std::list<int> list;
       return inOrderTrace(f, root, list); 
     }
@@ -395,11 +397,13 @@ From std::map insert_or_assign methods
     // Depth-first traversals
     template<typename Functor> void inOrderIterative(Functor f) const noexcept
     { 
+      if (!root) return; // nothing to iterate over  
       return inOrderIterative(f, root); 
     }
     
     template<typename Functor> void preOrderIterative(Functor f) const noexcept
     { 
+      if (!root) return; // nothing to iterate over  
       return preOrderIterative(f, root); 
     }
 
@@ -411,11 +415,13 @@ From std::map insert_or_assign methods
 
     template<typename Functor> void preOrderTraverse(Functor f) const noexcept  
     { 
+      if (!root) return; // nothing to iterate over  
       return preOrderTraverse(f, root); 
     }
 
     template<typename Functor> void postOrderTraverse(Functor f) const noexcept
     { 
+      if (!root) return; // nothing to iterate over  
       return postOrderTraverse(f, root); 
     }
 
@@ -1086,6 +1092,10 @@ post order iterative implementations
   https://www.geeksforgeeks.org/iterative-postorder-traversal-using-stack/
 
   https://stackoverflow.com/questions/54635756/iterative-postorder-traversal-of-a-binary-tree-with-a-single-stack-how-to-appro       <-- Python
+-------------------------
+More thoroughly discussed and commented
+
+   https://www.java67.com/2017/05/binary-tree-post-order-traversal-in-java-without-recursion.html
 
 */
 template<class Key, class Value>

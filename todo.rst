@@ -1,7 +1,10 @@
 TODO
 ----
 
-Test copy_tree(root_in). Test postOrderIterative() and __postOrderIterative().  
+copy_tree(root_in) uses postOrderIterative() or __postOrderIterative(), which is not working.  
+Use this more thorougly discussed and commented version of postOrderIterative:
+
+  `post-order Iterative algorithm <https://www.java67.com/2017/05/binary-tree-post-order-traversal-in-java-without-recursion.html>`_.
 
 Finish code to accurate set the recursion depth for ~bstree() and ~Node(), or use the debugger to follow the ~Node() calls to see how deep the recursion goes.
 
