@@ -1079,16 +1079,15 @@ void bstree<Key, Value>::preOrderIterative(Functor f, const std::unique_ptr<Node
 /*
 post order iterative implementations
 
-1. implementation using two stacks:
+1. post-order iterative pseudocode and discussions: <-------
 
-  In Java:
+  https://en.wikipedia.org/wiki/Tree_traversal
 
-  https://www.geeksforgeeks.org/iterative-postorder-traversal/
-  https://algorithmsandme.com/iterative-postorder-traversal/
+  Traversl implement in multiple prog. languages
+  http://rosettacode.org/wiki/Tree_traversal
 
-  In C++:
-
-  https://www.techiedelight.com/postorder-tree-traversal-iterative-recursive/
+  Tree traversal without recursion: the tree as a state machine
+  https://www.perlmonks.org/?node_id=600456
 
 2. implementation using one stack:
 
@@ -1102,10 +1101,16 @@ post order iterative implementations
 
   https://www.java67.com/2017/05/binary-tree-post-order-traversal-in-java-without-recursion.html
 
-3. post-order iterative pseudocode: <-------
+3. implementation using two stacks:
 
-  https://en.wikipedia.org/wiki/Tree_traversal
+  In Java:
 
+  https://www.geeksforgeeks.org/iterative-postorder-traversal/
+  https://algorithmsandme.com/iterative-postorder-traversal/
+
+  In C++:
+
+  https://www.techiedelight.com/postorder-tree-traversal-iterative-recursive/
 */
 template<class Key, class Value>
 template<typename Functor>
