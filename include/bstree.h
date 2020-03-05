@@ -1102,6 +1102,10 @@ post order iterative implementations
 
   https://www.java67.com/2017/05/binary-tree-post-order-traversal-in-java-without-recursion.html
 
+3. post-order iterative pseudocode: <-------
+
+  https://en.wikipedia.org/wiki/Tree_traversal
+
 */
 template<class Key, class Value>
 template<typename Functor>
