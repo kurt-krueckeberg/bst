@@ -1139,9 +1139,7 @@ void bstree<Key, Value>::postOrderIterative(Visitor visit, std::unique_ptr<Node>
 
       const Node *peekNode = stack.top();
 
-      // if right child exists and traversing pnode
-      // from left child, then move right
-
+      // if right child exists and traversing pnode from left child, then move right
       if (peekNode->right && lastNodeVisited != peekNode->right.get())
 
           pnode = peekNode->right.get();
@@ -1156,8 +1154,9 @@ void bstree<Key, Value>::postOrderIterative(Visitor visit, std::unique_ptr<Node>
             visit(root);
             
         else {
-          std::unique_ptr<Node>& ref = parent->left.get() == peekNode ? parent->left : parent->right;     
-           visit(ref);
+
+            std::unique_ptr<Node>& ref = parent->left.get() == peekNode ? parent->left : parent->right;     
+            visit(ref);
         }
         
         lastNodeVisited = stack.top();
@@ -1169,72 +1168,8 @@ void bstree<Key, Value>::postOrderIterative(Visitor visit, std::unique_ptr<Node>
  }
 }
 /*
-template<class Key, class Value>
-template<typename Functor>
-void bstree<Key, Value>::__postOrderIterative(Functor f, std::unique_ptr<Node>& root_in) noexcept
-{
-    // Check for empty tree 
-    if (!root_in) 
-        return; 
-      
-    std::stack<Node *> stack;
-
-    Node *__current = root_in.get();
-
-    do { 
-
-        // Move to leftmost node 
-        while (__current) { 
-
-            // Push __current's right child and then __current to stack. 
-            if (__current->right) 
-                stack.push(__current->right.get()); 
-
-            stack.push(__current); 
-  
-            // Set __current as __current's left child   
-            __current = __current->left.get(); 
-        } 
-  
-        // Pop an item from stack and set it as __current     
-        __current = stack.top(); 
-        stack.pop(); 
-  
-        // If the popped item has a right child and the right child is not 
-        // processed yet, then make sure right child is processed before __current. 
-        if (__current->right && stack.top() == __current->right.get())  { 
-
-            stack.pop();  // remove right child from stack 
-
-            stack.push(__current);  // push __current back to stack 
-
-            __current = __current->right.get(); // change __current so that the right  
-                                          // child is processed next 
-
-        } else {  // Else invoke f, passing in the __current's data and set __current as NULL 
-        
-            if (!__current->parent) // __current is the root.get()
-
-                f(root);
- 
-            else {
-
-                // Using __current->parent, get unique_ptr<Node> reference.
-                Node *parent = __current->parent;
-                std::unique_ptr<Node>& current = parent->left.get() == __current ? parent->left : parent->right;
-
-                f(current); 
-
-            }
-
-            __current = nullptr; 
-        } 
-    } while (!stack.empty()); 
-}
-*/
 /*
- This code seems to work.
- Pseudocode from https://en.wikipedia.org/wiki/Tree_traversal
+ * Pseudocode from https://en.wikipedia.org/wiki/Tree_traversal
  */
 template<class Key, class Value>
 template<typename Functor>
@@ -1291,9 +1226,7 @@ void bstree<Key, Value>::postOrderIterative(Functor f, const std::unique_ptr<Nod
 
       const Node *peekNode = stack.top();
 
-      // if right child exists and traversing pnode
-      // from left child, then move right
-
+      // if right child exists and traversing pnode from left child, then move right
       if (peekNode->right && lastNodeVisited != peekNode->right.get())
 
           pnode = peekNode->right.get();
@@ -1309,7 +1242,6 @@ void bstree<Key, Value>::postOrderIterative(Functor f, const std::unique_ptr<Nod
      }
    } 
  }
-
 }
 
 template<class Key, class Value>
