@@ -37,11 +37,14 @@ int main(int argc, char** argv)
 
   test_tree.inOrderTrace(trace_printer);
 
-  cout << "test_tree.postOrderItrative(key_printer) = ";
-
+  cout << "\ntest_tree.postOrderItrative(key_printer) = ";
+  
   test_tree.postOrderIterative(key_printer);
-
+  
+  cout << '\n' << flush;
+  
   bstree<int, int> t2;
+  
   t2 = test_tree;
   return 0;
 

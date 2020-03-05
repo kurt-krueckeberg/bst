@@ -1112,6 +1112,63 @@ post order iterative implementations
 
   https://www.techiedelight.com/postorder-tree-traversal-iterative-recursive/
 */
+
+/* 
+ * Prospective post-order iterator.
+ * Taken from pseudocode at https://en.wikipedia.org/wiki/Tree_traversal
+ */
+
+template<class Key, class Value>
+template<typename Visitor>
+void bstree<Key, Value>::__postOrderIterative(Visitor visit, std::unique_ptr<Node>& ptr) noexcept
+{
+  Node *pnode = ptr.get();
+
+  std::stack<Node *> stack; 
+
+  Node *lastNodeVisited{nullptr};
+
+  while (!stack.empty() || pnode) {
+
+    if (pnode) {
+
+      stack.push(pnode);
+      pnode = pnode->left.get();
+
+    } else {
+
+      Node *peekNode = stack.top();
+
+      // if right child exists and traversing pnode
+      // from left child, then move right
+
+      if (peekNode->right && lastNodeVisited != peekNode->right.get())
+
+          pnode = peekNode->right.get();
+
+      else {
+
+        // Get unique_ptr for peekNode 
+        Node *parent = peekNode->parent;  
+        
+        if (!parent)
+            
+            visit(root);
+            
+        else {
+          std::unique_ptr<Node>& ref = parent->left.get() == peekNode ? parent->left : parent->right;     
+           visit(ref);
+        }
+        
+        lastNodeVisited = stack.top();
+        stack.pop();
+ 
+        pnode = nullptr;
+     }
+   } 
+ }
+}
+/*
 template<class Key, class Value>
 template<typename Functor>
 void bstree<Key, Value>::__postOrderIterative(Functor f, std::unique_ptr<Node>& root_in) noexcept
@@ -1174,7 +1231,7 @@ void bstree<Key, Value>::__postOrderIterative(Functor f, std::unique_ptr<Node>& 
         } 
     } while (!stack.empty()); 
 }
-
+*/
 template<class Key, class Value>
 template<typename Functor>
 void bstree<Key, Value>::postOrderIterative(Functor f, const std::unique_ptr<Node>& root_in) const
@@ -1213,65 +1270,42 @@ void bstree<Key, Value>::postOrderIterative(Functor f, const std::unique_ptr<Nod
        output.pop();
     }
 */
-/////////////////////
-    // Check for empty tree 
-    if (!root_in) 
-        return; 
-      
-    std::stack<Node *> stack;
+  Node *pnode = root_in.get();
 
-    Node *__current = root_in.get();
+  std::stack<Node *> stack; 
 
-    do { 
+  Node *lastNodeVisited{nullptr};
 
-        // Move to leftmost node 
-        while (__current) { 
+  while (!stack.empty() || pnode) {
 
-            // Push __current's right child and then __current to stack. 
-            if (__current->right) 
-                stack.push(__current->right.get()); 
+    if (pnode) {
 
-            stack.push(__current); 
-  
-            // Set __current as __current's left child   
-            __current = __current->left.get(); 
-        } 
-  
-        // Pop an item from stack and set it as __current     
-        __current = stack.top(); 
-        stack.pop(); 
-  
-        // If the popped item has a right child and the right child is not 
-        // processed yet, then make sure right child is processed before __current. 
-        if (__current->right && stack.top() == __current->right.get())  { 
+      stack.push(pnode);
+      pnode = pnode->left.get();
 
-            stack.pop();  // remove right child from stack 
+    } else {
 
-            stack.push(__current);  // push __current back to stack 
+      Node *peekNode = stack.top();
 
-            __current = __current->right.get(); // change __current so that the right  
-                                          // child is processed next 
+      // if right child exists and traversing pnode
+      // from left child, then move right
 
-        } else {  // Else invoke f, passing in the __current's data and set __current as NULL 
-        
-            if (!__current->parent) // __current is the root.get()
+      if (peekNode->right && lastNodeVisited != peekNode->right.get())
 
-                f(root->__get_value());
+          pnode = peekNode->right.get();
+
+      else {
+
+        f(peekNode->__get_value());
+            
+        lastNodeVisited = stack.top();
+        stack.pop();
  
-            else {
+        pnode = nullptr;
+     }
+   } 
+ }
 
-                // Using __current->parent, get unique_ptr<Node> reference.
-                Node *parent = __current;
-                std::unique_ptr<Node>& current = parent->left.get() == __current ? parent->left : parent->right;
-                
-                throw std::logic_error("current is nullptr");        ;
-
-                f(current->__get_value()); 
-            }
-
-            __current = nullptr; 
-        } 
-    } while (!stack.empty()); 
 }
 
 template<class Key, class Value>
