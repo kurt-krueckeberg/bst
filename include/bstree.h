@@ -197,7 +197,7 @@ template<class Key, class Value> class bstree {
 
     template<typename Functor> void inOrderIterative(Functor f, const std::unique_ptr<Node>& root) const noexcept;
 
-    template<typename Functor> void postOrderIterative(Functor f, const std::unique_ptr<Node>& root) const noexcept;
+    template<typename Functor> void postOrderIterative(Functor f, const std::unique_ptr<Node>& root) const;
 
     template<typename Functor> void __postOrderIterative(Functor f, std::unique_ptr<Node>& root) noexcept; // private method. Mainly used to do post-order tree destruction
     template<typename Functor> void preOrderIterative(Functor f, const std::unique_ptr<Node>&) const noexcept;
@@ -405,6 +405,7 @@ From std::map insert_or_assign methods
 
     template<typename Functor> void postOrderIterative(Functor f) const noexcept
     { 
+      if (!root) return; // nothing to iterate over  
       return postOrderIterative(f, root); 
     }
 
@@ -1152,7 +1153,7 @@ void bstree<Key, Value>::__postOrderIterative(Functor f, std::unique_ptr<Node>& 
 
 template<class Key, class Value>
 template<typename Functor>
-void bstree<Key, Value>::postOrderIterative(Functor f, const std::unique_ptr<Node>& root_in) const noexcept
+void bstree<Key, Value>::postOrderIterative(Functor f, const std::unique_ptr<Node>& root_in) const
 {
     // Check for empty tree 
     if (!root_in) 
@@ -1203,6 +1204,8 @@ void bstree<Key, Value>::postOrderIterative(Functor f, const std::unique_ptr<Nod
                 // Using __current->parent, get unique_ptr<Node> reference.
                 Node *parent = __current;
                 std::unique_ptr<Node>& current = parent->left.get() == __current ? parent->left : parent->right;
+                
+                throw std::logic_error("current is nullptr");        ;
 
                 f(current->__get_value()); 
             }

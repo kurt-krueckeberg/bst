@@ -25,6 +25,7 @@ int main(int argc, char** argv)
 
   auto key_printer = [](const auto& pr) {
       const auto&[key, value] = pr;
+      
       cout << key << ", ";
   };
 
@@ -32,9 +33,13 @@ int main(int argc, char** argv)
 
   test_tree.printlevelOrder(key_printer); 
 
-  cout << "test_tree.inOrderTrace(key_printer) = ";
+  cout << "test_tree.inOrderTrace(trace_printer) = ";
 
   test_tree.inOrderTrace(trace_printer);
+
+  cout << "test_tree.postOrderItrative(key_printer) = ";
+
+  test_tree.postOrderIterative(key_printer);
 
   bstree<int, int> t2;
   t2 = test_tree;
