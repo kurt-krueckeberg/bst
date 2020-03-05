@@ -199,7 +199,7 @@ template<class Key, class Value> class bstree {
 
     template<typename Functor> void postOrderIterative(Functor f, const std::unique_ptr<Node>& root) const;
 
-    template<typename Functor> void __postOrderIterative(Functor f, std::unique_ptr<Node>& root) noexcept; // private method. Mainly used to do post-order tree destruction
+    template<typename Functor> void postOrderIterative(Functor f, std::unique_ptr<Node>& root) noexcept; // private method. Mainly used to do post-order tree destruction
     template<typename Functor> void preOrderIterative(Functor f, const std::unique_ptr<Node>&) const noexcept;
 
     constexpr Node *min(std::unique_ptr<Node>& current) const noexcept
@@ -286,7 +286,7 @@ From std::map insert_or_assign methods
           node.reset();
        };
     
-       __postOrderIterative(f, root);
+       postOrderIterative(f, root);
     } 
 
     bstree(std::initializer_list<value_type>& list) noexcept; 
@@ -823,7 +823,7 @@ template<class Key, class Value> bstree<Key, Value>& bstree<Key, Value>::operato
       uptr.reset();
   };
   
-  __postOrderIterative(f, root);
+  postOrderIterative(f, root);
   
   copy_tree(lhs.root);
  
@@ -1120,7 +1120,7 @@ post order iterative implementations
 
 template<class Key, class Value>
 template<typename Visitor>
-void bstree<Key, Value>::__postOrderIterative(Visitor visit, std::unique_ptr<Node>& ptr) noexcept
+void bstree<Key, Value>::postOrderIterative(Visitor visit, std::unique_ptr<Node>& ptr) noexcept
 {
   Node *pnode = ptr.get();
 
@@ -1274,11 +1274,11 @@ void bstree<Key, Value>::postOrderIterative(Functor f, const std::unique_ptr<Nod
        output.pop();
     }
 */
-  Node *pnode = root_in.get();
+  const Node *pnode = root_in.get();
 
-  std::stack<Node *> stack; 
+  std::stack<const Node *> stack; 
 
-  Node *lastNodeVisited{nullptr};
+  const Node *lastNodeVisited{nullptr};
 
   while (!stack.empty() || pnode) {
 
@@ -1289,7 +1289,7 @@ void bstree<Key, Value>::postOrderIterative(Functor f, const std::unique_ptr<Nod
 
     } else {
 
-      Node *peekNode = stack.top();
+      const Node *peekNode = stack.top();
 
       // if right child exists and traversing pnode
       // from left child, then move right
