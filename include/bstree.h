@@ -1008,7 +1008,6 @@ void bstree<Key, Value>::inOrderIterative(Functor f, const std::unique_ptr<Node>
    }
 }
 
-//--template<class Key, class Value> template<typename Functor> void bstree<Key, Value>::inOrderTrace(Functor f, const std::unique_ptr<Node>& current, std::list<int>& list, int depth) const noexcept
 template<class Key, class Value> template<typename Functor> void bstree<Key, Value>::inOrderTrace(Functor f, const std::unique_ptr<Node>& current, stack_tracer& tracer, int depth) const noexcept
 {
    if (!current) {
@@ -1088,6 +1087,19 @@ void bstree<Key, Value>::copy_tree(const std::unique_ptr<typename bstree<Key, Va
 
 template<class Key, class Value>
 template<typename Functor>
+void bstree<Key, Value>::preOrderTraverse(Functor f, const std::unique_ptr<Node>& current) const noexcept
+{
+   if (!current) return;
+
+   f(current->__get_value()); 
+
+   preOrderTraverse(f, current->left);
+
+   preOrderTraverse(f, current->right);
+}
+
+template<class Key, class Value>
+template<typename Functor>
 void bstree<Key, Value>::preOrderIterative(Functor f, const std::unique_ptr<Node>& lhs) const noexcept
 {
    if (!lhs) return;
@@ -1121,37 +1133,7 @@ void bstree<Key, Value>::preOrderIterative(Functor f, const std::unique_ptr<Node
     } 
 
 }
-template<class Key, class Value>
-template<typename Functor>
-void bstree<Key, Value>::preOrderTraverse(Functor f, const std::unique_ptr<Node>& current) const noexcept
-{
-   if (!current) return;
 
-   f(current->__get_value()); 
-
-   preOrderTraverse(f, current->left);
-
-   preOrderTraverse(f, current->right);
-}
-
-template<class Key, class Value>
-template<typename Functor>
-void bstree<Key, Value>::preOrderTrace(Functor f, const std::unique_ptr<Node>& current, stack_tracer& tracer, int depth) const noexcept
-{
-   if (!current) return;
-   
-   tracer.push(current->key());
-
-   tracer.print();
-
-   f(current->__get_value()); 
-
-   preOrderTrace(f, current->left, tracer, depth + 1);
-
-   preOrderTrace(f, current->right, tracer, depth + 1);
-
-   tracer.pop();
-}
 /*
 post order iterative implementations
 
