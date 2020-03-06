@@ -1,6 +1,7 @@
 #include <cstdlib>
 #include <utility>
 #include <iostream>
+#include <iomanip>
 #include <initializer_list>
 #include "test.h"
 #include "bstree.h"
@@ -26,7 +27,7 @@ int main(int argc, char** argv)
   auto key_printer = [](const auto& pr) {
       const auto&[key, value] = pr;
       
-      cout << key << ", ";
+      cout << setw(3) << key << '\n';
   };
 
   cout << "test_tree.printlevelOrder(key_printer) = " << flush;
