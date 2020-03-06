@@ -15,6 +15,41 @@
 #include <exception>
 #include <iterator>
 
+class stack_tracer {
+
+    std::list<int> list;
+
+public:
+
+    stack_tracer()
+    {
+    }
+
+    stack_tracer(const stack_tracer&) = default;
+    stack_tracer& operator=(const stack_tracer&) = default;
+
+    void push(int i)
+    {
+      list.push_back(i);
+    }
+    
+    void pop()
+    {
+      list.pop_back();
+    }
+    
+    void print()
+    {
+      std::cout << '[';
+    
+      for (auto riter = list.rbegin(); riter != list.rend(); ++riter)
+           
+          // Print out the simulated "stack". USe code above.
+          std::cout << *riter << ", ";    //std::cout << '\t' << std::setw(4) << *riter << std::endl;
+          
+       std::cout << ']' << std::endl;
+    }
+};
 template<class Key, class Value> class bstree; // Forward declaration.
 
 template<class Key, class Value> class bstree {
@@ -193,7 +228,8 @@ template<class Key, class Value> class bstree {
     template<typename Functor> void postOrderTraverse(Functor f,  const std::unique_ptr<Node>& root) const noexcept;
     template<typename Functor> void preOrderTraverse(Functor f, const std::unique_ptr<Node>& root) const noexcept;
     
-    template<typename Functor> void inOrderTrace(Functor f, const std::unique_ptr<Node>& current, std::list<int>& list, int depth=1) const noexcept;
+    template<typename Functor> void inOrderTrace(Functor f, const std::unique_ptr<Node>& current, stack_tracer& tracer, int depth=1) const noexcept;
+    template<typename Functor> void preOrderTrace(Functor f, const std::unique_ptr<Node>& current, stack_tracer& tracer, int depth=1) const noexcept;
 
     template<typename Functor> void inOrderIterative(Functor f, const std::unique_ptr<Node>& root) const noexcept;
 
@@ -390,8 +426,15 @@ From std::map insert_or_assign methods
     template<typename Functor> void inOrderTrace(Functor f) const noexcept
     { 
       if (!root) return; // nothing to iterate over  
-      std::list<int> list;
-      return inOrderTrace(f, root, list); 
+      stack_tracer tracer;
+      return inOrderTrace(f, root, tracer); 
+    }
+
+    template<typename Functor> void preOrderTrace(Functor f) const noexcept
+    { 
+      if (!root) return; // nothing to iterate over  
+      stack_tracer tracer;
+      return preOrderTrace(f, root, tracer); 
     }
 
     // Depth-first traversals
@@ -707,6 +750,7 @@ From std::map insert_or_assign methods
     }
 };
 
+
 // pprovided for symmetry
 template<typename Key, typename Value>
 inline bool operator==(const typename bstree<Key, Value>::inorder_stack_iterator::sentinel& sent, const typename bstree<Key, Value>::inorder_stack_iterator& iter)  noexcept
@@ -959,30 +1003,25 @@ void bstree<Key, Value>::inOrderIterative(Functor f, const std::unique_ptr<Node>
    }
 }
 
-template<class Key, class Value> template<typename Functor> void bstree<Key, Value>::inOrderTrace(Functor f, const std::unique_ptr<Node>& current, std::list<int>& list, int depth) const noexcept
+//--template<class Key, class Value> template<typename Functor> void bstree<Key, Value>::inOrderTrace(Functor f, const std::unique_ptr<Node>& current, std::list<int>& list, int depth) const noexcept
+template<class Key, class Value> template<typename Functor> void bstree<Key, Value>::inOrderTrace(Functor f, const std::unique_ptr<Node>& current, stack_tracer& tracer, int depth) const noexcept
 {
    if (!current) {
 
       return;
    }
 
-   list.push_back(current->key());
+   tracer.push(current->key());
 
-   inOrderTrace(f, current->left, list, depth + 1);
+   inOrderTrace(f, current->left, tracer, depth + 1);
    
-   std::cout << '[';
-   for (auto riter = list.rbegin(); riter != list.rend(); ++riter)
-       
-      // Print out the simulated "stack". USe code above.
-      std::cout << *riter << ", ";    //std::cout << '\t' << std::setw(4) << *riter << std::endl;
-      
-   std::cout << ']' << std::endl;
+   tracer.print();
    
    f(current->__get_value()); 
     
-   inOrderTrace(f, current->right, list, depth + 1);
+   inOrderTrace(f, current->right, tracer, depth + 1);
    
-   list.pop_back();
+   tracer.pop();
 }
 
 //TODO: Test
@@ -1075,6 +1114,38 @@ void bstree<Key, Value>::preOrderIterative(Functor f, const std::unique_ptr<Node
         if (node->left) 
             stack.push(node->left.get()); 
     } 
+
+}
+template<class Key, class Value>
+template<typename Functor>
+void bstree<Key, Value>::preOrderTraverse(Functor f, const std::unique_ptr<Node>& current) const noexcept
+{
+   if (!current) return;
+
+   f(current->__get_value()); 
+
+   preOrderTraverse(f, current->left);
+
+   preOrderTraverse(f, current->right);
+}
+
+template<class Key, class Value>
+template<typename Functor>
+void bstree<Key, Value>::preOrderTrace(Functor f, const std::unique_ptr<Node>& current, stack_tracer& tracer, int depth) const noexcept
+{
+   if (!current) return;
+   
+   tracer.push(current->key());
+
+   tracer.print();
+
+   f(current->__get_value()); 
+
+   preOrderTrace(f, current->left, tracer, depth + 1);
+
+   preOrderTrace(f, current->right, tracer, depth + 1);
+
+   tracer.pop();
 }
 /*
 post order iterative implementations
@@ -1242,19 +1313,6 @@ void bstree<Key, Value>::postOrderIterative(Functor f, const std::unique_ptr<Nod
      }
    } 
  }
-}
-
-template<class Key, class Value>
-template<typename Functor>
-void bstree<Key, Value>::preOrderTraverse(Functor f, const std::unique_ptr<Node>& current) const noexcept
-{
-   if (!current) return;
-
-   f(current->__get_value()); 
-
-   preOrderTraverse(f, current->left);
-
-   preOrderTraverse(f, current->right);
 }
 
 template<class Key, class Value>
