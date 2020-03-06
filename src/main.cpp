@@ -33,9 +33,13 @@ int main(int argc, char** argv)
 
   test_tree.printlevelOrder(key_printer); 
 
-  cout << "test_tree.inOrderTrace(trace_printer) = ";
+  cout << "test_tree.inOrderTraverse(key_printer) = ";
 
-  test_tree.inOrderTrace(trace_printer);
+  test_tree.inOrderTraverse(key_printer);
+
+  cout << "\ntest_tree.preOrderTraverse(key_printer) = ";
+
+  test_tree.preOrderTraverse(key_printer);
 
   cout << "\ntest_tree.postOrderItrative(key_printer) = ";
   
@@ -67,7 +71,6 @@ int main(int argc, char** argv)
   
   cout << '\n' << flush;
 
-  
   bstree<int, int> bal_tree;
 
   for (const auto& i : lst) 

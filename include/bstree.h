@@ -424,20 +424,17 @@ From std::map insert_or_assign methods
     // Depth-first traversals
     template<typename Functor> void inOrderTraverse(Functor f) const noexcept
     { 
-      if (!root) return; // nothing to iterate over  
       return inOrderTraverse(f, root); 
     }
 
     template<typename Functor> void inOrderTrace(Functor f) const noexcept
     { 
-      if (!root) return; // nothing to iterate over  
       stack_tracer tracer;
       return inOrderTrace(f, root, tracer); 
     }
 
     template<typename Functor> void preOrderTrace(Functor f) const noexcept
     { 
-      if (!root) return; // nothing to iterate over  
       stack_tracer tracer;
       return preOrderTrace(f, root, tracer); 
     }
@@ -445,31 +442,26 @@ From std::map insert_or_assign methods
     // Depth-first traversals
     template<typename Functor> void inOrderIterative(Functor f) const noexcept
     { 
-      if (!root) return; // nothing to iterate over  
       return inOrderIterative(f, root); 
     }
     
     template<typename Functor> void preOrderIterative(Functor f) const noexcept
     { 
-      if (!root) return; // nothing to iterate over  
       return preOrderIterative(f, root); 
     }
 
     template<typename Functor> void postOrderIterative(Functor f) const noexcept
     { 
-      if (!root) return; // nothing to iterate over  
       return postOrderIterative(f, root); 
     }
 
     template<typename Functor> void preOrderTraverse(Functor f) const noexcept  
     { 
-      if (!root) return; // nothing to iterate over  
       return preOrderTraverse(f, root); 
     }
 
     template<typename Functor> void postOrderTraverse(Functor f) const noexcept
     { 
-      if (!root) return; // nothing to iterate over  
       return postOrderTraverse(f, root); 
     }
 
