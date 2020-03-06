@@ -18,11 +18,12 @@
 class stack_tracer {
 
     std::list<int> list;
-
+    bool first_time;
 public:
 
-    stack_tracer()
+    stack_tracer() :first_time{true}
     {
+        
     }
 
     stack_tracer(const stack_tracer&) = default;
@@ -40,6 +41,10 @@ public:
     
     void print()
     {
+      if (first_time) {
+          std::cout << "\n ";
+          first_time = false;
+      }  
       std::cout << '[';
     
       for (auto riter = list.rbegin(); riter != list.rend(); ++riter)
