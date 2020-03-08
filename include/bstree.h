@@ -242,11 +242,12 @@ template<class Key, class Value> class bstree {
     template<typename Functor> void preOrderTrace(Functor f, const std::unique_ptr<Node>& current, stack_tracer<Key>& tracer, int depth=1) const noexcept;
 
     template<typename Functor> void inOrderIterative(Functor f, const std::unique_ptr<Node>& root) const noexcept;
-
     template<typename Functor> void postOrderIterative(Functor f, const std::unique_ptr<Node>& root) const;
 
-    template<typename Functor> void postOrderIterative(Functor f, std::unique_ptr<Node>& root) noexcept; // private method. Mainly used to do post-order tree destruction
     template<typename Functor> void preOrderIterative(Functor f, const std::unique_ptr<Node>&) const noexcept;
+
+    // private Node visitation iterative traversals 
+    template<typename Functor> void node_postOrderIterative(Functor f, std::unique_ptr<Node>& root) noexcept; 
 
     constexpr Node *min(std::unique_ptr<Node>& current) const noexcept
     {
@@ -258,7 +259,7 @@ template<class Key, class Value> class bstree {
     Node *getSuccessor(const Node *current) const noexcept;
 
     std::unique_ptr<Node>& get_unique_ptr(Node *pnode) noexcept;
-
+    
     std::pair<bool, const Node *> findNode(const key_type& key, const Node *current) const noexcept; 
 
     int  height(const Node *pnode) const noexcept;
@@ -332,7 +333,7 @@ From std::map insert_or_assign methods
           node.reset();
        };
     
-       postOrderIterative(f, root);
+       node_postOrderIterative(f, root);
     } 
 
     bstree(std::initializer_list<value_type>& list) noexcept; 
@@ -819,7 +820,7 @@ template<class Key, class Value> typename bstree<Key, Value>::Node&  bstree<Key,
       node.reset();
    };
 
-   postOrderIterative(f, root);
+   node_postOrderIterative(f, root);
 
    copy_tree(lhs.root);
 
@@ -869,7 +870,7 @@ template<class Key, class Value> bstree<Key, Value>& bstree<Key, Value>::operato
       uptr.reset();
   };
   
-  postOrderIterative(f, root);
+  node_postOrderIterative(f, root);
   
   copy_tree(lhs.root);
  
@@ -1213,13 +1214,13 @@ post order iterative implementations
 
 template<class Key, class Value>
 template<typename Visitor>
-void bstree<Key, Value>::postOrderIterative(Visitor visit, std::unique_ptr<Node>& ptr) noexcept
+void bstree<Key, Value>::node_postOrderIterative(Visitor visit, std::unique_ptr<Node>& ptr) noexcept
 {
   Node *pnode = ptr.get();
 
-  std::stack<const Node *> stack; 
+  std::stack<Node *> stack; 
 
-  const Node *lastNodeVisited{nullptr};
+  Node *lastNodeVisited{nullptr}; // same as pnode->parent?
 
   while (!stack.empty() || pnode) {
 
@@ -1230,28 +1231,20 @@ void bstree<Key, Value>::postOrderIterative(Visitor visit, std::unique_ptr<Node>
 
     } else {
 
-      const Node *peekNode = stack.top();
+      Node *top = stack.top();
 
       // if right child exists and traversing pnode from left child, then move right
-      if (peekNode->right && lastNodeVisited != peekNode->right.get())
+      if (top->right && lastNodeVisited != top->right.get())
 
-          pnode = peekNode->right.get();
+          pnode = top->right.get();
 
       else {
 
-        // Get unique_ptr for peekNode 
-        Node *parent = peekNode->parent;  
+        // Get unique_ptr for top 
+        std::unique_ptr<Node>& top_uptr = get_unique_ptr(top);
         
-        if (!parent)
-            
-            visit(root);
-            
-        else {
+        visit(top_uptr);
 
-            std::unique_ptr<Node>& ref = parent->left.get() == peekNode ? parent->left : parent->right;     
-            visit(ref);
-        }
-        
         lastNodeVisited = stack.top();
         stack.pop();
  

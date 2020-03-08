@@ -1,7 +1,7 @@
 TODO
 ----
 
-copy_tree(root_in) uses postOrderIterative() or __postOrderIterative(), which is not working.  
+TODO: Add const and non-const versions of the traveral methods. Add privaate non-const version that visit a Node& and not bstree::value_type.
 Use this more thorougly discussed and commented version of postOrderIterative:
 
   `post-order Iterative algorithm <https://www.java67.com/2017/05/binary-tree-post-order-traversal-in-java-without-recursion.html>`_.

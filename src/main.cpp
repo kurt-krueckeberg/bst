@@ -51,7 +51,7 @@ int main(int argc, char** argv)
       return;
   };
 
-  test_tree.preOrderIterative(key_printer);
+  test_tree.preOrderIterative(null_functor);
 
   cout << "\ntest_tree.postOrderIterative(key_printer) = ";
   
