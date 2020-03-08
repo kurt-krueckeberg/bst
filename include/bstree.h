@@ -1214,9 +1214,9 @@ post order iterative implementations
 
 template<class Key, class Value>
 template<typename Visitor>
-void bstree<Key, Value>::node_postOrderIterative(Visitor visit, std::unique_ptr<Node>& ptr) noexcept
+void bstree<Key, Value>::node_postOrderIterative(Visitor visit, std::unique_ptr<Node>& root_in) noexcept
 {
-  Node *pnode = ptr.get();
+  Node *pnode = root_in.get();
 
   std::stack<Node *> stack; 
 
@@ -1226,14 +1226,14 @@ void bstree<Key, Value>::node_postOrderIterative(Visitor visit, std::unique_ptr<
 
     if (pnode) {
 
-      stack.push(pnode);
-      pnode = pnode->left.get();
+      stack.push(pnode);          // Push pnode and its left-most children onto the stack.
+      pnode = pnode->left.get(); 
 
     } else {
 
-      Node *top = stack.top();
+      Node *top = stack.top();  // Initially pops left-most child of the root.
 
-      // if right child exists and traversing pnode from left child, then move right
+      // If top has a right child (ie it is not a leaf node) and we are traversing pnode from left child>>, then move right
       if (top->right && lastNodeVisited != top->right.get())
 
           pnode = top->right.get();
@@ -1245,8 +1245,8 @@ void bstree<Key, Value>::node_postOrderIterative(Visitor visit, std::unique_ptr<
         
         visit(top_uptr);
 
-        lastNodeVisited = stack.top();
-        stack.pop();
+        lastNodeVisited = stack.top(); // remember prior node
+        stack.pop();                   // and remove it from the stack
  
         pnode = nullptr;
      }

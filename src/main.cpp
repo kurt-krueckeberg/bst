@@ -69,8 +69,6 @@ int main(int argc, char** argv)
   
   t2 = test_tree;
   
-  // TODO: Print out t2
-  
   return 0;
 
   cout << "\ntest_tree.inOrderIterative(key_printer) = ";
