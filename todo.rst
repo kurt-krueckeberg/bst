@@ -1,6 +1,18 @@
 TODO
 ----
 
+auto functor = [](auto& x) {
+  using parm_type = decltype(x);
+};
+
+class Functor {
+  public:
+
+   void operator(bstree<Key, Value>::node_type
+
+
+ if constexpr (decltype(param_type)
+
 TODO: Add const and non-const versions of the traveral methods. Add privaate non-const version that visit a Node& and not bstree::value_type.
 Use this more thorougly discussed and commented version of postOrderIterative:
 
