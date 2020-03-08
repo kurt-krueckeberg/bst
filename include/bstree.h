@@ -15,9 +15,9 @@
 #include <exception>
 #include <iterator>
 
-class stack_tracer {
+template<typename Key> class stack_tracer {
 
-    std::list<int> list;
+    std::list<Key> list;
     bool first_time;
 public:
 
@@ -29,9 +29,14 @@ public:
     stack_tracer(const stack_tracer&) = default;
     stack_tracer& operator=(const stack_tracer&) = default;
 
-    void push(int i)
+    void push(const Key& key)
     {
-      list.push_back(i);
+      list.push_back(key);
+    }
+
+    Key peek() const
+    {
+       return list.back();  
     }
     
     void pop()
@@ -233,8 +238,8 @@ template<class Key, class Value> class bstree {
     template<typename Functor> void postOrderTraverse(Functor f,  const std::unique_ptr<Node>& root) const noexcept;
     template<typename Functor> void preOrderTraverse(Functor f, const std::unique_ptr<Node>& root) const noexcept;
     
-    template<typename Functor> void inOrderTrace(Functor f, const std::unique_ptr<Node>& current, stack_tracer& tracer, int depth=1) const noexcept;
-    template<typename Functor> void preOrderTrace(Functor f, const std::unique_ptr<Node>& current, stack_tracer& tracer, int depth=1) const noexcept;
+    template<typename Functor> void inOrderTrace(Functor f, const std::unique_ptr<Node>& current, stack_tracer<Key>& tracer, int depth=1) const noexcept;
+    template<typename Functor> void preOrderTrace(Functor f, const std::unique_ptr<Node>& current, stack_tracer<Key>& tracer, int depth=1) const noexcept;
 
     template<typename Functor> void inOrderIterative(Functor f, const std::unique_ptr<Node>& root) const noexcept;
 
@@ -429,13 +434,13 @@ From std::map insert_or_assign methods
 
     template<typename Functor> void inOrderTrace(Functor f) const noexcept
     { 
-      stack_tracer tracer;
+      stack_tracer<Key> tracer;
       return inOrderTrace(f, root, tracer); 
     }
 
     template<typename Functor> void preOrderTrace(Functor f) const noexcept
     { 
-      stack_tracer tracer;
+      stack_tracer<Key> tracer;
       return preOrderTrace(f, root, tracer); 
     }
 
@@ -1000,7 +1005,7 @@ void bstree<Key, Value>::inOrderIterative(Functor f, const std::unique_ptr<Node>
    }
 }
 
-template<class Key, class Value> template<typename Functor> void bstree<Key, Value>::inOrderTrace(Functor f, const std::unique_ptr<Node>& current, stack_tracer& tracer, int depth) const noexcept
+template<class Key, class Value> template<typename Functor> void bstree<Key, Value>::inOrderTrace(Functor f, const std::unique_ptr<Node>& current, stack_tracer<Key>& tracer, int depth) const noexcept
 {
    if (!current) {
 
@@ -1019,6 +1024,29 @@ template<class Key, class Value> template<typename Functor> void bstree<Key, Val
    
    tracer.pop();
 }
+
+template<class Key, class Value> template<typename Functor> void bstree<Key, Value>::preOrderTrace(Functor f, const std::unique_ptr<Node>& current, stack_tracer<Key>& tracer, int depth) const noexcept
+{
+   if (!current) {
+
+      return;
+   }
+
+   tracer.push(current->key());
+
+   tracer.print();
+
+   f(current->__get_value()); 
+
+   preOrderTrace(f, current->left, tracer, depth + 1);
+   
+   tracer.print();
+    
+   preOrderTrace(f, current->right, tracer, depth + 1);
+   
+   tracer.pop();
+}
+
 
 //TODO: Test
 template<class Key, class Value>
@@ -1094,11 +1122,15 @@ template<class Key, class Value>
 template<typename Functor>
 void bstree<Key, Value>::preOrderIterative(Functor f, const std::unique_ptr<Node>& lhs) const noexcept
 {
+ stack_tracer<Key> tracer; 
+
    if (!lhs) return;
   
     std::stack<const node_type *> stack; 
     stack.push(root.get()); 
   
+    tracer.push(root->key());
+
     /*
       Pop all items one by one, and do the following for every popped item:
  
@@ -1114,16 +1146,27 @@ void bstree<Key, Value>::preOrderIterative(Functor f, const std::unique_ptr<Node
         const node_type *node = stack.top(); 
         stack.pop(); 
 
+        Key key = tracer.peek();
+
+        std::cout << key << " is top of stack. Stack after pop() = ";
+        tracer.pop();
+        tracer.print();
+       
         f(node->__get_value()); 
 
         // Push right and left non-null children of the popped node to stack 
-        if (node->right) 
+        if (node->right) { 
+            tracer.push(node->right->key());
             stack.push(node->right.get()); 
+        }
 
-        if (node->left) 
+        if (node->left) {
+            tracer.push(node->left->key());
             stack.push(node->left.get()); 
+        } 
+        std::cout << "Stack after pushing children of " << key << " = ";
+        tracer.print();
     } 
-
 }
 
 /*

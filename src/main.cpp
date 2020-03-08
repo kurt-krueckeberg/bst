@@ -42,7 +42,18 @@ int main(int argc, char** argv)
 
   test_tree.preOrderTraverse(key_printer);
 
-  cout << "\ntest_tree.postOrderItrative(key_printer) = ";
+  cout << "\ntest_tree.preOrderIterative(key_printer) = ";
+  
+  auto null_functor = [](const auto& pr) {
+      //const auto&[key, value] = pr;
+      
+      //cout << setw(3) << key << '\n';
+      return;
+  };
+
+  test_tree.preOrderIterative(key_printer);
+
+  cout << "\ntest_tree.postOrderIterative(key_printer) = ";
   
   test_tree.postOrderIterative(key_printer);
   
