@@ -1,22 +1,31 @@
 TODO
-----
+====
 
-auto functor = [](auto& x) {
-  using parm_type = decltype(x);
-};
+Sources to Read
+---------------
 
-class Functor {
-  public:
+* C code that implements both recursive and iterative versions of traversal algorithms: https://code.google.com/archive/p/treetraversal/downloads
+* `Tree traversal without recursion: the tree as a state machine <https://www.perlmonks.org/?node_id=600456>`_ explains and shows how iterative tree traversal can be done withan explicit stack. 
+* Theory:  `Time Complexity of Resursive Algorithms: The Master Theorem <https://yourbasic.org/algorithms/time-complexity-recursive-functions/>`_
+  and also https://adrianmejia.com/analysis-of-recursive-algorithms/.
 
-   void operator(bstree<Key, Value>::node_type
+Specific todoes
+---------------
+
+1. `Tree traversal without recursion: the tree as a state machine <https://www.perlmonks.org/?node_id=600456>`_ explains and shows how iterative tree traversal can be done withan explicit stack. It shows  
+   a pre-order version that uses the parent pointer and doesn't require a stack. Mentions this and implement it. 
+2. Do likewise with pre- and post-order iterative traversals.
+
+Using 'if consexpr' to implement one version: 
+
+   if constexpr (not_exists(Functor::parm_type)) {
+   else if constexpr (is_node_type(Functor::parm_type)) {
+
+   } else {
+        std::throw
+   } 
 
 
- if constexpr (decltype(param_type)
-
-TODO: Add const and non-const versions of the traveral methods. Add privaate non-const version that visit a Node& and not bstree::value_type.
-Use this more thorougly discussed and commented version of postOrderIterative:
-
-  `post-order Iterative algorithm <https://www.java67.com/2017/05/binary-tree-post-order-traversal-in-java-without-recursion.html>`_.
 
 Finish code to accurate set the recursion depth for ~bstree() and ~Node(), or use the debugger to follow the ~Node() calls to see how deep the recursion goes.
 

@@ -1210,6 +1210,9 @@ post order iterative implementations
 /* 
  * Prospective post-order iterator.
  * Taken from pseudocode at https://en.wikipedia.org/wiki/Tree_traversal
+
+ * Note: This algorithm that requires a parent pointer eliminates the need for a stack enitrely:
+ * See: https://www.perlmonks.org/?node_id=600456
  */
 
 template<class Key, class Value>
@@ -1220,7 +1223,7 @@ void bstree<Key, Value>::node_postOrderIterative(Visitor visit, std::unique_ptr<
 
   std::stack<Node *> stack; 
 
-  Node *lastNodeVisited{nullptr}; // Use top->parent below--right?
+  Node *priorNode{nullptr}; // Use top->parent below--right?
 
   while (!stack.empty() || pnode) {
 
@@ -1233,8 +1236,8 @@ void bstree<Key, Value>::node_postOrderIterative(Visitor visit, std::unique_ptr<
 
       Node *top = stack.top();  // Initially pops left-most child of the root.
 
-      // If top has a right child (ie it is not a leaf node) and we are traversing pnode from left child>>, then move right
-      if (top->right && lastNodeVisited != top->right.get())
+      // If top has a right child (so we know at minimum it is not a leaf node) and we are traversing pnode from left child, then move right
+      if (top->right && priorNode != top->right.get())
 
           pnode = top->right.get();
 
@@ -1245,7 +1248,7 @@ void bstree<Key, Value>::node_postOrderIterative(Visitor visit, std::unique_ptr<
         
         visit(top_uptr);
 
-        lastNodeVisited = stack.top(); // remember prior node
+        priorNode = stack.top(); // remember prior node
         stack.pop();                   // and remove it from the stack
  
         pnode = nullptr;
@@ -1312,7 +1315,6 @@ void bstree<Key, Value>::postOrderIterative(Functor f, const std::unique_ptr<Nod
 
       const Node *peekNode = stack.top();
 
-      // if right child exists and traversing pnode from left child, then move right
       if (peekNode->right && lastNodeVisited != peekNode->right.get())
 
           pnode = peekNode->right.get();
