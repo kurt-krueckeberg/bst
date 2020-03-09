@@ -1220,7 +1220,7 @@ void bstree<Key, Value>::node_postOrderIterative(Visitor visit, std::unique_ptr<
 
   std::stack<Node *> stack; 
 
-  Node *lastNodeVisited{nullptr}; // same as pnode->parent?
+  Node *lastNodeVisited{nullptr}; // Use top->parent below--right?
 
   while (!stack.empty() || pnode) {
 
