@@ -716,7 +716,6 @@ template<class Key, class Value> class bstree {
         return sent;
     }
 
-   // TODO: Make this class a friend of bstree -- or vice versa??
    class iterator_inorder {  // This not efficient to copy due to the stack container inside it.
    
       using node_type = bstree<Key, Value>::node_type;
@@ -793,6 +792,14 @@ template<class Key, class Value> class bstree {
            
           return __x;
       }
+
+      Node *min(Node *__y)  
+      {
+         while(__y->left) // Infinite loop.
+            __y = __y->left.get();
+
+         return __y;
+      } 
       
      public:
    
@@ -806,12 +813,7 @@ template<class Key, class Value> class bstree {
       explicit iterator_inorder(bstree<Key, Value>& bstree) : tree{bstree}
       {
          // Set current to nodee with smallest key.
-         auto __y = bstree.root.get();
-   
-         while(__y->left) // Infinite loop.
-            __y = __y->left.get();
-   
-         current = __y;
+         current = min(bstree.root.get());
       }
       
       iterator_inorder(const iterator_inorder& lhs) : current{lhs.current}, tree{lhs.tree}
