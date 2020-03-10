@@ -181,7 +181,7 @@ _Rb_tree_decrement() throw ()
 */
 
 // TODO: Make this class a friend of bstree.
-class iterator_inorder {  // This not efficient to copy due to the stack container inside it.
+class iterator_preorder {  // This not efficient to copy due to the stack container inside it.
 
    using node_type = bstree<Key, Value>::node_type;
 
@@ -195,70 +195,26 @@ class iterator_inorder {  // This not efficient to copy due to the stack contain
    Node *increment() 
    {
      Node *__y = current;
-   
-       if (__y->right) { // current has a right child, a greater value to the right
-     
-           __y = __y->right.get();
-     
-           while (__y->left) // Get the smallest value in its right subtree, the smallest value in the r. subtree.
-              __y = __y->left.get();
-     
-       } else {
-     
-           auto parent = __y->parent;
-   
-           // Ascend to the first parent ancestor that is not a right child, 
-           // and thus is greater than __y 
-           while (__y == parent->right.get()) {
-   
-               if (parent == tree.root.get()) // We reached the root -> there is no successor
-                   return current;
-    
-               __y = parent;
-   
-               parent = parent->parent;
-           }
 
-           __y = parent; // First parent ancestor that is not a right child. 
-       }
+     if (__y->left) // Prefer left child
+         __y = __y->left.get();
+
+     else if (__y->right) // otherwise, the right 
+         __y = __y->right.get();
+
+     else  { // If leaf node, ascend until ? 
+
+         while (__y
+
+     }     
    
-       return __y;
    }
 
    // decrement
    Node *decrement()
    {
-      auto __x = current;
-    
-      if (__x->left) { // There is a left child, a left subtree.
-     
-           auto __y = __x->left;
-     
-           while (__y->right) // Get its largest value. This is the predecessor to current.
-             __y = __y->right;
-     
-           __x = __y;
-     
-       } else {
-     
-           auto parent = __x->parent;
-   
-           // Ascend to first parent ancestor that is not a left child
-           // and thus is less than __x.
-           while (__x == parent->left.get()) {
-   
-              if (parent == tree.root.get()) // The parent is the root -> there is no predecessor.
-                  return current;
-   
-               __x = parent;
-               parent = parent->parent;
-           }
-     
-           __x = parent; // Set __x to first parent less than __x.
-       }
-        
-       return __x;
    }
+        
    
   public:
 
@@ -269,52 +225,46 @@ class iterator_inorder {  // This not efficient to copy due to the stack contain
        
    using iterator_category = std::bidirectional_iterator_tag; 
 
-   explicit iterator_inorder(bstree<Key, Value>& bstree) : tree{bstree}
+   explicit iterator_preorder(bstree<Key, Value>& bstree) : tree{bstree}
    {
       // Set current to nodee with smallest key.
-      auto __y = bstree.root.get();
+      current = bstree.root.get();
 
-      while(__y->left) 
-         __y->left.get();
-
-      current = __y;
-      pos = position::start;
    }
    
-   iterator_inorder(const iterator_inorder& lhs) : current{lhs.current}, tree{lhs.tree}, pos{lhs.pos}
+   iterator_preorder(const iterator_preorder& lhs) : current{lhs.current}, tree{lhs.tree}, pos{lhs.pos}
    {
    }
    
-   iterator_inorder(iterator_inorder&& lhs) : current{lhs.current}, tree{lhs.tree}
+   iterator_preorder(iterator_preorder&& lhs) : current{lhs.current}, tree{lhs.tree}
    {
        lhs.current = nullptr;
-       lhs.pos = position::end;
    }
    
-   iterator_inorder& operator++() noexcept 
+   iterator_preorder& operator++() noexcept 
    {
       current = increment();
       return *this;
    } 
    
-   iterator_inorder operator++(int) noexcept
+   iterator_preorder operator++(int) noexcept
    {
-      iterator_inorder tmp(*this);
+      iterator_preorder tmp(*this);
 
       current = increment();
 
       return tmp;
    } 
     
-   iterator_inorder& operator--() noexcept 
+   iterator_preorder& operator--() noexcept 
    {
       current = decrement();
       return *this;
    } 
    
-   iterator_inorder operator--(int) noexcept
+   iterator_preorder operator--(int) noexcept
    {
-      iterator_inorder tmp(*this);
+      iterator_preorder tmp(*this);
 
       current = decrement();
 
@@ -323,7 +273,7 @@ class iterator_inorder {  // This not efficient to copy due to the stack contain
       
    reference operator*() const noexcept 
    { 
-       return current->__get_value();
+       return current->__get_value(); // May want 'Node *' itself
    } 
    
    pointer operator->() const noexcept
@@ -331,27 +281,27 @@ class iterator_inorder {  // This not efficient to copy due to the stack contain
       return &(operator*()); 
    } 
    
-   struct sentinel {}; // Use for determining "at the end" in 'bool operator==(const iterator_inorder&) const' below
+   struct sentinel {}; // Use for determining "at the end" in 'bool operator==(const iterator_preorder&) const' below
 
-   bool operator==(const iterator_inorder::sentinel& sent) const noexcept
+   bool operator==(const iterator_preorder::sentinel& sent) const noexcept
    {
       return ????; 
    }
    
-   bool operator!=(const iterator_inorder::sentinel& lhs) const noexcept
+   bool operator!=(const iterator_preorder::sentinel& lhs) const noexcept
    {
      return !operator==(lhs);    
    }
 };
-iterator_inorder begin() noexcept
+iterator_preorder begin() noexcept
 {
-   iterator_inorder iter{*this}; 
+   iterator_preorder iter{*this}; 
    return iter; 
 }
 
-iterator_inorder::sentinel end() noexcept // TODO: Can I use a sentinel? a C++17 feature.
+iterator_preorder::sentinel end() noexcept // TODO: Can I use a sentinel? a C++17 feature.
 {
-    typename iterator_inorder::sentinel sent;
+    typename iterator_preorder::sentinel sent;
     return sent;
 }
 
