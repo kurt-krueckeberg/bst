@@ -37,6 +37,13 @@ int main(int argc, char** argv)
   cout << "test_tree.inOrderTraverse(key_printer) = ";
 
   test_tree.inOrderTraverse(key_printer);
+  
+  cout << "for (auto& [key, value] : test_tree) cout << key " << endl; 
+
+  for (auto& [key, value] : test_tree) 
+      cout << key << ", " << flush;
+ 
+  cout << '\n' << flush;
 
   cout << "\ntest_tree.preOrderTraverse(key_printer) = ";
 
@@ -68,7 +75,6 @@ int main(int argc, char** argv)
       t2.insert(x, x);
   
   t2 = test_tree;
-  
   return 0;
 
   cout << "\ntest_tree.inOrderIterative(key_printer) = ";

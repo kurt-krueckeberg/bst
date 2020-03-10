@@ -565,17 +565,8 @@ template<class Key, class Value> class bstree {
          return !operator==(lhs);    
        }
     };
-    stack_iterator_inorder begin() noexcept
-    {
-       stack_iterator_inorder iter{*this}; 
-       return iter; 
-    }
     
-    stack_iterator_inorder::sentinel end() noexcept // TODO: Can I use a sentinel? a C++17 feature.
-    {
-        typename stack_iterator_inorder::sentinel sent;
-        return sent;
-    }
+    
     // preorder stack-based iterator
      /* 
      * Converted Pre-order Java iterator. This is NOT an in-order iterator!!
@@ -731,9 +722,7 @@ template<class Key, class Value> class bstree {
       using node_type = bstree<Key, Value>::node_type;
    
       node_type *current;
-      node_type *min;
-      node_type *max;
-   
+     
       bstree<Key, Value>& tree;
       
       Node *increment(Node *__y) 
@@ -819,10 +808,10 @@ template<class Key, class Value> class bstree {
          // Set current to nodee with smallest key.
          auto __y = bstree.root.get();
    
-         while(__y->left) 
-            __y->left.get();
+         while(__y->left) // Infinite loop.
+            __y = __y->left.get();
    
-         min = current = __y;
+         current = __y;
       }
       
       iterator_inorder(const iterator_inorder& lhs) : current{lhs.current}, tree{lhs.tree}
@@ -879,12 +868,12 @@ template<class Key, class Value> class bstree {
       struct sentinel {}; // Use for determining "at end" in 'bool operator==(const iterator_inorder&) const' below
       struct reverse_sentinel {}; // Use for determining "at beginning" in 'bool operator==(const iterator_inorder&) const' below
    
-      bool operator==(const iterator_inorder::sentinel& sent) const noexcept
+      bool operator==(const iterator_inorder::sentinel& sent) noexcept
       {
          return increment(current) == current ? true : false;
       }
       
-      bool operator!=(const iterator_inorder::sentinel& lhs) const noexcept
+      bool operator!=(const iterator_inorder::sentinel& lhs) noexcept
       {
         return !operator==(lhs);    
       }
@@ -899,9 +888,19 @@ template<class Key, class Value> class bstree {
         return !operator==(lhs);    
       }
    };
-
+   
+   iterator_inorder begin() noexcept
+   {
+       iterator_inorder iter{*this}; 
+       return iter; 
+   }
+    
+    iterator_inorder::sentinel end() noexcept // TODO: Can I use a sentinel? a C++17 feature.
+    {
+        typename iterator_inorder::sentinel sent;
+        return sent;
+    }
 };
-
 
 // pprovided for symmetry
 template<typename Key, typename Value>
