@@ -184,6 +184,33 @@ _Rb_tree_increment(_Rb_tree_node_base* __x) throw ()
     return __x;
 }
 
+static _Rb_tree_node_base*
+_Rb_tree_increment(_Rb_tree_node_base* current) throw ()
+{
+    if (current->right) {
+  
+        current = current->right.get();
+  
+        while (current->left)
+           current = current->left.get();
+  
+    } else {
+  
+        auto __y = current->parent;
+  
+        while (current == __y->right.get()) {
+  
+            current = __y;
+            __y = __y->parent;
+        }
+  
+        if (current->right.get() != __y)
+            current = __y;
+    }
+    return current;
+}
+
+
 // decrement
 static _Rb_tree_node_base*
 _Rb_tree_decrement(_Rb_tree_node_base* __x) throw ()
@@ -214,14 +241,19 @@ _Rb_tree_decrement(_Rb_tree_node_base* __x) throw ()
     return __x;
 }
 
+// TODO: Make this class a friend of bstree.
 class iterator_inorder {  // This not efficient to copy due to the stack container inside it.
 
    using node_type = bstree<Key, Value>::node_type;
 
    node_type *current;
 
-   const bstree<Key, Value>& tree;
+   bstree<Key, Value>& tree;
 
+   enum class position : char { start, neither, end };  
+   position pos;
+  
+ 
    // See libc++ source code for rb_iterator.
    iterator_inorder& increment() noexcept // Go to next node.
    {
