@@ -76,6 +76,7 @@ template<class Key, class Value> class bstree {
     using reference       = value_type&; 
 
   private:
+
    /*
     * The tree nodes are of type std::unique_ptr<Node>, and each node contains a __value_type member __vt, a convenience 
       wrapper for access to a pair<const Key, Value>. 
@@ -291,34 +292,6 @@ template<class Key, class Value> class bstree {
     const std::unique_ptr<Node>& get_ceiling(const std::unique_ptr<Node>& current, Key key) const noexcept;
 
   public:
-/*
-Some prospective methods found in std::map:
-    template< class InputIt >
-    void insert( InputIt first, InputIt last );
-    
-    void insert( std::initializer_list<value_type> ilist );
-    
-    insert_return_type insert(node_type&& nh);
-    
-    iterator insert(const_iterator hint, node_type&& nh);
-    
-    void insert( std::initializer_list<value_type> ilist );
-    
-    insert_return_type insert(node_type&& nh);
-    
-    iterator insert(const_iterator hint, node_type&& nh);
-    template< class InputIt >
-    void insert( InputIt first, InputIt last );
-From std::map insert_or_assign methods
-    template <class M>
-    pair<iterator, bool> insert_or_assign(const key_type& k, M&& obj);
-    template <class M>
-    pair<iterator, bool> insert_or_assign(key_type&& k, M&& obj);
-    template <class M>
-    iterator insert_or_assign(const_iterator hint, const key_type& k, M&& obj);
-    template <class M>
-    iterator insert_or_assign(const_iterator hint, key_type&& k, M&& obj);
-*/
 
     // One other stl typedef.
     using node_type       = Node; 
@@ -493,7 +466,7 @@ From std::map insert_or_assign methods
        return ostr;
     }
 
-    class inorder_stack_iterator {  // This not efficient to copy due to the stack container inside it.
+    class stack_iterator_inorder {  // This not efficient to copy due to the stack container inside it.
     
        using node_type = bstree<Key, Value>::node_type;
     
@@ -503,7 +476,7 @@ From std::map insert_or_assign methods
     
        const bstree<Key, Value>& tree;
     
-       inorder_stack_iterator& increment() noexcept // Go to next node.
+       stack_iterator_inorder& increment() noexcept // Go to next node.
        {
           if (stack.empty()) {
     
@@ -539,31 +512,31 @@ From std::map insert_or_assign methods
            
        using iterator_category = std::forward_iterator_tag; 
     
-       explicit inorder_stack_iterator(bstree<Key, Value>& lhs) : tree{lhs}
+       explicit stack_iterator_inorder(bstree<Key, Value>& lhs) : tree{lhs}
        {
           push_leftmost(tree.root.get());
 
           increment();  // go to first Node
        }
        
-       inorder_stack_iterator(const inorder_stack_iterator& lhs) : current{lhs.current}, stack{lhs.stack}, tree{lhs.tree}
+       stack_iterator_inorder(const stack_iterator_inorder& lhs) : current{lhs.current}, stack{lhs.stack}, tree{lhs.tree}
        {
        }
        
-       inorder_stack_iterator(inorder_stack_iterator&& lhs) : current{lhs.current}, stack{std::move(lhs.stack)}, tree{lhs.tree}
+       stack_iterator_inorder(stack_iterator_inorder&& lhs) : current{lhs.current}, stack{std::move(lhs.stack)}, tree{lhs.tree}
        {
            lhs.current = nullptr;
        }
        // TODO: Are assignment operators required?
-       inorder_stack_iterator& operator++() noexcept 
+       stack_iterator_inorder& operator++() noexcept 
        {
           increment();
           return *this;
        } 
        
-       inorder_stack_iterator operator++(int) noexcept
+       stack_iterator_inorder operator++(int) noexcept
        {
-          inorder_stack_iterator tmp(*this);
+          stack_iterator_inorder tmp(*this);
     
           increment();
     
@@ -580,27 +553,27 @@ From std::map insert_or_assign methods
           return &(operator*()); 
        } 
        
-       struct sentinel {}; // Use for determining "at the end" in 'bool operator==(const inorder_stack_iterator&) const' below
+       struct sentinel {}; // Use for determining "at the end" in 'bool operator==(const stack_iterator_inorder&) const' below
     
-       bool operator==(const inorder_stack_iterator::sentinel& sent) const noexcept
+       bool operator==(const stack_iterator_inorder::sentinel& sent) const noexcept
        {
           return stack.empty(); // We are done iterating when the stack becomes empty.
        }
        
-       bool operator!=(const inorder_stack_iterator::sentinel& lhs) const noexcept
+       bool operator!=(const stack_iterator_inorder::sentinel& lhs) const noexcept
        {
          return !operator==(lhs);    
        }
     };
-    inorder_stack_iterator begin() noexcept
+    stack_iterator_inorder begin() noexcept
     {
-       inorder_stack_iterator iter{*this}; 
+       stack_iterator_inorder iter{*this}; 
        return iter; 
     }
     
-    inorder_stack_iterator::sentinel end() noexcept // TODO: Can I use a sentinel? a C++17 feature.
+    stack_iterator_inorder::sentinel end() noexcept // TODO: Can I use a sentinel? a C++17 feature.
     {
-        typename inorder_stack_iterator::sentinel sent;
+        typename stack_iterator_inorder::sentinel sent;
         return sent;
     }
     // preorder stack-based iterator
@@ -621,7 +594,7 @@ From std::map insert_or_assign methods
        
        node_type *current;
     
-       const bstree<Key, Value>& tree;
+       const bstree<Key, Value>& tree; // TODO: This is not a const_iterator--right?
     
        preorder_stack_iterator& increment() 
        {
@@ -751,12 +724,188 @@ From std::map insert_or_assign methods
         typename preorder_stack_iterator::sentinel sent;
         return sent;
     }
+
+   // TODO: Make this class a friend of bstree -- or vice versa??
+   class iterator_inorder {  // This not efficient to copy due to the stack container inside it.
+   
+      using node_type = bstree<Key, Value>::node_type;
+   
+      node_type *current;
+      node_type *min;
+      node_type *max;
+   
+      bstree<Key, Value>& tree;
+      
+      Node *increment(Node *__y) 
+      {
+      
+          if (__y->right) { // current has a right child, a greater value to the right
+        
+              __y = __y->right.get();
+        
+              while (__y->left) // Get the smallest value in its right subtree, the smallest value in the r. subtree.
+                 __y = __y->left.get();
+        
+          } else {
+        
+              auto parent = __y->parent;
+      
+              // Ascend to the first parent ancestor that is not a right child, 
+              // and thus is greater than __y 
+              while (__y == parent->right.get()) {
+      
+                  if (parent == tree.root.get()) { // We reached the root -> there is no successor
+                      
+                      return current;
+                  }
+       
+                  __y = parent;
+      
+                  parent = parent->parent;
+              }
+   
+              __y = parent; // First parent ancestor that is not a right child. 
+          }
+      
+          return __y;
+      }
+   
+      // decrement
+      Node *decrement(Node *__x)
+      {
+       
+         if (__x->left) { // There is a left child, a left subtree.
+        
+              auto __y = __x->left;
+        
+              while (__y->right) // Get its largest value. This is the predecessor to current.
+                __y = __y->right;
+        
+              __x = __y;
+        
+          } else {
+        
+              auto parent = __x->parent;
+      
+              // Ascend to first parent ancestor that is not a left child
+              // and thus is less than __x.
+              while (__x == parent->left.get()) {
+      
+                 if (parent == tree.root.get())  // The parent is the root -> there is no predecessor.
+                     return current;
+                 
+      
+                  __x = parent;
+                  parent = parent->parent;
+              }
+        
+              __x = parent; // Set __x to first parent less than __x.
+          }
+           
+          return __x;
+      }
+      
+     public:
+   
+      using difference_type  = std::ptrdiff_t; 
+      using value_type       = bstree<Key, Value>::value_type; 
+      using reference        = value_type&; 
+      using pointer          = value_type*;
+          
+      using iterator_category = std::bidirectional_iterator_tag; 
+   
+      explicit iterator_inorder(bstree<Key, Value>& bstree) : tree{bstree}
+      {
+         // Set current to nodee with smallest key.
+         auto __y = bstree.root.get();
+   
+         while(__y->left) 
+            __y->left.get();
+   
+         min = current = __y;
+      }
+      
+      iterator_inorder(const iterator_inorder& lhs) : current{lhs.current}, tree{lhs.tree}
+      {
+      }
+      
+      iterator_inorder(iterator_inorder&& lhs) : current{lhs.current}, tree{lhs.tree}
+      {
+          lhs.current = nullptr;
+      }
+      
+       // TODO: Are assignment operators required?
+
+      iterator_inorder& operator++() noexcept 
+      {
+         current = increment(current);
+         return *this;
+      } 
+      
+      iterator_inorder operator++(int) noexcept
+      {
+         iterator_inorder tmp(*this);
+   
+         current = increment(current);
+   
+         return tmp;
+      } 
+       
+      iterator_inorder& operator--() noexcept 
+      {
+         current = decrement(current);
+         return *this;
+      } 
+      
+      iterator_inorder operator--(int) noexcept
+      {
+         iterator_inorder tmp(*this);
+   
+         current = decrement();
+   
+         return tmp;
+      } 
+         
+      reference operator*() const noexcept 
+      { 
+          return current->__get_value();
+      } 
+      
+      pointer operator->() const noexcept
+      { 
+         return &(operator*()); 
+      } 
+     
+      struct sentinel {}; // Use for determining "at end" in 'bool operator==(const iterator_inorder&) const' below
+      struct reverse_sentinel {}; // Use for determining "at beginning" in 'bool operator==(const iterator_inorder&) const' below
+   
+      bool operator==(const iterator_inorder::sentinel& sent) const noexcept
+      {
+         return increment(current) == current ? true : false;
+      }
+      
+      bool operator!=(const iterator_inorder::sentinel& lhs) const noexcept
+      {
+        return !operator==(lhs);    
+      }
+   
+      bool operator==(const iterator_inorder::reverse_sentinel& sent) const noexcept
+      {
+         return decrement(current) == current ? true : false;
+      }
+      
+      bool operator!=(const iterator_inorder::reverse_sentinel& lhs) const noexcept
+      {
+        return !operator==(lhs);    
+      }
+   };
+
 };
 
 
 // pprovided for symmetry
 template<typename Key, typename Value>
-inline bool operator==(const typename bstree<Key, Value>::inorder_stack_iterator::sentinel& sent, const typename bstree<Key, Value>::inorder_stack_iterator& iter)  noexcept
+inline bool operator==(const typename bstree<Key, Value>::stack_iterator_inorder::sentinel& sent, const typename bstree<Key, Value>::stack_iterator_inorder& iter)  noexcept
 {
      return iter == sent;    
 }    

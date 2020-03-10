@@ -1,7 +1,7 @@
 TODO
 ====
 
-Added include/inorder-iterator.h that does not use a stack.
+Added include/iterator_inorder.h that does not use a stack. Add pre- and post-order non-stack based iterators just like iterator_inorder.
 
 Sources to Read
 ---------------

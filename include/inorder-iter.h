@@ -5,77 +5,8 @@ See GNU C++ implementation uses
 
 from /usr/include/c++/9/bits/stl_tree.h (copied locally), which in turn uses two non-member increment and decrement method,
 which can be found in the subdirectory libstdc++-v3 of the g++ git repository at https://github.com/gcc-mirror/gcc
-*/
-/*
-template<typename _Tp>
-struct _Rb_tree_iterator {
 
-  typedef _Tp  value_type;
-  typedef _Tp& reference;
-  typedef _Tp* pointer;
-
-  typedef bidirectional_iterator_tag iterator_category;
-  typedef ptrdiff_t			 difference_type;
-
-  typedef _Rb_tree_iterator<_Tp>		_Self;
-  typedef _Rb_tree_node_base::_Base_ptr	_Base_ptr;
-  typedef _Rb_tree_node<_Tp>*		_Link_type;
-
-  _Rb_tree_iterator() _GLIBCXX_NOEXCEPT
-  : _M_node() { }
-
-  explicit
-  _Rb_tree_iterator(_Base_ptr __x) _GLIBCXX_NOEXCEPT
-  : _M_node(__x) { }
-
-  reference
-  operator*() const _GLIBCXX_NOEXCEPT
-  { return *static_cast<_Link_type>(_M_node)->_M_valptr(); }
-
-  pointer
-  operator->() const _GLIBCXX_NOEXCEPT
-  { return static_cast<_Link_type> (_M_node)->_M_valptr(); }
-
-  _Self&
-  operator++() _GLIBCXX_NOEXCEPT
-  {
-    _M_node = _Rb_tree_increment(_M_node);
-    return *this;
-  }
-
-  _Self
-  operator++(int) _GLIBCXX_NOEXCEPT
-  {
-    _Self __tmp = *this;
-    _M_node = _Rb_tree_increment(_M_node);
-    return __tmp;
-  }
-
-  _Self&
-  operator--() _GLIBCXX_NOEXCEPT
-  {
-    _M_node = _Rb_tree_decrement(_M_node);
-    return *this;
-  }
-
-  _Self
-  operator--(int) _GLIBCXX_NOEXCEPT
-  {
-    _Self __tmp = *this;
-    _M_node = _Rb_tree_decrement(_M_node);
-    return __tmp;
-  }
-
-  friend bool
-  operator==(const _Self& __x, const _Self& __y) _GLIBCXX_NOEXCEPT
-  { return __x._M_node == __y._M_node; }
-
-  friend bool
-  operator!=(const _Self& __x, const _Self& __y) _GLIBCXX_NOEXCEPT
-  { return __x._M_node != __y._M_node; }
-
-  _Base_ptr _M_node;
-};
+ class const_iterator:
 
 template<typename _Tp> struct _Rb_tree_const_iterator {
 
@@ -154,10 +85,7 @@ template<typename _Tp> struct _Rb_tree_const_iterator {
 
   _Base_ptr _M_node;
 };
-*/
 
-
-// increment
 static _Rb_tree_node_base*
 _Rb_tree_increment(_Rb_tree_node_base* __x) throw ()
 {
@@ -216,36 +144,41 @@ _Rb_tree_increment()
     return __y;
 }
 
-
 // decrement
 static _Rb_tree_node_base*
-_Rb_tree_decrement(_Rb_tree_node_base* __x) throw ()
+_Rb_tree_decrement() throw ()
 {
-    if (__x->_M_color == _S_red && __x->_M_parent->_M_parent == __x)
-        __x = __x->_M_right;
+   auto __x = current;
+ 
+   if (__x->left) { // There is a left child, a left subtree.
   
-    else if (__x->_M_left != 0) {
+        auto __y = __x->left;
   
-        _Rb_tree_node_base* __y = __x->_M_left;
-  
-        while (__y->_M_right != 0)
-          __y = __y->_M_right;
+        while (__y->right) // Get its largest value
+          __y = __y->right;
   
         __x = __y;
   
     } else {
   
-        _Rb_tree_node_base* __y = __x->_M_parent;
-  
-        while (__x == __y->_M_left) {
-            __x = __y;
-            __y = __y->_M_parent;
+        auto parent = __x->parent;
+
+        // Ascend to first parent ancestor that is not a left child
+        // and thus is less than __x.
+        while (__x == parent->left.get()) {
+
+           if (parent == tree.root.get()) // The parent is the root -> there is no predecessor.
+               return current;
+
+            __x = parent;
+            parent = parent->parent;
         }
   
-        __x = __y;
+        __x = parent; // Set __x to first parent less than __x.
     }
     return __x;
 }
+*/
 
 // TODO: Make this class a friend of bstree.
 class iterator_inorder {  // This not efficient to copy due to the stack container inside it.
@@ -256,69 +189,77 @@ class iterator_inorder {  // This not efficient to copy due to the stack contain
 
    bstree<Key, Value>& tree;
 
-   enum class position : char { start, neither, end };  
+   //enum class position : char { start, in_between, end };  
    position pos;
 
    Node *increment() 
    {
      Node *__y = current;
    
-       if (__y->right) { // There is a right child, a greater value to the right
+       if (__y->right) { // current has a right child, a greater value to the right
      
            __y = __y->right.get();
      
-           while (__y->left) // Get the last value in its left subtree.
+           while (__y->left) // Get the smallest value in its right subtree, the smallest value in the r. subtree.
               __y = __y->left.get();
      
        } else {
      
            auto parent = __y->parent;
    
-           // Ascend to the first parent that is not a right-most child, 
+           // Ascend to the first parent ancestor that is not a right child, 
            // and thus is greater than __y 
            while (__y == parent->right.get()) {
    
-               if (parent == tree.root.get()) // We reached the root -> there is not successor
+               if (parent == tree.root.get()) // We reached the root -> there is no successor
                    return current;
     
                __y = parent;
    
                parent = parent->parent;
            }
+
+           __y = parent; // First parent ancestor that is not a right child. 
        }
    
        return __y;
    }
 
    // decrement
-   Node *decrement(_Rb_tree_node_base* __x) throw ()
+   Node *decrement()
    {
-       if (__x->_M_color == _S_red && __x->_M_parent->_M_parent == __x)
-           __x = __x->_M_right;
+      auto __x = current;
+    
+      if (__x->left) { // There is a left child, a left subtree.
      
-       else if (__x->_M_left != 0) {
+           auto __y = __x->left;
      
-           _Rb_tree_node_base* __y = __x->_M_left;
-     
-           while (__y->_M_right != 0)
-             __y = __y->_M_right;
+           while (__y->right) // Get its largest value. This is the predecessor to current.
+             __y = __y->right;
      
            __x = __y;
      
        } else {
      
-           _Rb_tree_node_base* __y = __x->_M_parent;
-     
-           while (__x == __y->_M_left) {
-               __x = __y;
-               __y = __y->_M_parent;
+           auto parent = __x->parent;
+   
+           // Ascend to first parent ancestor that is not a left child
+           // and thus is less than __x.
+           while (__x == parent->left.get()) {
+   
+              if (parent == tree.root.get()) // The parent is the root -> there is no predecessor.
+                  return current;
+   
+               __x = parent;
+               parent = parent->parent;
            }
      
-           __x = __y;
+           __x = parent; // Set __x to first parent less than __x.
        }
+        
        return __x;
    }
-
+   
   public:
 
    using difference_type  = std::ptrdiff_t; 
@@ -326,26 +267,28 @@ class iterator_inorder {  // This not efficient to copy due to the stack contain
    using reference        = value_type&; 
    using pointer          = value_type*;
        
-   using iterator_category = std::forward_iterator_tag; 
+   using iterator_category = std::bidirectional_iterator_tag; 
 
    explicit iterator_inorder(bstree<Key, Value>& bstree) : tree{bstree}
    {
+      // Set current to nodee with smallest key.
       auto __y = bstree.root.get();
 
       while(__y->left) 
          __y->left.get();
 
       current = __y;
-      pos = start;
+      pos = position::start;
    }
    
-   iterator_inorder(const iterator_inorder& lhs) : current{lhs.current}, tree{lhs.tree}
+   iterator_inorder(const iterator_inorder& lhs) : current{lhs.current}, tree{lhs.tree}, pos{lhs.pos}
    {
    }
    
-   iterator_inorder(iterator_inorder&& lhs) : current{lhs.current}, stack{std::move(lhs.stack)}, tree{lhs.tree}
+   iterator_inorder(iterator_inorder&& lhs) : current{lhs.current}, tree{lhs.tree}
    {
        lhs.current = nullptr;
+       lhs.pos = position::end;
    }
    
    iterator_inorder& operator++() noexcept 
@@ -362,7 +305,22 @@ class iterator_inorder {  // This not efficient to copy due to the stack contain
 
       return tmp;
    } 
-     
+    
+   iterator_inorder& operator--() noexcept 
+   {
+      current = decrement();
+      return *this;
+   } 
+   
+   iterator_inorder operator--(int) noexcept
+   {
+      iterator_inorder tmp(*this);
+
+      current = decrement();
+
+      return tmp;
+   } 
+      
    reference operator*() const noexcept 
    { 
        return current->__get_value();
@@ -377,7 +335,7 @@ class iterator_inorder {  // This not efficient to copy due to the stack contain
 
    bool operator==(const iterator_inorder::sentinel& sent) const noexcept
    {
-      return stack.empty(); // We are done iterating when the stack becomes empty.
+      return ????; 
    }
    
    bool operator!=(const iterator_inorder::sentinel& lhs) const noexcept
