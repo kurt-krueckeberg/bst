@@ -185,29 +185,35 @@ _Rb_tree_increment(_Rb_tree_node_base* __x) throw ()
 }
 
 static _Rb_tree_node_base*
-_Rb_tree_increment(_Rb_tree_node_base* current) throw ()
+_Rb_tree_increment() 
 {
-    if (current->right) {
+  Node *__y = current;
+
+    if (__y->right) { // There is a right child, a greater value to the right
   
-        current = current->right.get();
+        __y = __y->right.get();
   
-        while (current->left)
-           current = current->left.get();
+        while (__y->left) // Get the last value in its left subtree.
+           __y = __y->left.get();
   
     } else {
   
-        auto __y = current->parent;
-  
-        while (current == __y->right.get()) {
-  
-            current = __y;
-            __y = __y->parent;
+        auto parent = __y->parent;
+
+        // Ascend to the first parent that is not a right-most child, 
+        // and thus is greater than __y 
+        while (__y == parent->right.get()) {
+
+            if (parent == tree.root.get()) // We reached the root -> there is not successor
+                return current;
+ 
+            __y = parent;
+
+            parent = parent->parent;
         }
-  
-        if (current->right.get() != __y)
-            current = __y;
     }
-    return current;
+
+    return __y;
 }
 
 
@@ -252,21 +258,65 @@ class iterator_inorder {  // This not efficient to copy due to the stack contain
 
    enum class position : char { start, neither, end };  
    position pos;
-  
- 
-   // See libc++ source code for rb_iterator.
-   iterator_inorder& increment() noexcept // Go to next node.
+
+   Node *increment() 
    {
-     // case 1: is leaf
-     if (current->is_leaf()) 
-         if (current == tree.root.get()) return *this; // root is leaf node
-         else {
+     Node *__y = current;
+   
+       if (__y->right) { // There is a right child, a greater value to the right
+     
+           __y = __y->right.get();
+     
+           while (__y->left) // Get the last value in its left subtree.
+              __y = __y->left.get();
+     
+       } else {
+     
+           auto parent = __y->parent;
+   
+           // Ascend to the first parent that is not a right-most child, 
+           // and thus is greater than __y 
+           while (__y == parent->right.get()) {
+   
+               if (parent == tree.root.get()) // We reached the root -> there is not successor
+                   return current;
+    
+               __y = parent;
+   
+               parent = parent->parent;
+           }
+       }
+   
+       return __y;
+   }
 
-        }
-      else { // current is internal node
-
-      }    
-      return *this;
+   // decrement
+   Node *decrement(_Rb_tree_node_base* __x) throw ()
+   {
+       if (__x->_M_color == _S_red && __x->_M_parent->_M_parent == __x)
+           __x = __x->_M_right;
+     
+       else if (__x->_M_left != 0) {
+     
+           _Rb_tree_node_base* __y = __x->_M_left;
+     
+           while (__y->_M_right != 0)
+             __y = __y->_M_right;
+     
+           __x = __y;
+     
+       } else {
+     
+           _Rb_tree_node_base* __y = __x->_M_parent;
+     
+           while (__x == __y->_M_left) {
+               __x = __y;
+               __y = __y->_M_parent;
+           }
+     
+           __x = __y;
+       }
+       return __x;
    }
 
   public:
@@ -280,9 +330,13 @@ class iterator_inorder {  // This not efficient to copy due to the stack contain
 
    explicit iterator_inorder(bstree<Key, Value>& bstree) : tree{bstree}
    {
-      current = bstree.root.get();
-      while(current->left) 
-         current->left.get();
+      auto __y = bstree.root.get();
+
+      while(__y->left) 
+         __y->left.get();
+
+      current = __y;
+      pos = start;
    }
    
    iterator_inorder(const iterator_inorder& lhs) : current{lhs.current}, tree{lhs.tree}
@@ -296,7 +350,7 @@ class iterator_inorder {  // This not efficient to copy due to the stack contain
    
    iterator_inorder& operator++() noexcept 
    {
-      increment();
+      current = increment();
       return *this;
    } 
    
@@ -304,7 +358,7 @@ class iterator_inorder {  // This not efficient to copy due to the stack contain
    {
       iterator_inorder tmp(*this);
 
-      increment();
+      current = increment();
 
       return tmp;
    } 
