@@ -59,8 +59,25 @@ int main(int argc, char** argv)
   };
 
   test_tree.preOrderIterative(null_functor);
-
+  cout << '\n';
+  cout << "\ntest_tree testing iterator_preorder  = ";
+ 
+  auto preiter = test_tree.begin_pre();
+  auto preend = test_tree.end_pre();
+  
+  // BUG: Gets stuck on -5 and next advances.
+  //for (;preiter != preend; ++preiter) {
+  while(1) {
+      
+      const auto&[key, value] = *preiter;  
+      cout << key << ",\n" << flush; 
+      ++preiter;
+  
+  }
+  
+  cout << '\n';
   cout << "\ntest_tree.postOrderIterative(key_printer) = ";
+ 
   
   test_tree.postOrderIterative(key_printer);
   
@@ -106,17 +123,6 @@ int main(int argc, char** argv)
     bal_tree.levelOrderTraverse(key_printer); // BUG <-- Why pass cout, when key_printer never uses this parameter! Providing only levelOrderTraverse() is sufficient.
   
   cout << "bal_tree::preorder_stack_iterator loop: for(iter =..; iter != iter_end; ++iter) = \n";
-  
-  auto preiter = bal_tree.begin_pre();
-  auto preend = bal_tree.end_pre();
-  
-  for (;preiter != preend; ++preiter) {
-      
-      const auto&[key, value] = *preiter;  
-      cout << key << ",\n" << flush;  
-  }
-  
-  cout << '\n';
   
   bal_tree.inOrderIterative(key_printer);
 

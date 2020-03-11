@@ -735,26 +735,11 @@ template<class Key, class Value> class bstree {
             __y = __y->right.get();
    
         else  { // current is a leaf node, find parent that is left childIf leaf node, ascend until ? 
-
-            auto parent = __y->parent;
-
-            while (__y == parent->right.get()) {
-		    
-		  // special case when the parent is the root.
-                  if (parent == tree.root.get()) 
-                      return current;  
-                    
-		  __y = parent;
-                  parent = __y->parent;
-	    }
-
-	    __y = parent; // __y is now ancestor parent and current is in its left subtree.
-
-	    if (__y->right)
-                __y = __y->right.get();
-	    else    
-                __y = current; // There is no next pre-order node.		   
-          }     
+                // Figure out using an illustration what has to be done to traversal the tree in pre-order. How do
+               // know a node has already been visisted? We can use a flag, but is there a way to do so without using a flag?
+            
+        }     
+        return __y;
       }     
       
      public:
