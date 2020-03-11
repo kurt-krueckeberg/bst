@@ -800,7 +800,14 @@ template<class Key, class Value> class bstree {
 
          return __y;
       } 
-      
+ 
+      Node *max(Node *__y)  
+      {
+         while(__y->right) // Infinite loop.
+            __y = __y->right.get();
+
+         return __y;
+      }     
      public:
    
       using difference_type  = std::ptrdiff_t; 
@@ -815,7 +822,14 @@ template<class Key, class Value> class bstree {
          // Set current to nodee with smallest key.
          current = min(bstree.root.get());
       }
-      
+   
+      // Ctor for reverse iterators 
+      iterator_inorder(bstree<Key, Value>& bstree, int dummy) : tree{bstree}
+      {
+         // Set current to nodee with smallest key.
+         current = max(bstree.root.get());
+      }
+   
       iterator_inorder(const iterator_inorder& lhs) : current{lhs.current}, tree{lhs.tree}
       {
       }
@@ -825,8 +839,6 @@ template<class Key, class Value> class bstree {
           lhs.current = nullptr;
       }
       
-       // TODO: Are assignment operators required?
-
       iterator_inorder& operator++() noexcept 
       {
          current = increment(current);
@@ -874,7 +886,12 @@ template<class Key, class Value> class bstree {
       {
          return increment(current) == current ? true : false;
       }
-      
+    
+      bool operator==(const iterator_inorder::reverse_sentinel& rsent) noexcept
+      {
+         return decrement(current) == current ? true : false;
+      }
+       
       bool operator!=(const iterator_inorder::sentinel& lhs) noexcept
       {
         return !operator==(lhs);    
@@ -897,10 +914,22 @@ template<class Key, class Value> class bstree {
        return iter; 
    }
     
-    iterator_inorder::sentinel end() noexcept // TODO: Can I use a sentinel? a C++17 feature.
+    iterator_inorder::sentinel end() noexcept 
     {
         typename iterator_inorder::sentinel sent;
         return sent;
+    }
+   
+   iterator_inorder rbegin() noexcept
+   {
+       iterator_inorder iter{*this, int}; 
+       return iter; 
+   }
+    
+    iterator_inorder::reverse_sentinel rend() noexcept 
+    {
+        typename iterator_inorder::reverse_sentinel rsent;
+        return rsent;
     }
 };
 
@@ -908,7 +937,7 @@ template<class Key, class Value> class bstree {
 template<typename Key, typename Value>
 inline bool operator==(const typename bstree<Key, Value>::stack_iterator_inorder::sentinel& sent, const typename bstree<Key, Value>::stack_iterator_inorder& iter)  noexcept
 {
-     return iter == sent;    
+   return iter == sent;    
 }    
 
 /*
