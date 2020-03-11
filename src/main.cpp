@@ -107,8 +107,8 @@ int main(int argc, char** argv)
   
   cout << "bal_tree::preorder_stack_iterator loop: for(iter =..; iter != iter_end; ++iter) = \n";
   
-  auto preiter = bal_tree.pre_begin();
-  auto preend = bal_tree.pre_end();
+  auto preiter = bal_tree.begin_pre();
+  auto preend = bal_tree.end_pre();
   
   for (;preiter != preend; ++preiter) {
       

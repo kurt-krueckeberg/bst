@@ -55,7 +55,7 @@ class iterator_preorder {  // This not efficient to copy due to the stack contai
 
    }
    
-   iterator_preorder(const iterator_preorder& lhs) : current{lhs.current}, tree{lhs.tree}, pos{lhs.pos}
+   iterator_preorder(const iterator_preorder& lhs) : current{lhs.current}, tree{lhs.tree}
    {
    }
    
