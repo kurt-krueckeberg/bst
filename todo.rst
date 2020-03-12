@@ -1,7 +1,12 @@
 TODO
 ====
 
-Test iterator_preorder some more. Test it with a much bigger tree.
+* There is a bug in the current code related to iteration.
+* See TODO comments in code. They may be relevant to fixing the bug.
+* Test both iterator_inorder and iterator_preorder. Test both with 'big' trees.
+* Note: The iterator_inorder code does not support reverse iterator. Remove rbegin() and rend(). The extra complexity of supporting it is not worth the extra time.
+* The postorder destruction call by ~bstree() and bstree(conost bstree&) need to operator on 'Node *' and not 'bstree:value_type'
+* The preorder call in 'bstree(const bstree&)' needs to operator agains 'Node *' and not 'bstree:value_type'
 
 Sources to Read
 ---------------

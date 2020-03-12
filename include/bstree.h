@@ -837,12 +837,17 @@ template<class Key, class Value> class bstree {
        return sent;
    }
    
-   class iterator_inorder {  // This not efficient to copy due to the stack container inside it.
-   
+   // Note: the iterator_inorder class does not support reverse iteration yet.
+
+   // TODO: Make sure we support calling decrement() when we are at the beginning already.
+   // Maybe a state variable is the way to support this. But then we must remember to properly set the state to in_between when 
+   // it is not already.
+   class iterator_inorder {  
+       
       using node_type = bstree<Key, Value>::node_type;
    
       node_type *current;
-      bool at_end = false; // TODO: Change to rely on this flag. What about with reverse_iterator's?
+      bool at_end = false; // 
 
       bstree<Key, Value>& tree;
       
@@ -890,9 +895,9 @@ template<class Key, class Value> class bstree {
       Node *decrement()
       {
         // if (at_beg) ???
-         Node *__y = current; 
+         Node *__x = current; 
        
-         if (__x->left) { // There is a left child, a left subtree.
+         if (__x->left) { // Unlike increment() we check left child before right child. 
         
               auto __y = __x->left;
         
@@ -901,7 +906,7 @@ template<class Key, class Value> class bstree {
         
               __x = __y;
         
-          } else {
+          } else { // When we ascend, we look for a parent ancestor that is not a left child, unlike increment that looks for 'not a right child'.
         
               auto parent = __x->parent;
       
@@ -909,10 +914,13 @@ template<class Key, class Value> class bstree {
               // and thus is less than __x.
               while (__x == parent->left.get()) {
       
-                 if (parent == tree.root.get())  // The parent is the root -> there is no predecessor.
-                     return current;             // TODO: Do we set at_beginning for revese_iterator's?
+                 if (parent == tree.root.get()) { // The parent is the root -> there is no predecessor.
+
+                     //return current;             
+                     __x = current;
+                     break;
+                 }
                  
-      
                   __x = parent;
                   parent = parent->parent;
               }
@@ -1014,12 +1022,12 @@ template<class Key, class Value> class bstree {
    
       bool operator==(const iterator_inorder::sentinel& sent) noexcept
       {
-         return increment(current) == current ? true : false;
+         return increment() == current ? true : false;
       }
     
       bool operator==(const iterator_inorder::reverse_sentinel& rsent) noexcept
       {
-         return decrement(current) == current ? true : false;
+         return decrement() == current ? true : false;
       }
        
       bool operator!=(const iterator_inorder::sentinel& lhs) noexcept
@@ -1029,7 +1037,7 @@ template<class Key, class Value> class bstree {
    
       bool operator==(const iterator_inorder::reverse_sentinel& sent) const noexcept
       {
-         return decrement(current) == current ? true : false;
+         return decrement() == current ? true : false;
       }
       
       bool operator!=(const iterator_inorder::reverse_sentinel& lhs) const noexcept
