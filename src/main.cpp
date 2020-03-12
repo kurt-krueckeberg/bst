@@ -66,12 +66,9 @@ int main(int argc, char** argv)
   auto preend = test_tree.end_pre();
   
   // BUG: Gets stuck on -5 and next advances.
-  //for (;preiter != preend; ++preiter) {
-  while(1) {
-      
+  for (;preiter != preend; ++preiter) {
       const auto&[key, value] = *preiter;  
       cout << key << ",\n" << flush; 
-      ++preiter;
   
   }
   
