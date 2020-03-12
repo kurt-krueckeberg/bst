@@ -65,16 +65,17 @@ int main(int argc, char** argv)
   auto preiter = test_tree.begin_pre();
   auto preend = test_tree.end_pre();
   
-  // BUG: Gets stuck on -5 and next advances.
   for (;preiter != preend; ++preiter) {
       const auto&[key, value] = *preiter;  
+      
       cout << key << ",\n" << flush; 
   
   }
   
+  return 0;
+ 
   cout << '\n';
   cout << "\ntest_tree.postOrderIterative(key_printer) = ";
- 
   
   test_tree.postOrderIterative(key_printer);
   
@@ -87,10 +88,9 @@ int main(int argc, char** argv)
 
   for (auto& x : lst) 
       t2.insert(x, x);
-  
+    
   t2 = test_tree;
-  return 0;
-
+  
   cout << "\ntest_tree.inOrderIterative(key_printer) = ";
 
   test_tree.inOrderIterative(key_printer);

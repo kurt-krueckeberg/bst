@@ -527,7 +527,7 @@ template<class Key, class Value> class bstree {
        {
            lhs.current = nullptr;
        }
-       // TODO: Are assignment operators required?
+       
        stack_iterator_inorder& operator++() noexcept 
        {
           increment();
@@ -659,7 +659,6 @@ template<class Key, class Value> class bstree {
        {
            lhs.current = nullptr;
        }
-       // TODO: Are assignment operators required?
        
        preorder_stack_iterator& operator++() 
        {
@@ -721,6 +720,7 @@ template<class Key, class Value> class bstree {
       using node_type = bstree<Key, Value>::node_type;
    
       node_type *current;
+      bool at_end = false;
    
       bstree<Key, Value>& tree;
    
@@ -756,8 +756,9 @@ template<class Key, class Value> class bstree {
                 }
              } 
            } 
-        }
-        
+        } 
+        if (__y == current)
+            at_end = true;
         return __y;
      }     
       
@@ -813,7 +814,7 @@ template<class Key, class Value> class bstree {
    
       bool operator==(const iterator_preorder::sentinel& sent) noexcept
       {
-         return current == increment() ? true : false; 
+          return at_end; 
       }
       
       bool operator!=(const iterator_preorder::sentinel& lhs) noexcept
@@ -839,12 +840,12 @@ template<class Key, class Value> class bstree {
       using node_type = bstree<Key, Value>::node_type;
    
       node_type *current;
-     
+      bool at_end = false; // TODO: Change to rely on this flag. What about with reverse_iterator's?
+
       bstree<Key, Value>& tree;
       
       Node *increment(Node *__y)
       {
-      
           if (__y->right) { // current has a right child, a greater value to the right
         
               __y = __y->right.get();
@@ -861,7 +862,7 @@ template<class Key, class Value> class bstree {
               while (__y == parent->right.get()) {
       
                   if (parent == tree.root.get()) { // We reached the root -> there is no successor
-                      
+                      at_end = true; 
                       return current;
                   }
        
@@ -898,7 +899,7 @@ template<class Key, class Value> class bstree {
               while (__x == parent->left.get()) {
       
                  if (parent == tree.root.get())  // The parent is the root -> there is no predecessor.
-                     return current;
+                     return current;             // TODO: Do we set at_beginning for revese_iterator's?
                  
       
                   __x = parent;
