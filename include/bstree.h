@@ -846,8 +846,12 @@ template<class Key, class Value> class bstree {
 
       bstree<Key, Value>& tree;
       
-      Node *increment(Node *__y)
+      Node *increment()
       {
+          if (at_end) return current;
+
+          Node *__y = current;
+
           if (__y->right) { // current has a right child, a greater value to the right
         
               __y = __y->right.get();
@@ -864,8 +868,8 @@ template<class Key, class Value> class bstree {
               while (__y == parent->right.get()) {
       
                   if (parent == tree.root.get()) { // We reached the root -> there is no successor
-                      at_end = true; 
-                      return current;
+                      __y = current;
+                      break; //return current;
                   }
        
                   __y = parent;
@@ -875,13 +879,18 @@ template<class Key, class Value> class bstree {
    
               __y = parent; // First parent ancestor that is not a right child. 
           }
-      
+
+          if (__y == current) 
+             at_end = true;
+          
           return __y;
       }
    
       // decrement
-      Node *decrement(Node *__x)
+      Node *decrement()
       {
+        // if (at_beg) ???
+         Node *__y = current; 
        
          if (__x->left) { // There is a left child, a left subtree.
         
@@ -910,7 +919,7 @@ template<class Key, class Value> class bstree {
         
               __x = parent; // Set __x to first parent less than __x.
           }
-           
+          // if (??) at_beg = true? 
           return __x;
       }
 
@@ -962,7 +971,7 @@ template<class Key, class Value> class bstree {
       
       iterator_inorder& operator++() noexcept 
       {
-         current = increment(current);
+         current = increment();
          return *this;
       } 
       
@@ -970,14 +979,14 @@ template<class Key, class Value> class bstree {
       {
          iterator_inorder tmp(*this);
    
-         current = increment(current);
+         current = increment();
    
          return tmp;
       } 
        
       iterator_inorder& operator--() noexcept 
       {
-         current = decrement(current);
+         current = decrement();
          return *this;
       } 
       
