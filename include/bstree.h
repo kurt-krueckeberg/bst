@@ -847,14 +847,15 @@ template<class Key, class Value> class bstree {
       using node_type = bstree<Key, Value>::node_type;
    
       node_type *current;
-      bool at_end = false; // 
+      bool at_end = false; 
 
-      bstree<Key, Value>& tree;
+      bstree<Key, Value> &tree;
       
       Node *increment()
       {
-          if (at_end) return current;
-
+          if (current == nullptr || at_end)
+              return current;
+          
           Node *__y = current;
 
           if (__y->right) { // current has a right child, a greater value to the right
@@ -872,11 +873,9 @@ template<class Key, class Value> class bstree {
               // and thus is greater than __y 
               while (__y == parent->right.get()) {
       
-                  if (parent == tree.root.get()) { // We reached the root -> there is no successor
-                      __y = current;
-                      break; //return current;
-                  }
-       
+                  if (parent == tree.root.get())  // We reached the root -> there is no successor
+                      return current;
+                         
                   __y = parent;
       
                   parent = parent->parent;
@@ -885,13 +884,9 @@ template<class Key, class Value> class bstree {
               __y = parent; // First parent ancestor that is not a right child. 
           }
 
-          if (__y == current) 
-             at_end = true;
-          
           return __y;
       }
-   
-      // decrement
+      
       Node *decrement()
       {
         // if (at_beg) ???
@@ -899,10 +894,10 @@ template<class Key, class Value> class bstree {
        
          if (__x->left) { // Unlike increment() we check left child before right child. 
         
-              auto __y = __x->left;
+              auto __y = __x->left.get();
         
               while (__y->right) // Get its largest value. This is the predecessor to current.
-                __y = __y->right;
+                __y = __y->right.get();
         
               __x = __y;
         
@@ -914,12 +909,8 @@ template<class Key, class Value> class bstree {
               // and thus is less than __x.
               while (__x == parent->left.get()) {
       
-                 if (parent == tree.root.get()) { // The parent is the root -> there is no predecessor.
-
-                     //return current;             
-                     __x = current;
-                     break;
-                 }
+                 if (parent == tree.root.get()) // The parent is the root -> there is no predecessor.
+                     return current;             
                  
                   __x = parent;
                   parent = parent->parent;
@@ -927,7 +918,7 @@ template<class Key, class Value> class bstree {
         
               __x = parent; // Set __x to first parent less than __x.
           }
-          // if (??) at_beg = true? 
+
           return __x;
       }
 
@@ -955,6 +946,11 @@ template<class Key, class Value> class bstree {
           
       using iterator_category = std::bidirectional_iterator_tag; 
    
+      iterator_inorder() : current{nullptr}, at_end{true}
+      {
+
+      }
+
       explicit iterator_inorder(bstree<Key, Value>& bstree) : tree{bstree}
       {
          // Set current to nodee with smallest key.
@@ -962,24 +958,38 @@ template<class Key, class Value> class bstree {
       }
    
       // Ctor for reverse iterators 
+      /*
       iterator_inorder(bstree<Key, Value>& bstree, int dummy) : tree{bstree}
       {
          // Set current to nodee with smallest key.
          current = max(bstree.root.get());
       }
+      */
    
-      iterator_inorder(const iterator_inorder& lhs) : current{lhs.current}, tree{lhs.tree}
+      iterator_inorder(const iterator_inorder& lhs) : current{lhs.current}, tree{lhs.tree}, at_end{lhs.at_end}
       {
       }
       
-      iterator_inorder(iterator_inorder&& lhs) : current{lhs.current}, tree{lhs.tree}
+      iterator_inorder& operator=(const iterator_inorder& lhs)
       {
-          lhs.current = nullptr;
+          if (this == &lhs) return *this;
+
+          current = lhs.current;
+          tree = lhs.tree;
+          at_end = lhs.at_end;
+
+          return *this;
       }
-      
+ 
       iterator_inorder& operator++() noexcept 
       {
-         current = increment();
+         auto next = increment();
+         
+         if (current == next) 
+             at_end = true;
+         else
+             current = next; 
+        
          return *this;
       } 
       
@@ -1022,11 +1032,12 @@ template<class Key, class Value> class bstree {
    
       bool operator==(const iterator_inorder::sentinel& sent) noexcept
       {
-         return increment() == current ? true : false;
+         return at_end; //increment() == current ? true : false;
       }
     
       bool operator==(const iterator_inorder::reverse_sentinel& rsent) noexcept
       {
+         //return at_beg; // ???? 
          return decrement() == current ? true : false;
       }
        

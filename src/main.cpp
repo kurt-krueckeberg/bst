@@ -39,11 +39,37 @@ int main(int argc, char** argv)
   test_tree.inOrderTraverse(key_printer);
   
   cout << "for (auto& [key, value] : test_tree) cout << key " << endl; 
+  
+  auto iter_end = test_tree.end();
+   
+//  for (auto& [key, value] : test_tree) {
+    auto iter = test_tree.begin();
+    
+    for (; iter != iter_end; ++iter) {
 
-  for (auto& [key, value] : test_tree) 
-      cout << key << ", " << flush;
+      auto& [key, value] = *iter;
+
+      if (key == 60) {
+          auto debug = 10;
+          ++debug;
+      }
+      cout << key << ", \n" << flush;
+  }
  
   cout << '\n' << flush;
+  
+  decltype(iter) iter2;
+  iter2 = iter;
+  
+  iter = test_tree.begin();
+  
+  auto& [key, value] = *iter;
+  
+  cout << key << endl;
+  
+  --iter;        
+  
+  cout << key << endl;
 
   cout << "\ntest_tree.preOrderTraverse(key_printer) = ";
 
