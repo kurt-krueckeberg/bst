@@ -726,6 +726,8 @@ template<class Key, class Value> class bstree {
    
       Node *increment() 
       {
+        if (at_end) return current;
+
         Node *__y = current;
       
         if (__y->left) // Prefer left child
