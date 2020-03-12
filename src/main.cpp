@@ -42,18 +42,17 @@ int main(int argc, char** argv)
   
   auto iter_end = test_tree.end();
    
-//  for (auto& [key, value] : test_tree) {
-    auto iter = test_tree.begin();
-    
-    for (; iter != iter_end; ++iter) {
+  auto iter = test_tree.begin();
+  
+  for (; iter != iter_end; ++iter) {
 
-      auto& [key, value] = *iter;
+    auto& [key, value] = *iter;
 
-      if (key == 60) {
-          auto debug = 10;
-          ++debug;
-      }
-      cout << key << ", \n" << flush;
+    if (key == 60) {
+        auto debug = 10;
+        ++debug;
+    }
+    cout << key << ", \n" << flush;
   }
  
   cout << '\n' << flush;
@@ -70,6 +69,21 @@ int main(int argc, char** argv)
   --iter;        
   
   cout << key << endl;
+
+  cout << "testing bstree reverse iteration." << endl;
+  auto riter = test_tree.rbegin();
+  
+  for (; riter != test_tree.rend(); ++iter) {
+
+    auto& [key, value] = *riter;
+
+    if (key == 60) {
+        auto debug = 10;
+        ++debug;
+    }
+
+    cout << key << ", \n" << flush;
+  }
 
   cout << "\ntest_tree.preOrderTraverse(key_printer) = ";
 

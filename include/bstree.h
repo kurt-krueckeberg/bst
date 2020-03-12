@@ -831,7 +831,7 @@ template<class Key, class Value> class bstree {
       return iter; 
    }
    
-   iterator_preorder::sentinel end_pre() noexcept // TODO: Can I use a sentinel? a C++17 feature.
+   iterator_preorder::sentinel end_pre() noexcept 
    {
        typename iterator_preorder::sentinel sent;
        return sent;
@@ -946,6 +946,7 @@ template<class Key, class Value> class bstree {
          return __y;
       }     
 
+
      public:
    
       using difference_type  = std::ptrdiff_t; 
@@ -969,30 +970,27 @@ template<class Key, class Value> class bstree {
          } else { 
 
            pos = position::between;
-           // Set current to nodee with smallest key.
+           // Set current to node with smallest key.
            current = min(ptree->root.get());
          }
       } 
+      
+      // Ctor for return the iterator_inorder returned by end();  
+      iterator_inorder(bstree<Key, Value>& tree, int dummy) : ptree{&tree}
+      {
+          pos = position::at_end; 
+          
+         if (ptree->root == nullptr) 
+             current = nullptr;
+         else 
+           // Set current to node with largest key.
+           current = max(ptree->root.get());
+      }
 
       iterator_inorder(const iterator_inorder& lhs) : current{lhs.current}, ptree{lhs.ptree}, pos{lhs.pos}
       {
       }
    
-      // Ctor for reverse iterators 
-      iterator_inorder(bstree<Key, Value>& bsptree, int dummy) : ptree{bsptree}
-      {
-         if (ptree->root == nullptr) {
-
-             pos = position::at_beg; 
-             current = nullptr;
-         } else { 
-               
-           pos = position::between; 
-           // Set current to nodee with smallest key.
-
-           current = max(ptree->root.get());
-         }
-      }
         
       iterator_inorder& operator=(const iterator_inorder& lhs)
       {
@@ -1063,28 +1061,17 @@ template<class Key, class Value> class bstree {
       { 
          return &(operator*()); 
       } 
-     
-      struct sentinel {}; // Use for determining "at end" in 'bool operator==(const iterator_inorder&) const' below
-      struct reverse_sentinel {}; // Use for determining "at beginning" in 'bool operator==(const iterator_inorder&) const' below
    
-      bool operator==(const iterator_inorder::sentinel& sent) noexcept
+      friend bool
+      operator==(const iterator_inorder& __x, const iterator_inorder& __y) noexcept
       {
-         return pos == position::at_end ? true : false;
+        return __x.current == __y.current && __x.pos == __y.pos;
       }
-    
-      bool operator==(const iterator_inorder::reverse_sentinel& rsent) noexcept
+
+      friend bool
+      operator!=(const iterator_inorder& __x, const iterator_inorder& __y) noexcept 
       {
-         return pos = position::at_beg ? true : false;
-      }
-       
-      bool operator!=(const iterator_inorder::sentinel& lhs) noexcept
-      {
-        return !operator==(lhs);    
-      }
-   
-      bool operator!=(const iterator_inorder::reverse_sentinel& lhs) const noexcept
-      {
-        return !operator==(lhs);    
+         return !operator==(__x, __y); 
       }
    };
    
@@ -1094,23 +1081,37 @@ template<class Key, class Value> class bstree {
        return iter; 
    }
     
-    iterator_inorder::sentinel end() noexcept 
-    {
-        typename iterator_inorder::sentinel sent;
-        return sent;
-    }
-   
-   iterator_inorder rbegin() noexcept
+   iterator_inorder end() noexcept 
    {
-       iterator_inorder iter{*this, 0}; 
-       return iter; 
+       iterator_inorder iter{*this, 1};
+       return iter;  
    }
+   
+   using reverse_iterator = std::reverse_iterator<iterator_inorder>;
+   /*
+   TODO: 
+     Should be able to call:
+     make_reverse_iterator(v.end()):
+     make_reverse_iterator(v.begin()):
+   
+         copy(
+   
+         std::make_reverse_iterator(v.end()), 
+         std::make_reverse_iterator(v.begin()),
+         std::ostream_iterator<int>(std::cout, ", ")
+   
+         );
+   */
     
-    iterator_inorder::reverse_sentinel rend() noexcept 
-    {
-        typename iterator_inorder::reverse_sentinel rsent;
-        return rsent;
-    }
+   reverse_iterator rbegin() noexcept  
+   {
+      return std::make_reverse_iterator(this->end());
+   }    
+
+   reverse_iterator rend() noexcept
+   {
+      return std::make_reverse_iterator(this->begin());
+   }    
 };
 
 // pprovided for symmetry

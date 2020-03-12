@@ -2,7 +2,7 @@ TODO
 ====
 
 
-* Test iterator_inorder further.
+* Test iterator_inorder further. Test begin(), end(), rbegin() and rend().
 * Implement reverse iteration for interator_inorder.
 * Check any TODOs
 * Test both iterator_inorder and iterator_preorder. Test both with 'big' trees.
