@@ -2,8 +2,9 @@ TODO
 ====
 
 
-* iterator_inorder needs tp handle the case when operator--() is called and we are already at the the first element. See TODO in code.
-* See TODO comments in code. They may be relevant to fixing the bug.
+* Test iterator_inorder further.
+* Implement reverse iteration for interator_inorder.
+* Check any TODOs
 * Test both iterator_inorder and iterator_preorder. Test both with 'big' trees.
 * Note: The iterator_inorder code does not support reverse iterator. Remove rbegin() and rend(). The extra complexity of supporting it is not worth the extra time.
 * The postorder destruction call by ~bstree() and bstree(conost bstree&) need to operator on 'Node *' and not 'bstree:value_type'

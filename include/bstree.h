@@ -847,13 +847,15 @@ template<class Key, class Value> class bstree {
       using node_type = bstree<Key, Value>::node_type;
    
       node_type *current;
-      bool at_end = false; 
 
+      enum class position {at_beg, between, at_end};
+      position pos;
+  
       bstree<Key, Value> *ptree;
       
       Node *increment()
       {
-          if (current == nullptr || at_end)
+          if (current == nullptr || pos == position::at_end) 
               return current;
           
           Node *__y = current;
@@ -889,7 +891,9 @@ template<class Key, class Value> class bstree {
       
       Node *decrement()
       {
-        // if (at_beg) ???
+         if (current == nullptr || pos == position::at_beg) 
+             return current;
+
          Node *__x = current; 
        
          if (__x->left) { // Unlike increment() we check left child before right child. 
@@ -924,7 +928,9 @@ template<class Key, class Value> class bstree {
 
       Node *min(Node *__y)  
       {
-         while(__y->left) // Infinite loop.
+         if (__y == nullptr) return __y;
+
+         while(__y->left) 
             __y = __y->left.get();
 
          return __y;
@@ -932,11 +938,14 @@ template<class Key, class Value> class bstree {
  
       Node *max(Node *__y)  
       {
-         while(__y->right) // Infinite loop.
+         if (__y == nullptr) return __y;
+
+         while(__y->right) 
             __y = __y->right.get();
 
          return __y;
       }     
+
      public:
    
       using difference_type  = std::ptrdiff_t; 
@@ -946,36 +955,53 @@ template<class Key, class Value> class bstree {
           
       using iterator_category = std::bidirectional_iterator_tag; 
    
-      iterator_inorder() : current{nullptr}, ptree{nullptr}, at_end{true}
+      iterator_inorder() : current{nullptr}, ptree{nullptr}, pos{position::at_end}
       {
       }
 
       explicit iterator_inorder(bstree<Key, Value>& tree) : ptree{&tree}
+      { 
+         if (ptree->root == nullptr) {
+
+             pos = position::at_end; 
+             current = nullptr;
+
+         } else { 
+
+           pos = position::between;
+           // Set current to nodee with smallest key.
+           current = min(ptree->root.get());
+         }
+      } 
+
+      iterator_inorder(const iterator_inorder& lhs) : current{lhs.current}, ptree{lhs.ptree}, pos{lhs.pos}
       {
-         // Set current to nodee with smallest key.
-         current = min(ptree->root.get());
       }
    
       // Ctor for reverse iterators 
-      /*
-      iterator_inorder(bsptree<Key, Value>& bsptree, int dummy) : ptree{bsptree}
+      iterator_inorder(bstree<Key, Value>& bsptree, int dummy) : ptree{bsptree}
       {
-         // Set current to nodee with smallest key.
-         current = max(bstree->root.get());
+         if (ptree->root == nullptr) {
+
+             pos = position::at_beg; 
+             current = nullptr;
+         } else { 
+               
+           pos = position::between; 
+           // Set current to nodee with smallest key.
+
+           current = max(ptree->root.get());
+         }
       }
-      */
-   
-      iterator_inorder(const iterator_inorder& lhs) : current{lhs.current}, ptree{lhs.ptree}, at_end{lhs.at_end}
-      {
-      }
-      
+        
       iterator_inorder& operator=(const iterator_inorder& lhs)
       {
-          if (this == &lhs) return *this;
+          if (this == &lhs)
+              return *this;
 
           current = lhs.current;
           ptree = lhs.ptree;
-          at_end = lhs.at_end;
+          pos = lhs.pos; 
 
           return *this;
       }
@@ -984,11 +1010,14 @@ template<class Key, class Value> class bstree {
       {
          auto next = increment();
          
-         if (current == next) 
-             at_end = true;
-         else
+         if (next == current) 
+             pos = position::at_end;
+
+         else {
+
              current = next; 
-        
+             pos = position::between;
+         } 
          return *this;
       } 
       
@@ -996,19 +1025,23 @@ template<class Key, class Value> class bstree {
       {
          iterator_inorder tmp(*this);
    
-         current = increment();
+         operator++();
    
          return tmp;
       } 
        
       iterator_inorder& operator--() noexcept 
       {
-         auto next = decrement();
-         /*
-         TODO: This signals we were already at the beginning. Do we need a state variable?
-         if (next == current)
-          */ 
-         current = next;
+         auto prev = decrement();
+         
+         if (prev == current) 
+             pos = position::at_beg;
+         else {
+
+             current = prev; 
+             pos = position::between;
+         } 
+        
          return *this;
       } 
       
@@ -1016,7 +1049,7 @@ template<class Key, class Value> class bstree {
       {
          iterator_inorder tmp(*this);
    
-         current = decrement();
+         operator--();
    
          return tmp;
       } 
@@ -1036,13 +1069,12 @@ template<class Key, class Value> class bstree {
    
       bool operator==(const iterator_inorder::sentinel& sent) noexcept
       {
-         return at_end; //increment() == current ? true : false;
+         return pos == position::at_end ? true : false;
       }
     
       bool operator==(const iterator_inorder::reverse_sentinel& rsent) noexcept
       {
-         //return at_beg; // ???? 
-         return decrement() == current ? true : false;
+         return pos = position::at_beg ? true : false;
       }
        
       bool operator!=(const iterator_inorder::sentinel& lhs) noexcept
@@ -1050,11 +1082,6 @@ template<class Key, class Value> class bstree {
         return !operator==(lhs);    
       }
    
-      bool operator==(const iterator_inorder::reverse_sentinel& sent) const noexcept
-      {
-         return decrement() == current ? true : false;
-      }
-      
       bool operator!=(const iterator_inorder::reverse_sentinel& lhs) const noexcept
       {
         return !operator==(lhs);    
