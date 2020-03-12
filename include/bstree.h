@@ -724,7 +724,42 @@ template<class Key, class Value> class bstree {
    
       bstree<Key, Value>& tree;
    
-      Node *increment(); 
+      Node *increment() 
+      {
+        Node *__y = current;
+      
+        if (__y->left) // Prefer left child
+            __y = __y->left.get();
+        else if (__y->right) // otherwise, the right 
+            __y = __y->right.get();
+      
+        else  { // current is a leaf node
+      
+           // If leaf is a left child and it's parent has a right child, make it current
+           if (current == current->parent->left.get() && current->parent->right) 
+               
+                  __y = current->parent->right.get();
+             
+           else {// leaf is a right child (or a left child whose parent does not have a right child). Ascend the parent chain until we find a parent whose right child's key > current->key()
+             
+             for(auto parent = __y->parent; 1; parent = parent->parent) {
+      
+                // When parent's key is > current->key(), we know we are high enough in the parent chain to test if the parent has a right child whose key > current->key()
+                // We simply combine all three of these tests in one if-test. 
+                if (parent->right && parent->key() > current->key() && parent->right->key() > current->key()) { 
+                     __y = parent->right.get();
+                     break; // break out of while loop
+                } 
+                if (parent == tree.root.get()) {
+                    __y = current; // there is no next pre-order node because we ascended to the root and the root's right child is < current->key()
+                    break; 
+                }
+             } 
+           } 
+        }
+        
+        return __y;
+     }     
       
      public:
    
@@ -1015,43 +1050,6 @@ template<class Key, class Value> class bstree {
         return rsent;
     }
 };
-template<typename Key, typename Value> typename bstree<Key, Value>::Node *bstree<Key, Value>::iterator_preorder::increment() 
-{
-  Node *__y = current;
-
-  if (__y->left) // Prefer left child
-      __y = __y->left.get();
-  else if (__y->right) // otherwise, the right 
-      __y = __y->right.get();
-
-  else  { // current is a leaf node
-
-     // If leaf is a left child and it's parent has a right child, make it current
-     if (current == current->parent->left.get() && current->parent->right) 
-         
-            __y = current->parent->right.get();
-       
-     else {// leaf is a right child (or a left child whose parent does not have a right child). Ascend the parent chain until we find a parent whose right child's key > current->key()
-       
-       for(auto parent = __y->parent; 1; parent = parent->parent){
-         //auto parent = __y->parent;
-         //while (1) {
-   
-          if (parent->right && parent->key() > current->key() && parent->right->key() > current->key()) { // parent has right child with a key > current->key()
-               __y = parent->right.get();
-               break; // break out of while loop
-          } 
-          if (parent == tree.root.get()) {
-              __y = current; // there is no next pre-order node because we ascended to the root and the root's right child is < current->key()
-              break; 
-          }
-          
-       } 
-     } 
-  }
-  
-  return __y;
-}     
 
 // pprovided for symmetry
 template<typename Key, typename Value>
