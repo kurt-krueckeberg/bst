@@ -1,8 +1,8 @@
 TODO
 ====
 
-* iterator_inorder needs a default copy ctor and an assigment operator, which menas the 'tree' cannot be a reference. It must be a raw pointer.
-* How does iterator_inorder handle the case when operator--() is called and we are already at the the first element?
+
+* iterator_inorder needs tp handle the case when operator--() is called and we are already at the the first element. See TODO in code.
 * See TODO comments in code. They may be relevant to fixing the bug.
 * Test both iterator_inorder and iterator_preorder. Test both with 'big' trees.
 * Note: The iterator_inorder code does not support reverse iterator. Remove rbegin() and rend(). The extra complexity of supporting it is not worth the extra time.

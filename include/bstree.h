@@ -849,7 +849,7 @@ template<class Key, class Value> class bstree {
       node_type *current;
       bool at_end = false; 
 
-      bstree<Key, Value> &tree;
+      bstree<Key, Value> *ptree;
       
       Node *increment()
       {
@@ -862,7 +862,7 @@ template<class Key, class Value> class bstree {
         
               __y = __y->right.get();
         
-              while (__y->left) // Get the smallest value in its right subtree, the smallest value in the r. subtree.
+              while (__y->left) // Get the smallest value in its right subptree, the smallest value in the r. subptree.
                  __y = __y->left.get();
         
           } else {
@@ -873,7 +873,7 @@ template<class Key, class Value> class bstree {
               // and thus is greater than __y 
               while (__y == parent->right.get()) {
       
-                  if (parent == tree.root.get())  // We reached the root -> there is no successor
+                  if (parent == ptree->root.get())  // We reached the root -> there is no successor
                       return current;
                          
                   __y = parent;
@@ -909,7 +909,7 @@ template<class Key, class Value> class bstree {
               // and thus is less than __x.
               while (__x == parent->left.get()) {
       
-                 if (parent == tree.root.get()) // The parent is the root -> there is no predecessor.
+                 if (parent == ptree->root.get()) // The parent is the root -> there is no predecessor.
                      return current;             
                  
                   __x = parent;
@@ -946,27 +946,26 @@ template<class Key, class Value> class bstree {
           
       using iterator_category = std::bidirectional_iterator_tag; 
    
-      iterator_inorder() : current{nullptr}, at_end{true}
+      iterator_inorder() : current{nullptr}, ptree{nullptr}, at_end{true}
       {
-
       }
 
-      explicit iterator_inorder(bstree<Key, Value>& bstree) : tree{bstree}
+      explicit iterator_inorder(bstree<Key, Value>& tree) : ptree{&tree}
       {
          // Set current to nodee with smallest key.
-         current = min(bstree.root.get());
+         current = min(ptree->root.get());
       }
    
       // Ctor for reverse iterators 
       /*
-      iterator_inorder(bstree<Key, Value>& bstree, int dummy) : tree{bstree}
+      iterator_inorder(bsptree<Key, Value>& bsptree, int dummy) : ptree{bsptree}
       {
          // Set current to nodee with smallest key.
-         current = max(bstree.root.get());
+         current = max(bstree->root.get());
       }
       */
    
-      iterator_inorder(const iterator_inorder& lhs) : current{lhs.current}, tree{lhs.tree}, at_end{lhs.at_end}
+      iterator_inorder(const iterator_inorder& lhs) : current{lhs.current}, ptree{lhs.ptree}, at_end{lhs.at_end}
       {
       }
       
@@ -975,7 +974,7 @@ template<class Key, class Value> class bstree {
           if (this == &lhs) return *this;
 
           current = lhs.current;
-          tree = lhs.tree;
+          ptree = lhs.ptree;
           at_end = lhs.at_end;
 
           return *this;
@@ -1004,7 +1003,12 @@ template<class Key, class Value> class bstree {
        
       iterator_inorder& operator--() noexcept 
       {
-         current = decrement();
+         auto next = decrement();
+         /*
+         TODO: This signals we were already at the beginning. Do we need a state variable?
+         if (next == current)
+          */ 
+         current = next;
          return *this;
       } 
       
