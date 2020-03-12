@@ -969,7 +969,7 @@ template<class Key, class Value> class bstree {
 
          } else { 
 
-           pos = position::between;
+           pos = position::at_beg;
            // Set current to node with smallest key.
            current = min(ptree->root.get());
          }
@@ -1030,16 +1030,23 @@ template<class Key, class Value> class bstree {
        
       iterator_inorder& operator--() noexcept 
       {
-         auto prev = decrement();
+        
+         if (position::at_beg) 
+             return *this;
          
-         if (prev == current) 
-             pos = position::at_beg;
-         else {
+        //
+         ?? Not sure what to do.
+        auto prev = decrement();
+         
+        if (prev == current) 
+              pos = position::at_beg;
+           else {
 
              current = prev; 
              pos = position::between;
-         } 
-        
+            }   
+             
+         
          return *this;
       } 
       
