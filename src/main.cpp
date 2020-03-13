@@ -47,11 +47,6 @@ int main(int argc, char** argv)
   for (; iter != iter_end; ++iter) {
 
     auto& [key, value] = *iter;
-
-    if (key == 60) {
-        auto debug = 10;
-        ++debug;
-    }
     cout << key << ", \n" << flush;
   }
  
@@ -71,20 +66,18 @@ int main(int argc, char** argv)
   cout << key << endl;
 
   cout << "testing bstree reverse iteration." << endl;
-  auto riter = test_tree.rbegin();
   
-  for (; riter != test_tree.rend(); ++iter) {
+  // Check
+  auto riter = test_tree.rbegin();
+  auto riter_end = test_tree.rend();
+  
+  for (; riter != riter_end; ++riter) { // BUG: In decrement()
 
     auto& [key, value] = *riter;
 
-    if (key == 60) {
-        auto debug = 10;
-        ++debug;
-    }
-
     cout << key << ", \n" << flush;
   }
-
+  
   cout << "\ntest_tree.preOrderTraverse(key_printer) = ";
 
   test_tree.preOrderTraverse(key_printer);

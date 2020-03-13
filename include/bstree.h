@@ -1057,6 +1057,8 @@ template<class Key, class Value> class bstree {
             
               if (prev == current) 
                  pos = position::at_beg;
+              else
+                  current = prev;
              } 
              break;
          

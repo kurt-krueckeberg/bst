@@ -7,8 +7,7 @@ The behavior of accessing one-past-one, accessing an iterator equal to some_cont
    According to https://en.cppreference.com/w/cpp/container/vector/end: This element acts as a placeholder; attempting to access it results in undefined behavior. 
 
 * Test iterator_inorder both forward to end() and backward to begin() and one-past-begin() 
-* Design iterator_inorder so it works correctly with make_reverse_iterator. See the tree23 code. It works with reverse_iterators.
-
+* Test reverse_iterator<iterator_inorder> completely.
 
 Sources to Read
 ---------------
