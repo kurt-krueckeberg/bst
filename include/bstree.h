@@ -746,14 +746,16 @@ template<class Key, class Value> class bstree {
              
              for(auto parent = __y->parent; 1; parent = parent->parent) {
       
-                // When parent's key is > current->key(), we know we are high enough in the parent chain to test if the parent has a right child whose key > current->key()
-                // We simply combine all three of these tests in one if-test. 
+                // When parent's key is > current->key(), we are high enough in the parent chain to determine if the parent's right child's key > current->key().
+                // If it is, this is the preorder successor for the leaf node current. 
+
+                // Note: we combine all three tests--right child of parent exits, parent key is > current's, and parent's right child's key > current's--into one if-test. 
                 if (parent->right && parent->key() > current->key() && parent->right->key() > current->key()) { 
                      __y = parent->right.get();
-                     break; // break out of while loop
+                     break; 
                 } 
                 if (parent == tree.root.get()) {
-                    __y = current; // there is no next pre-order node because we ascended to the root and the root's right child is < current->key()
+                    __y = current; // There is no pre-order successor because we ascended to the root, and the root's right child is < current->key()
                     break; 
                 }
              } 
@@ -761,6 +763,7 @@ template<class Key, class Value> class bstree {
         } 
         if (__y == current)
             at_end = true;
+
         return __y;
      }     
       
@@ -837,11 +840,6 @@ template<class Key, class Value> class bstree {
        return sent;
    }
    
-   // Note: the iterator_inorder class does not support reverse iteration yet.
-
-   // TODO: Make sure we support calling decrement() when we are at the beginning already.
-   // Maybe a state variable is the way to support this. But then we must remember to properly set the state to in_between when 
-   // it is not already.
    class iterator_inorder {  
        
       using node_type = bstree<Key, Value>::node_type;
@@ -990,7 +988,6 @@ template<class Key, class Value> class bstree {
       iterator_inorder(const iterator_inorder& lhs) : current{lhs.current}, ptree{lhs.ptree}, pos{lhs.pos}
       {
       }
-   
         
       iterator_inorder& operator=(const iterator_inorder& lhs)
       {
@@ -1046,10 +1043,8 @@ template<class Key, class Value> class bstree {
                 break; 
             
              case position::at_end:
-             {
                  pos = position::between;
                  break;
-             }
    
              case position::between: 
              {     
@@ -1091,27 +1086,23 @@ template<class Key, class Value> class bstree {
       operator==(const iterator_inorder& __x, const iterator_inorder& __y) noexcept
       {
       
-        //--return __x.current == __y.current && __x.pos == __y.pos;
-        /* 
-          From tree23::iterator::operator==(const iterator&) 
-         */
-          if (__x.ptree == __y.ptree) {
-         
-             // If we are not in_between...check whether both iterators are at the end...
-             if (__x.pos == position::at_end && __y.pos == position::at_end) { 
-         
-                 return true;
-         
-             } else if (__x.pos == position::at_beg && __y.pos == position::at_beg) { // ...or at beg. 
-         
-                 return true;
-         
-             } else if (__x.pos == __y.pos && __x.current == __y.current) { // else check whether pos and current are all equal.
-                 return true;
-            }
+        if (__x.ptree == __y.ptree) {
+        
+           // If we are not in_between...check whether both iterators are at the end...
+           if (__x.pos == position::at_end && __y.pos == position::at_end) { 
+        
+               return true;
+        
+           } else if (__x.pos == position::at_beg && __y.pos == position::at_beg) { // ...or at beg. 
+        
+               return true;
+        
+           } else if (__x.pos == __y.pos && __x.current == __y.current) { // else check whether pos and current are all equal.
+               return true;
           }
-          
-          return false;
+        }
+        
+        return false;
       }
 
       friend bool
@@ -1134,21 +1125,7 @@ template<class Key, class Value> class bstree {
    }
    
    using reverse_iterator = std::reverse_iterator<iterator_inorder>;
-   /*
-   TODO: 
-     Should be able to call:
-     make_reverse_iterator(v.end()):
-     make_reverse_iterator(v.begin()):
    
-         copy(
-   
-         std::make_reverse_iterator(v.end()), 
-         std::make_reverse_iterator(v.begin()),
-         std::ostream_iterator<int>(std::cout, ", ")
-   
-         );
-   */
-    
    reverse_iterator rbegin() noexcept  
    {
       return std::make_reverse_iterator(this->end());
@@ -1168,53 +1145,6 @@ inline bool operator==(const typename bstree<Key, Value>::stack_iterator_inorder
 }    
 
 /*
-
- The Node copy ctor could be implemented recursively as below, but this results in more recursive calls and possible
- stack overflow than using a pre-order tree traversal that copies the input node. Therefore the default copy ctor 
- is deleted.
- 
-template<class Key, class Value>
-bstree<Key, Value>::Node::Node(const Node& lhs) : __vt{lhs.__vt}, left{nullptr}, right{nullptr}
-{
-   if (!lhs.parent) // If lhs is the root, then set parent to nullptr.
-       parent = nullptr;
-
-   // This will recursively invoke the constructor again, resulting in the entire tree rooted at
-   // lhs being copied.
-
-   if (lhs.left) 
-       connectLeft(*lhs.left); 
-   
-   if (lhs.right) 
-       connectRight(*lhs.right); 
-}
-*/
-
-/*
- The Node assignment operatorr could be implemented recursively as below, but this results in more recursive calls (and 
- possible stack overflow) than using a pre-order tree traversal that copies the input node. 
- 
-template<class Key, class Value> typename bstree<Key, Value>::Node&  bstree<Key, Value>::Node::operator=(const typename bstree<Key, Value>::Node& lhs) noexcept
-{
-   if (&lhs == this) return *this;
-
-   __vt = lhs.__vt;
-
-   if (lhs.parent == nullptr) // If we are copying a root pointer, then set parent.
-       parent = nullptr;
-
-   // The make_unique<Node> calls below results in the entire tree rooted at lhs being copied.
-   if (lhs.left) 
-       connectLeft(*lhs.left); 
-   
-   if (lhs.right)
-       connectRight(*lhs.right); 
-  
-   return *this;
-}
-*/
-
-/*
  The Node assignment operatorr could be implemented recursively as below, but this results more recursive calls than using
  a pre-order tree traversal that copies the input node. 
  */
@@ -1230,19 +1160,6 @@ template<class Key, class Value> typename bstree<Key, Value>::Node&  bstree<Key,
 
    copy_tree(lhs.root);
 
-/*
-   __vt = lhs.__vt;
-
-   if (lhs.parent == nullptr) // If we are copying a root pointer, then set parent.
-       parent = nullptr;
-
-   // The make_unique<Node> calls below results in the entire tree rooted at lhs being copied.
-   if (lhs.left) 
-       connectLeft(*lhs.left); 
-   
-   if (lhs.right)
-       connectRight(*lhs.right); 
-*/  
    return *this;
 }
 
