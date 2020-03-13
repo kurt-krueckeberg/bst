@@ -1742,18 +1742,40 @@ void bstree<Key, Value>::node_postOrderIterative(Functor f, std::unique_ptr<Node
 
     std::unique_ptr<Node>& __ref = get_unique_ptr(__y);  
     
+    /*
+     * We must do some if-test here, even though logically they would come after 'f(__ref)'
+     * The reason is, if f(__ref) does __ref.reset(), then __y is no longer a valid pointer.
+     */
+    bool __y_was_root = __y == root_in.get(); 
+    
+  
+    auto parent = __y->parent; 
+
+    bool parent_is_successor;
+   
+    if (parent)  {// not nullptr
+      // If given node is a right child of its parent or the parent's right is empty (implying the node is the left child and only child of its parent),
+      // then the parent is post-order successor.   
+      parent_is_successor = !parent->right || __y == parent->right.get();
+    }
+    
     f(__ref);
 
-    if (__y == root_in.get()) // done
+    if (__y_was_root)  // done
        break;
 
    // If given node is a right child of its parent or the parent's right is empty (implying the node is the left child and only child of its parent),
    // then the parent is post-order successor. 
+   /*
    auto parent = __y->parent; 
 
    if (!parent->right || __y == parent->right.get()) 
        __y = parent; 
    
+   */ 
+   if (parent_is_successor) 
+       __y = parent;  
+    
    else {
    
       // In all other cases, find the left-most child in the right substree of parent. 
