@@ -852,39 +852,38 @@ template<class Key, class Value> class bstree {
       using node_type = bstree<Key, Value>::node_type;
    
       node_type *current;
-      bool at_end = false;
-   
-      bstree<Key, Value>& tree;
-   
+
+      enum class position {at_beg, between, at_end};
+      position pos;
+  
+      bstree<Key, Value> *ptree;
+    
       Node *increment() 
       {
-          if (at_end || current == root.get()) return current;
+          if (current == nullptr || pos == position::at_end) return current;
            
           Node *__y = current;
-      
+        
           // If given node is the right child of its parent or parent's right is empty, then the 
           // parent is postorder successor. 
           auto parent = __y->parent; 
-       
+         
           if (!parent->right || __y == parent->right.get()) 
               __y = parent; 
           
           else {
-       
+         
              // In all other cases, find the left-most child in the right substree of parent. 
              auto pnode = parent->right.get(); 
           
              while (pnode->left) 
                  pnode = pnode->left.get(); 
-   
+     
               __y = parent;
           }          
-   
-         if (__y == current) // TODO: Or __y == ptree->root.get()?
-            at_end = true;
-   
-        return __y;
-     }     
+     
+          return __y;
+      }     
       
      public:
    
@@ -894,38 +893,66 @@ template<class Key, class Value> class bstree {
       using pointer          = value_type*;
           
       using iterator_category = std::forward_iterator_tag; 
-   
-      explicit iterator_postorder(bstree<Key, Value>& bstree) : tree{bstree}
-      {
-         if (root.get() 
-         current = min(root.get());
-         //...
-      }
-      
-      iterator_postorder(const iterator_postorder& lhs) : current{lhs.current}, tree{lhs.tree}
+    
+      iterator_postorder() : current{nullptr}, ptree{nullptr}, pos{position::at_end}
       {
       }
-      
-      iterator_postorder(iterator_postorder&& lhs) : current{lhs.current}, tree{lhs.tree}
+
+      explicit iterator_postorder(bstree<Key, Value>& tree) : ptree{&tree}
       {
-          lhs.current = nullptr;
+         if (ptree->root == nullptr) {
+
+             pos = position::at_end; 
+             current = nullptr;
+
+         } else { 
+
+           pos = position::at_beg;
+           // Set current to node with smallest key.
+           current = min(ptree->root.get());
+         }
+      }
+
+      // Ctor for return the iterator_inorder returned by end();  
+      iterator_postorder(bstree<Key, Value>& tree, int dummy) : ptree{&tree}
+      {
+          pos = position::at_end; 
+          
+         if (ptree->root == nullptr) 
+             current = nullptr;
+         else 
+            // Set current to root 
+            current = ptree->root.get();
+      }
+     
+      iterator_postorder(const iterator_postorder& lhs) : current{lhs.current}, ptree{lhs.ptree}, pos{lhs.pos}
+      {
       }
       
       iterator_postorder& operator++() noexcept 
       {
-         current = increment();
-         return *this;
-      } 
+        switch (pos) {
       
-      iterator_postorder operator++(int) noexcept
-      {
-         iterator_postorder tmp(*this);
-   
-         current = increment();
-   
-         return tmp;
-      } 
-         
+           case position::at_end:
+               break;
+            
+           case position::at_beg:
+           case position::between:
+           {
+               auto next = increment();
+
+               if (current == next) 
+                   pos = position::at_end;
+               else
+                 current = next; 
+           }
+           break;
+           default:
+                 break;
+         } 
+         return *this;
+      }
+        
       reference operator*() const noexcept 
       { 
           return current->__get_value(); // May want 'Node *' itself
@@ -940,7 +967,7 @@ template<class Key, class Value> class bstree {
    
       bool operator==(const iterator_postorder::sentinel& sent) noexcept
       {
-          return at_end; 
+          return (pos == position::at_end) ? true : false; 
       }
       
       bool operator!=(const iterator_postorder::sentinel& lhs) noexcept
