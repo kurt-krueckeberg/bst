@@ -3,7 +3,6 @@
 #include <iostream>
 #include <iomanip>
 #include <initializer_list>
-#include "test.h"
 #include "bstree.h"
 
 using namespace std;

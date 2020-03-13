@@ -1,11 +1,7 @@
 TODO
 ====
 
-
-The behavior of accessing one-past-one, accessing an iterator equal to some_container.end(), is undefined:
-
-   According to https://en.cppreference.com/w/cpp/container/vector/end: This element acts as a placeholder; attempting to access it results in undefined behavior. 
-
+* Implement: class iterator_postorder.
 * Test iterator_inorder both forward to end() and backward to begin() and one-past-begin() 
 * Test reverse_iterator<iterator_inorder> completely.
 

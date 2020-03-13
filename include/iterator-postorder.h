@@ -9,6 +9,13 @@
 #include <iostream>  
 #include <exception>
 #include <iterator>
+/*
+Sources:
+
+https://www.geeksforgeeks.org/postorder-successor-node-binary-tree/         <-- post-order successor logic w/o stack
+
+in file po.h
+*/
 
 class iterator_postorder {  // This not efficient to copy due to the stack container inside it.
 
@@ -21,41 +28,31 @@ class iterator_postorder {  // This not efficient to copy due to the stack conta
 
    Node *increment() 
    {
-     if (at_end) return curren
-     Node *__y = current;
+       if (at_end || current == root.get()) return current;
+        
+       Node *__y = current;
    
-     if (__y->left) // Prefer left child
-         __y = __y->left.get();
-     else if (__y->right) // otherwise, the right 
-         __y = __y->right.get();
-   
-     else  { // current is a leaf node
-   
-        // If leaf is a left child and it's parent has a right child, make it current
-        if (current == current->parent->left.get() && current->parent->right) 
-            
-               __y = current->parent->right.get();
-          
-        else {// leaf is a right child (or a left child whose parent does not have a right child). Ascend the parent chain until we find a parent whose right child's key > current->key()
-          
-          for(auto parent = __y->parent; 1; parent = parent->parent) {
-   
-             // When parent's key is > current->key(), we are high enough in the parent chain to determine if the parent's right child's key > current->key().
-             // If it is, this is the preorder successor for the leaf node current
-             // Note: we combine all three tests--right child of parent exits, parent key is > current's, and parent's right child's key > current's--into one if-test. 
-             if (parent->right && parent->key() > current->key() && parent->right->key() > current->key()) { 
-                  __y = parent->right.get();
-                  break; 
-             } 
-             if (parent == tree.root.get()) {
-                 __y = current; // There is no pre-order successor because we ascended to the root, and the root's right child is < current->key()
-                 break; 
-             }
-          } 
-        } 
-     } 
-     if (__y == current)
-         at_end = tru
+       // If given node is the right child of its parent or parent's right is empty, then the 
+       // parent is postorder successor. 
+       auto parent = __y->parent; 
+    
+       if (!parent->right || __y == parent->right.get()) 
+           __y = parent; 
+       
+       else {
+    
+          // In all other cases, find the left-most child in the right substree of parent. 
+          auto pnode = parent->right.get(); 
+       
+          while (pnode->left) 
+              pnode = pnode->left.get(); 
+
+           __y = parent;
+       }          
+
+      if (__y == current) // TODO: Or __y == ptree->root.get()?
+         at_end = true;
+
      return __y;
   }     
    
@@ -66,11 +63,13 @@ class iterator_postorder {  // This not efficient to copy due to the stack conta
    using reference        = value_type&; 
    using pointer          = value_type*;
        
-   using iterator_category = std::bidirectional_iterator_tag; 
+   using iterator_category = std::forward_iterator_tag; 
 
    explicit iterator_postorder(bstree<Key, Value>& bstree) : tree{bstree}
    {
-      current = bstree.root.get();
+      if (root.get() 
+      current = min(root.get());
+      //...
    }
    
    iterator_postorder(const iterator_postorder& lhs) : current{lhs.current}, tree{lhs.tree}
