@@ -89,15 +89,6 @@ int main(int argc, char** argv)
   
   cout << '\n' << flush;
   
-  cout << "\ntest_tree.node_postOrderIterative(node_printer) = ";
-  
-  auto node_printer = [](auto& node) {
-     auto&[key, value] = node->__get_value();
-     cout << key << endl;   
-  };
-  
-  test_tree.node_postOrderIterative(node_printer);
-  
   cout << '\n';
   cout << "\ntest_tree testing iterator_preorder  = ";
  

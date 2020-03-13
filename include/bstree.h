@@ -329,11 +329,6 @@ template<class Key, class Value> class bstree {
     {
       return (size == 0) ? true : false;
     }
-    //todo: remove 
-    template<typename Functor> void node_postOrderIterative(Functor f) noexcept
-    {
-        node_postOrderIterative(f, root);
-    }
 
     void test_invariant() const noexcept;
 
