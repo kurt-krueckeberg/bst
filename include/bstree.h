@@ -109,10 +109,12 @@ template<class Key, class Value> class bstree {
 
         Node(Node&&); // ...but we allow move assignment and move construction.
         /*
-          '~Node() = default;' implictily invokes the Node destructor for left and right, which results in the recursive destruction of the entire subtree rooted at *this. However,
-           this can cause stack overflow, especially if the Node being destructed is the root. To avoid this, ~bstree() calls destroy_subtree(root), which does a post-order traversal,
-           calling node.reset(). The unique_ptr<Node>::reset() will invoke the ~Node destructor, which will implicitly invoke the destructor left and right. However, the post-order
-           traversal ensures that left and right will already be nullptr (and thus no infinite recursion can occur).
+          '~Node() = default;' would implictily invoke the Node destructor for left and right, resulting in recursive destruction of the entire trees. This could
+           cause stack overflow. To avoid this, ~bstree() calls 
+
+                 node_postOrderIterator([](std::unique_ptr<Node>& ptr){ ptr.reset(); }, root)
+
+           which does an iterative post-order traversal, calling std::unique_ptr<Node>::reset(). 
          */
 
        ~Node() = default; // TODO: How can we make the dtor only delete  Node::__vt but not Node::left and Node::right
@@ -182,7 +184,7 @@ template<class Key, class Value> class bstree {
 
         __value_type<Key, Value> __vt;  // Convenience wrapper for std::pair<const Key, Value>
 
-        int __order;           // This is for education purposes only
+        int __order;     // This is for education purposes only
                               
         std::unique_ptr<Node> left;
         std::unique_ptr<Node> right;
@@ -223,7 +225,6 @@ template<class Key, class Value> class bstree {
               display_level(level);       
           }
 
-          //--do_print(pnode->__get_value());
           std::cout << std::setw(3) << std::right << pnode->key();
          
           std::cout << '\n' << std::flush;
@@ -299,8 +300,6 @@ template<class Key, class Value> class bstree {
   
     bstree() noexcept : root{nullptr}, size{0} { }
 
-    // While the default destructor successfully frees all nodes. A huge recursive call invokes every Node's destructor.
-    // will be invoke in one huge recursive call 
     ~bstree() noexcept
     {
        auto f = [] (std::unique_ptr<Node>& node) {
@@ -353,8 +352,6 @@ template<class Key, class Value> class bstree {
     Value& operator[](const Key& key) noexcept; 
 
     const Value& operator[](const Key& key) const noexcept; 
-
-    // TODO: Add emplace() methods and other methods like std::map have, like insert_or_assign().
 
     constexpr bool remove(Key key) noexcept
     {
@@ -586,12 +583,12 @@ template<class Key, class Value> class bstree {
        
        node_type *current;
     
-       const bstree<Key, Value>& tree; // TODO: This is not a const_iterator--right?
+       const bstree<Key, Value>& tree; // TODO: const is only needed for a const_iterator.
     
        preorder_stack_iterator& increment() 
        {
           if (stack.empty())
-                throw std::logic_error("No such element"); //TODO: logic_error?
+                throw std::logic_error("No such element"); 
         
            current = stack.top();
 
@@ -604,35 +601,7 @@ template<class Key, class Value> class bstree {
                stack.push(current->left.get());
         
            return *this;
-        
-         /* Alternate implementation
-          current = stack.top();
-          
-          if (current->left)       // If left not nullptr, push it onto stack.  
-          
-             stack.push(current->left.get());
-          
-          else {
-          
-             Node *tmp = stack.top();
-    
-             stack.pop(); 
-          
-             while (!tmp->right) {  // While tmp->right is nullptr
-          
-                if (stack.empty()) 
-                     return *this;  // current->__get_value();
-          
-                tmp = stack.top();
-                stack.pop();  
-             }
-          
-             stack.push(tmp->right.get());
-          }
-          
-          return *this;  
-          */ 
-       }  
+      }  
     
      public:
        // traits for forward iterator
@@ -648,7 +617,7 @@ template<class Key, class Value> class bstree {
           if (tree.root) {
     
               stack.push(tree.root.get());
-              increment();  // Set current
+              increment();  // Sets current
           }
        }
         
@@ -743,21 +712,23 @@ template<class Key, class Value> class bstree {
                
                   __y = current->parent->right.get();
              
-           else {// leaf is a right child (or a left child whose parent does not have a right child). Ascend the parent chain until we find a parent whose right child's key > current->key()
+           else {// leaf is a right child (or a left child whose parent does not have a right child).
+                 // Ascend the parent chain until we find a parent whose right child's key > current->key()
              
              for(auto parent = __y->parent; 1; parent = parent->parent) {
       
-                // When parent's key is > current->key(), we are high enough in the parent chain to determine if the parent's right child's key > current->key().
-                // If it is, this is the preorder successor for the leaf node current. 
+                // When parent's key is > current->key(), we are high enough in the parent chain to determine if the
+                // parent's right child's key > current->key(). If it is, this is the preorder successor for the leaf node current. 
 
-                // Note: we combine all three tests--right child of parent exits, parent key is > current's, and parent's right child's key > current's--into one if-test. 
+                // Note: we combine all three tests--right child of parent exits, parent key is > current's,
+                // and parent's right child's key > current's--into one if-test. 
                 if (parent->right && parent->key() > current->key() && parent->right->key() > current->key()) { 
                      __y = parent->right.get();
                      break; 
                 } 
                 if (parent == tree.root.get()) {
-                    __y = current; // There is no pre-order successor because we ascended to the root, and the root's right child is < current->key()
-                    break; 
+                    __y = current; // There is no pre-order successor because we ascended to the root,
+                    break;         // and the root's right child is < current->key().
                 }
              } 
            } 
@@ -841,11 +812,8 @@ template<class Key, class Value> class bstree {
        return sent;
    }
    /*
-     Sources:
-   
-      https://www.geeksforgeeks.org/postorder-successor-node-binary-tree/         <-- post-order successor logic w/o stack
-   
-      Code in include/po.h
+     Source for post-order successor logic w/o stack:
+     https://www.geeksforgeeks.org/postorder-successor-node-binary-tree/      
    */
    
    class iterator_postorder {  // This not efficient to copy due to the stack container inside it.
@@ -1508,8 +1476,7 @@ template<class Key, class Value> template<typename Functor> void bstree<Key, Val
    tracer.pop();
 }
 
-
-//TODO: Test
+// TODO: Replace with an iterative pre-order traversal version
 template<class Key, class Value>
 void bstree<Key, Value>::copy_tree(const std::unique_ptr<typename bstree<Key, Value>::Node>& root_in) noexcept
 {

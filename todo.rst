@@ -1,6 +1,8 @@
 TODO
 ====
 
+Implement pre-order and post-order iterative methods. Change the name of the current stack-based versions to indicate they are stack-based.
+
 Sources to Read
 ---------------
 
@@ -24,8 +26,6 @@ Using 'if consexpr' to implement one version:
    } else {
         std::throw
    } 
-
-
 
 Finish code to accurate set the recursion depth for ~bstree() and ~Node(), or use the debugger to follow the ~Node() calls to see how deep the recursion goes.
 
