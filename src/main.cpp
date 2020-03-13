@@ -82,15 +82,22 @@ int main(int argc, char** argv)
   test_tree.preOrderTraverse(key_printer);
 
   cout << "\ntest_tree.preOrderIterative(key_printer) = ";
+  cout << '\n';
+  cout << "\ntest_tree.postOrderIterative(key_printer) = ";
   
-  auto null_functor = [](const auto& pr) {
-      //const auto&[key, value] = pr;
-      
-      //cout << setw(3) << key << '\n';
-      return;
+  test_tree.postOrderIterative(key_printer);
+  
+  cout << '\n' << flush;
+  
+  cout << "\ntest_tree.node_postOrderIterative(node_printer) = ";
+  
+  auto node_printer = [](auto& node) {
+     auto&[key, value] = node->__get_value();
+     cout << key << endl;   
   };
-
-  test_tree.preOrderIterative(null_functor);
+  
+  test_tree.node_postOrderIterative(node_printer);
+  
   cout << '\n';
   cout << "\ntest_tree testing iterator_preorder  = ";
  
@@ -106,12 +113,7 @@ int main(int argc, char** argv)
   
   return 0;
  
-  cout << '\n';
-  cout << "\ntest_tree.postOrderIterative(key_printer) = ";
   
-  test_tree.postOrderIterative(key_printer);
-  
-  cout << '\n' << flush;
   
   std::initializer_list<int> lst = {100, 50, 200, 20, 70, 150, 250, -10, 40, 60, 90, 125, 175, 225, 275, -40, 10, 30, 45, 55, 65, 80, 95, 110, 130, 165, 190, 220, 230, 260, 290,\
     -70, -30, -5, 15, 25, 35, 42, 47, 52, 57, 62, 67, 92, 97, 105, 115, 127, 135, 160, 170, 180, 195, 210, 222, 227, 235, 260, 280 };

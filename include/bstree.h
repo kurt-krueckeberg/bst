@@ -152,18 +152,7 @@ template<class Key, class Value> class bstree {
             right = std::make_unique<Node>(node);    
             right->parent = this;
         }  
-
-    private:
-
-        __value_type<Key, Value> __vt;  // Convenience wrapper for std::pair<const Key, Value>
-
-        int __order;           // This is for education purposes only
-                              
-        std::unique_ptr<Node> left;
-        std::unique_ptr<Node> right;
-
-        Node *parent;
-
+        
         constexpr const value_type&  __get_value() const noexcept
         {
 	    return __vt.__get_value();
@@ -188,6 +177,18 @@ template<class Key, class Value> class bstree {
         { 
            return __get_value().second; 
         }
+
+    private:
+
+        __value_type<Key, Value> __vt;  // Convenience wrapper for std::pair<const Key, Value>
+
+        int __order;           // This is for education purposes only
+                              
+        std::unique_ptr<Node> left;
+        std::unique_ptr<Node> right;
+
+        Node *parent;
+
     }; 
 
    template<typename Printer> class LevelOrderPrinter {
@@ -327,6 +328,11 @@ template<class Key, class Value> class bstree {
     constexpr bool isEmpty() const noexcept
     {
       return (size == 0) ? true : false;
+    }
+    //todo: remove 
+    template<typename Functor> void node_postOrderIterative(Functor f) noexcept
+    {
+        node_postOrderIterative(f, root);
     }
 
     void test_invariant() const noexcept;
@@ -1325,8 +1331,8 @@ template<class Key, class Value> bstree<Key, Value>& bstree<Key, Value>::operato
 {
   if (this == &lhs)  return *this;
   
-  auto f = [] (std::unique_ptr<Node>& uptr) {
-      uptr.reset();
+  auto f = [] (std::unique_ptr<Node>& ptr) {
+      ptr.reset();
   };
   
   node_postOrderIterative(f, root);
@@ -1722,11 +1728,11 @@ An efficient solution is based on below observations.
  */
 template<class Key, class Value>
 template<typename Functor>
-void bstree<Key, Value>::node_postOrderIterative(Functor f, const std::unique_ptr<Node>& root_in) const
+void bstree<Key, Value>::node_postOrderIterative(Functor f, std::unique_ptr<Node>& root_in) noexcept
 {
    if (!root_in) return;
 
-   Node *__y == root_in.get();
+   Node *__y = root_in.get();
 
    // Go to min node in tree
    while (__y->left)
@@ -1734,7 +1740,9 @@ void bstree<Key, Value>::node_postOrderIterative(Functor f, const std::unique_pt
 
   while (__y != nullptr) {
 
-    f(__y);
+    std::unique_ptr<Node>& __ref = get_unique_ptr(__y);  
+    
+    f(__ref);
 
     if (__y == root_in.get()) // done
        break;
