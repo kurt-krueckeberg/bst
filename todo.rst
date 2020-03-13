@@ -1,6 +1,7 @@
 TODO
 ====
 
+* Fix compile error and test node_postOrderIterative().
 * Implement: class iterator_postorder.
 * Test iterator_inorder both forward to end() and backward to begin() and one-past-begin() 
 * Test reverse_iterator<iterator_inorder> completely.

@@ -1666,56 +1666,7 @@ post order iterative implementations
   https://www.techiedelight.com/postorder-tree-traversal-iterative-recursive/
 */
 
-/* 
- * Prospective post-order iterator.
- * Taken from pseudocode at https://en.wikipedia.org/wiki/Tree_traversal
 
- * Note: This algorithm that requires a parent pointer eliminates the need for a stack enitrely:
- * See: https://www.perlmonks.org/?node_id=600456
- */
-
-template<class Key, class Value>
-template<typename Visitor>
-void bstree<Key, Value>::node_postOrderIterative(Visitor visit, std::unique_ptr<Node>& root_in) noexcept
-{
-  Node *pnode = root_in.get();
-
-  std::stack<Node *> stack; 
-
-  Node *priorNode{nullptr}; // Use top->parent below--right?
-
-  while (!stack.empty() || pnode) {
-
-    if (pnode) {
-
-      stack.push(pnode);          // Push pnode and its left-most children onto the stack.
-      pnode = pnode->left.get(); 
-
-    } else {
-
-      Node *top = stack.top();  // Initially pops left-most child of the root.
-
-      // If top has a right child (so we know at minimum it is not a leaf node) and we are traversing pnode from left child, then move right
-      if (top->right && priorNode != top->right.get())
-
-          pnode = top->right.get();
-
-      else {
-
-        // Get unique_ptr for top 
-        std::unique_ptr<Node>& top_uptr = get_unique_ptr(top);
-        
-        visit(top_uptr);
-
-        priorNode = stack.top(); // remember prior node
-        stack.pop();                   // and remove it from the stack
- 
-        pnode = nullptr;
-     }
-   } 
- }
-}
-/*
 /*
  * Pseudocode from https://en.wikipedia.org/wiki/Tree_traversal
  */
@@ -1723,6 +1674,7 @@ template<class Key, class Value>
 template<typename Functor>
 void bstree<Key, Value>::postOrderIterative(Functor f, const std::unique_ptr<Node>& root_in) const
 {
+  //TODO: Rewrite without stack.
   const Node *pnode = root_in.get();
 
   std::stack<const Node *> stack; 
@@ -1756,6 +1708,56 @@ void bstree<Key, Value>::postOrderIterative(Functor f, const std::unique_ptr<Nod
    } 
  }
 }
+
+/*
+This method visits the Node
+
+From https://www.geeksforgeeks.org/postorder-successor-node-binary-tree/:
+
+An efficient solution is based on below observations.
+
+   If given node is root, then postorder successor is NULL, since the root is the last node print in a postorder traversal
+   If given node is a right child of its parent, or the right child of parent is NULL, then parent is postorder successor.
+   If given node is left child of parent and right child of parent is not NULL, then postorder successor is the leftmost node of parent’s right subtree
+ */
+template<class Key, class Value>
+template<typename Functor>
+void bstree<Key, Value>::node_postOrderIterative(Functor f, const std::unique_ptr<Node>& root_in) const
+{
+   if (!root_in) return;
+
+   Node *__y == root_in.get();
+
+   // Go to min node in tree
+   while (__y->left)
+       __y = __y->left.get();
+
+  while (__y != nullptr) {
+
+    f(__y);
+
+    if (__y == root_in.get()) // done
+       break;
+
+   // If given node is a right child of its parent or the parent's right is empty (implying the node is the left child and only child of its parent),
+   // then the parent is post-order successor. 
+   auto parent = __y->parent; 
+
+   if (!parent->right || __y == parent->right.get()) 
+       __y = parent; 
+   
+   else {
+   
+      // In all other cases, find the left-most child in the right substree of parent. 
+      auto pnode = parent->right.get(); 
+   
+      while (pnode->left)    // get min node in subtree. 
+          pnode = pnode->left.get(); 
+
+       __y = pnode;
+   }          
+ }
+} 
 
 template<class Key, class Value>
 template<typename Functor>
