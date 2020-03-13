@@ -1006,18 +1006,28 @@ template<class Key, class Value> class bstree {
  
       iterator_inorder& operator++() noexcept 
       {
-         auto next = increment();
-         
-         if (next == current) 
-             pos = position::at_end;
+        switch (pos) {
+      
+           case position::at_end:
+               break;
+            
+           case position::at_beg:
+           case position::between:
+           {
+               auto next = increment();
 
-         else {
-
-             current = next; 
-             pos = position::between;
+               if (current == next) 
+                   pos = position::at_end;
+               else
+                 current = next; 
+           }
+           break;
+           default:
+                 break;
+      
          } 
          return *this;
-      } 
+      }
       
       iterator_inorder operator++(int) noexcept
       {
@@ -1030,23 +1040,29 @@ template<class Key, class Value> class bstree {
        
       iterator_inorder& operator--() noexcept 
       {
-        
-         if (position::at_beg) 
-             return *this;
+         switch(pos) {
+   
+             case position::at_beg:
+                break; 
+            
+             case position::at_end:
+             {
+                 pos = position::between;
+                 break;
+             }
+   
+             case position::between: 
+             {     
+               auto prev = decrement();
+            
+              if (prev == current) 
+                 pos = position::at_beg;
+             } 
+             break;
          
-        //
-         ?? Not sure what to do.
-        auto prev = decrement();
-         
-        if (prev == current) 
-              pos = position::at_beg;
-           else {
-
-             current = prev; 
-             pos = position::between;
-            }   
-             
-         
+             default:
+                 break;
+         } 
          return *this;
       } 
       
@@ -1072,7 +1088,28 @@ template<class Key, class Value> class bstree {
       friend bool
       operator==(const iterator_inorder& __x, const iterator_inorder& __y) noexcept
       {
-        return __x.current == __y.current && __x.pos == __y.pos;
+      
+        //--return __x.current == __y.current && __x.pos == __y.pos;
+        /* 
+          From tree23::iterator::operator==(const iterator&) 
+         */
+          if (__x.ptree == __y.ptree) {
+         
+             // If we are not in_between...check whether both iterators are at the end...
+             if (__x.pos == position::at_end && __y.pos == position::at_end) { 
+         
+                 return true;
+         
+             } else if (__x.pos == position::at_beg && __y.pos == position::at_beg) { // ...or at beg. 
+         
+                 return true;
+         
+             } else if (__x.pos == __y.pos && __x.current == __y.current) { // else check whether pos and current are all equal.
+                 return true;
+            }
+          }
+          
+          return false;
       }
 
       friend bool

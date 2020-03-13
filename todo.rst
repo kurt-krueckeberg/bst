@@ -2,13 +2,13 @@ TODO
 ====
 
 
-* Test iterator_inorder further. Test begin(), end(), rbegin() and rend().
-* Implement reverse iteration for interator_inorder.
-* Check any TODOs
-* Test both iterator_inorder and iterator_preorder. Test both with 'big' trees.
-* Note: The iterator_inorder code does not support reverse iterator. Remove rbegin() and rend(). The extra complexity of supporting it is not worth the extra time.
-* The postorder destruction call by ~bstree() and bstree(conost bstree&) need to operator on 'Node *' and not 'bstree:value_type'
-* The preorder call in 'bstree(const bstree&)' needs to operator agains 'Node *' and not 'bstree:value_type'
+The behavior of accessing one-past-one, accessing an iterator equal to some_container.end(), is undefined:
+
+   According to https://en.cppreference.com/w/cpp/container/vector/end: This element acts as a placeholder; attempting to access it results in undefined behavior. 
+
+* Test iterator_inorder both forward to end() and backward to begin() and one-past-begin() 
+* Design iterator_inorder so it works correctly with make_reverse_iterator. See the tree23 code. It works with reverse_iterators.
+
 
 Sources to Read
 ---------------
