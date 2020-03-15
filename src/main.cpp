@@ -10,16 +10,26 @@ using namespace std;
 
 int main(int argc, char** argv) 
 {
-  bstree<int, int> test_tree;
-
+  bstree<int, int> tree;
+/*--
   std::initializer_list<int> lst1 = {7, 1, 30, 0, 3, 8, 50, 20, 9, 2, 5, 4, 6, -10, -5, 40, 60, 55, 65, 54, -20};
   
   test(lst1);
-
+*/
   std::initializer_list<int> lst2 = {100, 50, 200, 20, 70, 150, 250, -10, 40, 60, 90, 125, 175, 225, 275, -40, 10, 30, 45, 55, 65, 80, 95, 110, 130, 165, 190, 220, 230, 260, 290,\
     -70, -30, -5, 15, 25, 35, 42, 47, 52, 57, 62, 67, 92, 97, 105, 115, 127, 135, 160, 170, 180, 195, 210, 222, 227, 235, 260, 280 };
+  
+  for (const auto& i : lst2) 
+      tree.insert(i, i);
 
-  test(lst2); 
+   cout << tree;
+
+   decltype(tree) tree_out;
+
+   tree_out = tree;
+
+   cout << "\n====================\n" << tree_out;
+//++  test(lst2); 
  
   return 0;
 /*

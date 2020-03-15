@@ -1491,65 +1491,6 @@ template<class Key, class Value> template<typename Functor> void bstree<Key, Val
    tracer.pop();
 }
 
-// TODO: Replace with an iterative pre-order traversal version
-/*
-template<class Key, class Value>
-void bstree<Key, Value>::copy_tree(const std::unique_ptr<typename bstree<Key, Value>::Node>& root_in) noexcept
-{
-   if (!root_in) { 
-        root = nullptr;
-        return;
-   } 
-  
-   std::stack<const node_type *> stack; 
-   stack.push(root_in.get()); 
-  
-   //
-   //  Pop all items one by one, and do the following for every popped item:
-   //
-   //   a) invoke f 
-   //   b) push its right child 
-   //   c) push its left child 
-   //
-   // Note: the right child is pushed first so that left is processed first 
-  
-   Node *prior_node = nullptr;
-   while (!stack.empty()) { 
-
-       auto pnode = stack.top();
-       stack.pop(); 
-
-       std::unique_ptr<Node> new_node = std::make_unique<Node>(*pnode); 
-
-       if (!prior_node)
-           root = std::move(new_node);
-
-       else { 
-       
-           bool is_left_child = pnode->parent->left.get() == pnode ? true : false; 
-   
-           if (is_left_child) { 
-
-               prior_node->connectLeft(new_node);    
-               prior_node = prior_node->left.get(); 
-
-           } else  {
-
-               prior_node->connectRight(new_node);    
-               prior_node = prior_node->right.get(); 
-           }
-       }
-
-       // Push right and left non-null children of the popped node to stack 
-       if (pnode->right) 
-           stack.push(pnode->right.get()); 
-
-       if (pnode->left) 
-           stack.push(pnode->left.get()); 
-   } 
-}
-*/
-
 template<class Key, class Value>
 template<typename Functor>
 void bstree<Key, Value>::preOrderTraverse(Functor f, const std::unique_ptr<Node>& current) const noexcept
@@ -1710,73 +1651,72 @@ void bstree<Key, Value>::preOrderIterative(Functor f, const std::unique_ptr<Node
 template<class Key, class Value>
 bstree<Key, Value> bstree<Key, Value>::copy_tree(const std::unique_ptr<Node>& root_in) const noexcept
 {
-  bstree<Key, Value> new_tree;
-  
-  //--int debug_counter = 0;
-
-   if (!root_in) return new_tree;
-
+   bstree<Key, Value> new_tree;
+   
+   if (!root_in) 
+       return new_tree;
+ 
+   Node *new_node_parent = nullptr; 
+   
+   Node *new_node = nullptr;
+   
    Node *__y = root_in.get();
     
-   Node *new_node_parent = nullptr; 
-  
-   std::cout << "In copy_tree(root_in). Printing the output tree each time a node is copied from the input tree.\n";
- 
    do {   
-        std::unique_ptr<Node> new_node = std::make_unique<Node>(*__y);
-
-        if (!new_node_parent) {// __y was the root, so set parent of new_node to nullptr.
-            
-           new_node->parent = new_node_parent;
+       
+        std::unique_ptr<Node> new_uptr = std::make_unique<Node>(__y->__vt);
+        
+        new_node = new_uptr.get();
+ 
+        if (!__y->parent) {// __y was the root, so set parent of new_node to nullptr.
            
-           new_tree.root = std::move(new_node);
-           
-           new_node_parent = new_tree.root.get();
-
-        }  else { // parent is not the root
-
-           if (new_node_parent->key() > new_node->key()) {
+            new_tree.root = std::move(new_uptr);
+            new_node_parent = new_tree.root.get();
+ 
+        }  else if (new_node_parent->key() > new_uptr->key()) {
                
-               new_node_parent->connectLeft(new_node); 
-               new_node_parent = new_node_parent->left.get();
+            new_node_parent->connectLeft(new_uptr); 
+            new_node_parent = new_node_parent->left.get();
                
-           } else {
+        } else {
                
-               new_node_parent->connectRight(new_node); 
-               new_node_parent = new_node_parent->right.get();
-           }
-        } 
-
-        std::cout << new_tree << std::endl;         
-   
+            new_node_parent->connectRight(new_uptr); 
+            new_node_parent = new_node_parent->right.get();
+        }
+        
+        std::cout << new_tree << std::endl;
+        
         if (__y->left)          // Prefer left child
             __y = __y->left.get();
         else if (__y->right)       // otherwise, the right 
             __y = __y->right.get();
       
         else  { // else __y is a leaf
-
+ 
            // If leaf is a left child and it's parent has a right child, make that right child the pre-order successor.
-           if (__y == __y->parent->left.get() && __y->parent->right)  { // TODO: Could parent be nullptr, say, if root_in is the only node in the input tree? 
+           if (__y == __y->parent->left.get() && __y->parent->right)  {
                
                   __y = __y->parent->right.get();
-             
+                  new_node_parent = new_node->parent;
+                
            } else {// Leaf is a right child (or a left child whose parent does not have a right child).
                   // We must ascend the parent chain until we find a parent whose right child's key > prior->key()
-              //--std::cout << "debug count = " << ++debug_counter << std::endl;
-              
+             auto new_xxx = new_node->parent;  
+
              for(auto parent = __y->parent; 1; parent = parent->parent) {
         
                 // When parent's key is > prior->key(), we are high enough in the parent chain to determine if the
                 // parent's right child's key > prior->key(). If it is, this is the preorder successor for the leaf node prior. 
-
+ 
                 // Note: we combine all three tests--right child of parent exits, parent key is > prior's,
                 // and parent's right child's key > prior's--into one if-test. 
                 if (parent->right && parent->key() > __y->key() && parent->right->key() > __y->key()) { 
-
+ 
                      __y = parent->right.get();
 
-                     new_node_parent = new_tree.find__(parent->key());   
+                     new_xxx = new_xxx->right.get(); //--
+                     
+                     new_node_parent = new_tree.find__(parent->key()); //TODO: Can I speed this up?   
                      break; 
                 } 
                 
@@ -1784,22 +1724,22 @@ bstree<Key, Value> bstree<Key, Value>::copy_tree(const std::unique_ptr<Node>& ro
                     __y = root_in.get(); // There is no pre-order successor because we ascended to the root,
                     break;             // and the root's right child is < prior->key().
                 }
-                
+                new_xxx = new_xxx->parent;   
              } 
            } 
         }
     } while(__y != root_in.get()); 
-  
+   
     return new_tree;
-}
-
+ }
+ 
 /*
 post order iterative implementations
-
+ 
 1. post-order iterative pseudocode and discussions: <-------
-
+ 
   https://en.wikipedia.org/wiki/Tree_traversal
-
+ 
   Traversl implement in multiple prog. languages
   http://rosettacode.org/wiki/Tree_traversal
 
