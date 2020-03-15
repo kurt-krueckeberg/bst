@@ -93,7 +93,7 @@ template<class Key, class Value> class bstree {
 
         // Due to stack overflow concerns, the default ctor, which would successfully copy the the entire subtree of lhs,
         // is deleted.
-        Node(const Node& lhs) : __vt{lhs.__vt}, left{nullptr}, right{nullptr} // = delete; 
+        Node(const Node& lhs) : __vt{lhs.__vt}, left{nullptr}, right{nullptr}, parent{nullptr} 
         {
         }
         
@@ -1606,9 +1606,74 @@ void bstree<Key, Value>::node_preOrderIterative(Functor f, const std::unique_ptr
 
    Node *__y = root_in.get();
     
+   std::unique_ptr<Node> new_root = std::make_unique<Node>(__y); //++
+   auto new_node_parent = new_root.get();                        //++ 
+
+   do {   
+        f(__y);
+
+        std::unique_ptr<Node> new_node = std::make_unique<Node>(__y);
+
+
+        new_node_parent->connectLeft/Right(std::move(new_node)); 
+
+        auto prior_new_node = new_node.get();
+        
+        Node *prior = __y;
+
+        if (__y->left)          // Prefer left child
+            __y = __y->left.get();
+        else if (__y->right)       // otherwise, the right 
+            __y = __y->right.get();
+      
+        else  { // else __y is a leaf
+      
+           // If leaf is a left child and it's parent has a right child, make it prior
+           if (prior == prior->parent->left.get() && prior->parent->right)  {
+               
+                  __y = prior->parent->right.get();
+                  new_node_parent = prior_new_node->parent->right.get();   //++
+             
+           } else {// leaf is a right child (or a left child whose parent does not have a right child).
+                 // Ascend the parent chain until we find a parent whose right child's key > prior->key()
+             
+             for(auto parent = __y->parent; 1; parent = parent->parent) {
+      
+                // When parent's key is > prior->key(), we are high enough in the parent chain to determine if the
+                // parent's right child's key > prior->key(). If it is, this is the preorder successor for the leaf node prior. 
+
+                // Note: we combine all three tests--right child of parent exits, parent key is > prior's,
+                // and parent's right child's key > prior's--into one if-test. 
+                if (parent->right && parent->key() > prior->key() && parent->right->key() > prior->key()) { 
+                     __y = parent->right.get();
+                     break; 
+                } 
+                if (parent == root_in.get()) {
+                    __y = root_in.get(); // There is no pre-order successor because we ascended to the root,
+                    //break;             // and the root's right child is < prior->key().
+                }
+             } 
+           } 
+        }
+    } while(__y != root_in.get()); 
+}
+
+
+template<class Key, class Value>
+template<typename Functor>
+void bstree<Key, Value>::node_preOrderIterative(Functor f, const std::unique_ptr<Node>& root_in) const noexcept
+{
+   if (!root_in) return;
+
+   Node *__y = root_in.get();
+    
+   std::unique_ptr<Node> new_root = std::make_unique<Node>(__y);
+
    do {
         f(__y);
 
+        std::unique_ptr<Node> new_node = std::make_unique<Node>(__y);
+        new_node_parent->connectLeft/Right(std::move(new_node)); 
         
         Node *prior = __y;
 
