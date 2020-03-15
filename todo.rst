@@ -1,8 +1,11 @@
 TODO
 ====
 
-The result of copy_tree() is incorrectly ordered.
+Bug
+~~~
 
-Does reverse_iterator<iterator_inorder> prints the last value twice?
+cout << tree_in;
 
-Test post-order iterative methods. 
+auto tree_out = copy_tree(tree_in);
+
+cout << tree_out;             // <---- BUG: Output differs from tree_in!! 

@@ -27,6 +27,7 @@ void test(std::initializer_list<int>& test_lst)
       
       cout << setw(3) << key << '\n';
   };
+/*
 
   cout << "test_tree.printlevelOrder(key_printer) = " << flush;
 
@@ -37,6 +38,8 @@ void test(std::initializer_list<int>& test_lst)
   test_tree.inOrderTraverse(key_printer);
   
   cout << "for (auto& [key, value] : test_tree) cout << key " << endl; 
+
+  test_iterators(test_tree); // Subsume code below
   
   auto iter_end = test_tree.end();
    
@@ -47,7 +50,6 @@ void test(std::initializer_list<int>& test_lst)
     auto& [key, value] = *iter;
     cout << key << ", \n" << flush;
   }
- 
   cout << '\n' << flush;
   
   decltype(iter) iter2;
@@ -55,20 +57,66 @@ void test(std::initializer_list<int>& test_lst)
   iter2 = iter;
   
   iter = test_tree.begin();
+ */ 
+ 
+  test_preorder(test_tree);
+ /* 
+  cout << "\ntest_tree.postOrderIterative(key_printer) = ";
   
-  auto& [key, value] = *iter;
+  test_tree.postOrderIterative(key_printer);
   
-  cout << key << endl;
-  
-  --iter;        
-  
-  cout << key << endl;
+  cout << '\n' << flush;
 
-  cout << "testing bstree reverse iteration." << endl;
+*/
+  /*
+  test_reverse_iterators(test_tree);
+ */
+  cout << "Test bstree copy ctor\n";
+
+  decltype(test_tree) tree2 = test_tree;
+
+  cout << "Does tree2 = test_tree. Printing tree2.preOrderIterative() = \n";
+
+  tree2.preOrderIterative(key_printer);
+
+  cout << "Does tree2 = test_tree. Printing tree2.inOrderIterative() = \n";
+
+  tree2.inOrderIterative(key_printer);
+}
+
+template<typename Key, typename Value>
+void test_preorder(const bstree<Key, Value>& tree)
+{
+  auto key_printer = [](const auto& pr) {
+      const auto&[key, value] = pr;
+      
+      cout << setw(3) << key << '\n';
+  };
   
-  // Check
-  auto riter = test_tree.rbegin();
-  auto riter_end = test_tree.rend();
+  cout << "\ntree.preOrderTraverse(key_printer) = ";
+
+  tree.preOrderTraverse(key_printer);
+
+  cout << "\ntree.preOrderStackIterative(key_printer) = ";
+  
+  tree.preOrderStackIterative(key_printer);
+  
+  cout << '\n';
+  
+  cout << "\ntree.preOrderIterative(key_printer) = ";
+  
+  tree.preOrderIterative(key_printer);
+  
+  cout << '\n';
+}
+
+template<typename Key, typename Value>
+void test_reverse_iterators(bstree<Key, Value>& tree)
+{
+ cout << "testing bstree reverse iteration." << endl;
+  
+  auto riter = tree.rbegin();
+  auto riter_end = tree.rend();
   
   for (; riter != riter_end; ++riter) { // BUG: In decrement()
 
@@ -76,45 +124,4 @@ void test(std::initializer_list<int>& test_lst)
 
     cout << key << ", \n" << flush;
   }
-  
-  cout << "\ntest_tree.preOrderTraverse(key_printer) = ";
-
-  test_tree.preOrderTraverse(key_printer);
-
-  cout << "\ntest_tree.preOrderStackIterative(key_printer) = ";
-  
-  test_tree.preOrderStackIterative(key_printer);
-  
-  cout << '\n';
-  
-  cout << "\ntest_tree.preOrderIterative(key_printer) = ";
-  
-  test_tree.preOrderIterative(key_printer);
-  
-  cout << '\n';
-  cout << "\ntest_tree.postOrderIterative(key_printer) = ";
-  
-  test_tree.postOrderIterative(key_printer);
-  
-  cout << '\n' << flush;
-  
-  cout << '\n';
-  cout << "\ntest_tree testing iterator_preorder  = ";
- 
-  auto preiter = test_tree.begin_pre();
-  auto preend = test_tree.end_pre();
-  
-  for (;preiter != preend; ++preiter) {
-      const auto&[key, value] = *preiter;  
-      
-      cout << key << ",\n" << flush; 
-  
-  }
-
-  cout << "Test bstree copy ctor\n";
-
-  decltype(test_tree) tree2 = test_tree;
-
-  cout << tree2;
- 
 }

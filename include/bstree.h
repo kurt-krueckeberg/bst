@@ -1654,7 +1654,9 @@ void bstree<Key, Value>::preOrderStackIterative(Functor f, const std::unique_ptr
         
     } 
 }
-
+/*
+ Successfully Tested
+ */
 template<class Key, class Value>
 template<typename Functor>
 void bstree<Key, Value>::preOrderIterative(Functor f, const std::unique_ptr<Node>& root_in) const noexcept
