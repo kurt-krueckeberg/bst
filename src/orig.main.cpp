@@ -4,24 +4,116 @@
 #include <iomanip>
 #include <initializer_list>
 #include "bstree.h"
-#include "test.h"
 
 using namespace std;
+
 
 int main(int argc, char** argv) 
 {
   bstree<int, int> test_tree;
 
-  std::initializer_list<int> lst1 = {7, 1, 30, 0, 3, 8, 50, 20, 9, 2, 5, 4, 6, -10, -5, 40, 60, 55, 65, 54, -20};
+  std::initializer_list<int> test_lst = {7, 1, 30, 0, 3, 8, 50, 20, 9, 2, 5, 4, 6, -10, -5, 40, 60, 55, 65, 54, -20};
+
+  for (const auto& i : test_lst) 
+      test_tree.insert(i, i);
+
+  auto trace_printer = [](const auto& pr) {
+      const auto&[key, value] = pr;
+      //cout << "\tPopped and visited: " << key;
+      cout << "  " << key << "  ";
+  };
+
+  auto key_printer = [](const auto& pr) {
+      const auto&[key, value] = pr;
+      
+      cout << setw(3) << key << '\n';
+  };
+
+  cout << "test_tree.printlevelOrder(key_printer) = " << flush;
+
+  test_tree.printlevelOrder(key_printer); 
+
+  cout << "test_tree.inOrderTraverse(key_printer) = ";
+
+  test_tree.inOrderTraverse(key_printer);
   
-  //--test(lst1);
+  cout << "for (auto& [key, value] : test_tree) cout << key " << endl; 
+  
+  auto iter_end = test_tree.end();
+   
+  auto iter = test_tree.begin();
+  
+  for (; iter != iter_end; ++iter) {
 
-  std::initializer_list<int> lst2 = {100, 50, 200, 20, 70, 150, 250, -10, 40, 60, 90, 125, 175, 225, 275, -40, 10, 30, 45, 55, 65, 80, 95, 110, 130, 165, 190, 220, 230, 260, 290,\
-    -70, -30, -5, 15, 25, 35, 42, 47, 52, 57, 62, 67, 92, 97, 105, 115, 127, 135, 160, 170, 180, 195, 210, 222, 227, 235, 260, 280 };
+    auto& [key, value] = *iter;
+    cout << key << ", \n" << flush;
+  }
+ 
+  cout << '\n' << flush;
+  
+  decltype(iter) iter2;
+  iter2 = iter;
+  
+  iter = test_tree.begin();
+  
+  auto& [key, value] = *iter;
+  
+  cout << key << endl;
+  
+  --iter;        
+  
+  cout << key << endl;
 
-  test(lst2); 
+  cout << "testing bstree reverse iteration." << endl;
+  
+  // Check
+  auto riter = test_tree.rbegin();
+  auto riter_end = test_tree.rend();
+  
+  for (; riter != riter_end; ++riter) { // BUG: In decrement()
+
+    auto& [key, value] = *riter;
+
+    cout << key << ", \n" << flush;
+  }
+  
+  cout << "\ntest_tree.preOrderTraverse(key_printer) = ";
+
+  test_tree.preOrderTraverse(key_printer);
+
+  cout << "\ntest_tree.preOrderStackIterative(key_printer) = ";
+  
+  test_tree.preOrderStackIterative(key_printer);
+  
+  cout << '\n';
+  
+  cout << "\ntest_tree.preOrderIterative(key_printer) = ";
+  
+  test_tree.preOrderIterative(key_printer);
+  
+  cout << '\n';
+  cout << "\ntest_tree.postOrderIterative(key_printer) = ";
+  
+  test_tree.postOrderIterative(key_printer);
+  
+  cout << '\n' << flush;
+  
+  cout << '\n';
+  cout << "\ntest_tree testing iterator_preorder  = ";
+ 
+  auto preiter = test_tree.begin_pre();
+  auto preend = test_tree.end_pre();
+  
+  for (;preiter != preend; ++preiter) {
+      const auto&[key, value] = *preiter;  
+      
+      cout << key << ",\n" << flush; 
+  
+  }
+  
   return 0;
  
+  
   std::initializer_list<int> lst = {100, 50, 200, 20, 70, 150, 250, -10, 40, 60, 90, 125, 175, 225, 275, -40, 10, 30, 45, 55, 65, 80, 95, 110, 130, 165, 190, 220, 230, 260, 290,\
     -70, -30, -5, 15, 25, 35, 42, 47, 52, 57, 62, 67, 92, 97, 105, 115, 127, 135, 160, 170, 180, 195, 210, 222, 227, 235, 260, 280 };
 
@@ -33,12 +125,6 @@ int main(int argc, char** argv)
   t2 = test_tree;
   
   cout << "\ntest_tree.inOrderIterative(key_printer) = ";
-
-  auto key_printer = [](const auto& pr) {
-      const auto&[key, value] = pr;
-      
-      cout << setw(3) << key << '\n';
-  };
 
   test_tree.inOrderIterative(key_printer);
 

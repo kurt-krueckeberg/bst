@@ -248,6 +248,7 @@ template<class Key, class Value> class bstree {
     template<typename Functor> void postOrderIterative(Functor f, const std::unique_ptr<Node>& root) const;
 
     template<typename Functor> void preOrderIterative(Functor f, const std::unique_ptr<Node>&) const noexcept;
+    template<typename Functor> void preOrderStackIterative(Functor f, const std::unique_ptr<Node>&) const noexcept;
 
     // private Node visitation iterative traversals 
     template<typename Functor> void node_postOrderIterative(Functor f, std::unique_ptr<Node>& root) noexcept; 
@@ -426,6 +427,11 @@ template<class Key, class Value> class bstree {
     template<typename Functor> void preOrderIterative(Functor f) const noexcept
     { 
       return preOrderIterative(f, root); 
+    }
+ 
+    template<typename Functor> void preOrderStackIterative(Functor f) const noexcept
+    { 
+      return preOrderStackIterative(f, root); 
     }
 
     template<typename Functor> void postOrderIterative(Functor f) const noexcept
@@ -715,27 +721,28 @@ template<class Key, class Value> class bstree {
              
            else {// leaf is a right child (or a left child whose parent does not have a right child).
                  // Ascend the parent chain until we find a parent whose right child's key > current->key()
-             
-             for(auto parent = __y->parent; 1; parent = parent->parent) {
+              
+             for(auto parent = __y->parent; 1; parent = parent->parent) {// TODO: Could parent be nullptr, say, when root is only node?          
       
                 // When parent's key is > current->key(), we are high enough in the parent chain to determine if the
                 // parent's right child's key > current->key(). If it is, this is the preorder successor for the leaf node current. 
 
                 // Note: we combine all three tests--right child of parent exits, parent key is > current's,
                 // and parent's right child's key > current's--into one if-test. 
-                if (parent->right && parent->key() > current->key() && parent->right->key() > current->key()) { 
+                //--if (parent->right && parent->key() > current->key() && parent->right->key() > current->key()) { 
+
+                if (parent->right && parent->key() > __y->key() && parent->right->key() > __y->key()) { 
                      __y = parent->right.get();
                      break; 
                 } 
                 if (parent == tree.root.get()) {
-                    __y = current; // There is no pre-order successor because we ascended to the root,
-                    break;         // and the root's right child is < current->key().
+                    //--__y = current; // There is no pre-order successor because we ascended to the root, and the root's right child is < current->key().
+                    at_end = true;
+                    break; 
                 }
              } 
            } 
         } 
-        if (__y == current)
-            at_end = true;
 
         return __y;
      }     
@@ -1545,13 +1552,16 @@ void bstree<Key, Value>::preOrderTraverse(Functor f, const std::unique_ptr<Node>
    preOrderTraverse(f, current->left);
 
    preOrderTraverse(f, current->right);
+
 }
 
+/* 
+  Traced version of method below
 template<class Key, class Value>
 template<typename Functor>
-void bstree<Key, Value>::preOrderIterative(Functor f, const std::unique_ptr<Node>& lhs) const noexcept
+void bstree<Key, Value>::preOrderStackIterative(Functor f, const std::unique_ptr<Node>& lhs) const noexcept
 {
- stack_tracer<Key> tracer; 
+    stack_tracer<Key> tracer; 
 
    if (!lhs) return;
   
@@ -1560,15 +1570,15 @@ void bstree<Key, Value>::preOrderIterative(Functor f, const std::unique_ptr<Node
   
     tracer.push(root->key());
 
-    /*
-      Pop all items one by one, and do the following for every popped item:
- 
-       a) invoke f 
-       b) push its right child 
-       c) push its left child 
-
-    Note: the right child is pushed first so that left is processed first 
-     */
+    //
+    //  Pop all items one by one, and do the following for every popped item:
+    // 
+    //   a) invoke f 
+    //   b) push its right child 
+    //   c) push its left child 
+    //
+    // Note: the right child is pushed first so that left is processed first 
+     
     while (!stack.empty()) { 
 
         // Pop the top item from stack and print it 
@@ -1597,29 +1607,57 @@ void bstree<Key, Value>::preOrderIterative(Functor f, const std::unique_ptr<Node
         tracer.print();
     } 
 }
+*/
 
 template<class Key, class Value>
 template<typename Functor>
-void bstree<Key, Value>::node_preOrderIterative(Functor f, const std::unique_ptr<Node>& root_in) const noexcept
+void bstree<Key, Value>::preOrderStackIterative(Functor f, const std::unique_ptr<Node>& lhs) const noexcept
 {
+
+   if (!lhs) return;
+  
+    std::stack<const node_type *> stack; 
+    stack.push(root.get()); 
+
+    //
+    //  Pop all items one by one, and do the following for every popped item:
+    // 
+    //   a) invoke f 
+    //   b) push its right child 
+    //   c) push its left child 
+    //
+    // Note: the right child is pushed first so that left is processed first 
+     
+    while (!stack.empty()) { 
+
+        // Pop the top item from stack and print it 
+        const node_type *node = stack.top(); 
+        stack.pop(); 
+
+        f(node->__get_value()); 
+
+        // Push right and left non-null children of the popped node to stack 
+        if (node->right) 
+            stack.push(node->right.get()); 
+
+        if (node->left)
+            stack.push(node->left.get()); 
+        
+    } 
+}
+
+template<class Key, class Value>
+template<typename Functor>
+void bstree<Key, Value>::preOrderIterative(Functor f, const std::unique_ptr<Node>& root_in) const noexcept
+{
+
    if (!root_in) return;
 
    Node *__y = root_in.get();
-    
-   std::unique_ptr<Node> new_root = std::make_unique<Node>(__y); //++
-   auto new_node_parent = new_root.get();                        //++ 
 
    do {   
-        f(__y);
-
-        std::unique_ptr<Node> new_node = std::make_unique<Node>(__y);
-
-
-        new_node_parent->connectLeft/Right(std::move(new_node)); 
-
-        auto prior_new_node = new_node.get();
-        
-        Node *prior = __y;
+       
+        f(__y->__get_value());  
 
         if (__y->left)          // Prefer left child
             __y = __y->left.get();
@@ -1627,55 +1665,64 @@ void bstree<Key, Value>::node_preOrderIterative(Functor f, const std::unique_ptr
             __y = __y->right.get();
       
         else  { // else __y is a leaf
-      
-           // If leaf is a left child and it's parent has a right child, make it prior
-           if (prior == prior->parent->left.get() && prior->parent->right)  {
+
+           // If leaf is a left child and it's parent has a right child, make that right child the pre-order successor.
+           if (__y == __y->parent->left.get() && __y->parent->right)  { // TODO: Could parent be nullptr, say, if root_in is the only node in the input tree? 
                
-                  __y = prior->parent->right.get();
-                  new_node_parent = prior_new_node->parent->right.get();   //++
+                  __y = __y->parent->right.get();
              
-           } else {// leaf is a right child (or a left child whose parent does not have a right child).
-                 // Ascend the parent chain until we find a parent whose right child's key > prior->key()
-             
+           } else {// Leaf is a right child (or a left child whose parent does not have a right child).
+                  // We must ascend the parent chain until we find a parent whose right child's key > prior->key()
+
              for(auto parent = __y->parent; 1; parent = parent->parent) {
-      
+        
                 // When parent's key is > prior->key(), we are high enough in the parent chain to determine if the
                 // parent's right child's key > prior->key(). If it is, this is the preorder successor for the leaf node prior. 
 
                 // Note: we combine all three tests--right child of parent exits, parent key is > prior's,
                 // and parent's right child's key > prior's--into one if-test. 
-                if (parent->right && parent->key() > prior->key() && parent->right->key() > prior->key()) { 
+                if (parent->right && parent->key() > __y->key() && parent->right->key() > __y->key()) { 
+
                      __y = parent->right.get();
                      break; 
                 } 
                 if (parent == root_in.get()) {
                     __y = root_in.get(); // There is no pre-order successor because we ascended to the root,
-                    //break;             // and the root's right child is < prior->key().
+                    break;              // and the root's right child is < prior->key().
                 }
              } 
            } 
         }
     } while(__y != root_in.get()); 
 }
-
-
+/* <--- This is the new code
 template<class Key, class Value>
 template<typename Functor>
 void bstree<Key, Value>::node_preOrderIterative(Functor f, const std::unique_ptr<Node>& root_in) const noexcept
 {
+  bstree<Key, Value> new_tree;
+
    if (!root_in) return;
 
    Node *__y = root_in.get();
     
-   std::unique_ptr<Node> new_root = std::make_unique<Node>(__y);
+   auto new_node_parent = nullptr; 
 
-   do {
-        f(__y);
-
+   do {   
         std::unique_ptr<Node> new_node = std::make_unique<Node>(__y);
-        new_node_parent->connectLeft/Right(std::move(new_node)); 
-        
-        Node *prior = __y;
+
+        if (!new_node_parent) // __y was the root, so set parent of new_node to nullptr.
+           new_node->parent = new_node_parent;
+
+        else { // parent is not the root
+
+           if (new_node_parent->key() > new_node->key()) 
+                new_node_parent->connectLeft(std::move(new_node)); 
+           else
+                new_node_parent->connectRight(std::move(new_node)); 
+        } 
+
+        auto prior_new_node = new_node.get();
 
         if (__y->left)          // Prefer left child
             __y = __y->left.get();
@@ -1683,24 +1730,30 @@ void bstree<Key, Value>::node_preOrderIterative(Functor f, const std::unique_ptr
             __y = __y->right.get();
       
         else  { // else __y is a leaf
-      
-           // If leaf is a left child and it's parent has a right child, make it prior
-           if (prior == prior->parent->left.get() && prior->parent->right) 
+
+           // If leaf is a left child and it's parent has a right child, make that right child the pre-order successor.
+           if (__y == __y->parent->left.get() && __y->parent->right)  { // TODO: Could parent be nullptr, say, if root_in is the only node in the input tree? 
                
-                  __y = prior->parent->right.get();
+                  __y = __y->parent->right.get();
+
+                  new_node_parent = prior_new_node;   
              
-           else {// leaf is a right child (or a left child whose parent does not have a right child).
-                 // Ascend the parent chain until we find a parent whose right child's key > prior->key()
-             
+           } else {// Leaf is a right child (or a left child whose parent does not have a right child).
+                  // We must ascend the parent chain until we find a parent whose right child's key > prior->key()
+
              for(auto parent = __y->parent; 1; parent = parent->parent) {
-      
+        
                 // When parent's key is > prior->key(), we are high enough in the parent chain to determine if the
                 // parent's right child's key > prior->key(). If it is, this is the preorder successor for the leaf node prior. 
 
                 // Note: we combine all three tests--right child of parent exits, parent key is > prior's,
                 // and parent's right child's key > prior's--into one if-test. 
-                if (parent->right && parent->key() > prior->key() && parent->right->key() > prior->key()) { 
+                if (parent->right && parent->key() > __y->key() && parent->right->key() > __y->key()) { 
+
                      __y = parent->right.get();
+
+                     new_node_parent = new_tree.find(parent->key());                      
+
                      break; 
                 } 
                 if (parent == root_in.get()) {
@@ -1712,7 +1765,7 @@ void bstree<Key, Value>::node_preOrderIterative(Functor f, const std::unique_ptr
         }
     } while(__y != root_in.get()); 
 }
-
+*/
 
 /*
 post order iterative implementations
