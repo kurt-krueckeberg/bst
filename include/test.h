@@ -11,4 +11,6 @@ template<typename Key, typename Value> void test_preorder(const bstree<Key, Valu
 
 template<typename Key, typename Value> void test_reverse_iterators(bstree<Key, Value>& tree);
 
+template<typename Key, typename Value> void test_tree_assignment(bstree<Key, Value>& tree);
+
 #endif

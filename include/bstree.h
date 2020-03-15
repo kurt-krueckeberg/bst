@@ -1719,7 +1719,9 @@ bstree<Key, Value> bstree<Key, Value>::copy_tree(const std::unique_ptr<Node>& ro
    Node *__y = root_in.get();
     
    Node *new_node_parent = nullptr; 
-   
+  
+   std::cout << "In copy_tree(root_in). Printing the output tree each time a node is copied from the input tree.\n";
+ 
    do {   
         std::unique_ptr<Node> new_node = std::make_unique<Node>(*__y);
 
@@ -1744,7 +1746,9 @@ bstree<Key, Value> bstree<Key, Value>::copy_tree(const std::unique_ptr<Node>& ro
                new_node_parent = new_node_parent->right.get();
            }
         } 
-        
+
+        std::cout << new_tree << std::endl;         
+   
         if (__y->left)          // Prefer left child
             __y = __y->left.get();
         else if (__y->right)       // otherwise, the right 

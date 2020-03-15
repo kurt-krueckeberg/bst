@@ -14,22 +14,15 @@ int main(int argc, char** argv)
 
   std::initializer_list<int> lst1 = {7, 1, 30, 0, 3, 8, 50, 20, 9, 2, 5, 4, 6, -10, -5, 40, 60, 55, 65, 54, -20};
   
-  //--test(lst1);
+  test(lst1);
 
   std::initializer_list<int> lst2 = {100, 50, 200, 20, 70, 150, 250, -10, 40, 60, 90, 125, 175, 225, 275, -40, 10, 30, 45, 55, 65, 80, 95, 110, 130, 165, 190, 220, 230, 260, 290,\
     -70, -30, -5, 15, 25, 35, 42, 47, 52, 57, 62, 67, 92, 97, 105, 115, 127, 135, 160, 170, 180, 195, 210, 222, 227, 235, 260, 280 };
 
   test(lst2); 
-  return 0;
  
-  std::initializer_list<int> lst = {100, 50, 200, 20, 70, 150, 250, -10, 40, 60, 90, 125, 175, 225, 275, -40, 10, 30, 45, 55, 65, 80, 95, 110, 130, 165, 190, 220, 230, 260, 290,\
-    -70, -30, -5, 15, 25, 35, 42, 47, 52, 57, 62, 67, 92, 97, 105, 115, 127, 135, 160, 170, 180, 195, 210, 222, 227, 235, 260, 280 };
-
-  bstree<int, int> t2;
-
-  for (auto& x : lst) 
-      t2.insert(x, x);
-    
+  return 0;
+/*
   t2 = test_tree;
   
   cout << "\ntest_tree.inOrderIterative(key_printer) = ";
@@ -108,6 +101,7 @@ int main(int argc, char** argv)
   } 
 
   return 0;
+ */ 
   /*      
   cout << "This is the input tree " << tree << " printed in debug level order:\n";
   

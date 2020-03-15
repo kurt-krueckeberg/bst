@@ -15,6 +15,10 @@ void test(std::initializer_list<int>& test_lst)
   for (const auto& i : test_lst) 
       test_tree.insert(i, i);
 
+  test_tree_assignment(test_tree);
+
+  return;
+
   auto trace_printer = [](const auto& pr) {
 
       const auto&[key, value] = pr;
@@ -72,16 +76,8 @@ void test(std::initializer_list<int>& test_lst)
   test_reverse_iterators(test_tree);
  */
   cout << "Test bstree copy ctor\n";
-
-  decltype(test_tree) tree2 = test_tree;
-
-  cout << "Does tree2 = test_tree. Printing tree2.preOrderIterative() = \n";
-
-  tree2.preOrderIterative(key_printer);
-
-  cout << "Does tree2 = test_tree. Printing tree2.inOrderIterative() = \n";
-
-  tree2.inOrderIterative(key_printer);
+  
+  test_tree_assignment(test_tree);
 }
 
 template<typename Key, typename Value>
@@ -124,4 +120,47 @@ void test_reverse_iterators(bstree<Key, Value>& tree)
 
     cout << key << ", \n" << flush;
   }
+}
+
+template<typename Key, typename Value>
+void test_tree_assignment(bstree<Key, Value>& tree)
+{
+  decltype(tree) tree2 = tree;
+
+  auto key_printer = [](const auto& pr) {
+      const auto&[key, value] = pr;
+      
+      cout << setw(3) << key << '\n';
+  };
+   
+  cout << "Printing input tree.inOrderIterative(key_printer) = \n";
+
+  tree.inOrderIterative(key_printer);
+ 
+  cout << "Printing tree copy, tree2. tree2.inOrderIterative(key_printer) = \n";
+
+  tree2.inOrderIterative(key_printer);
+
+  cout << "Print input tree using iterator_inorder =\n";
+  for (const auto& pr : tree) {
+  
+        auto& [key, value] = pr;
+        cout << key << ", " << endl;
+  }
+
+  cout << '\n';
+
+  cout << "Print ouput tree using iterator_inorder =\n";
+  for (const auto& pr :  tree2) {
+        auto& [key, value] = pr;
+        cout << key << ", " << endl;
+  }
+   
+  cout << "Printing input tree.preOrderIterative(key_printer) = \n";
+
+  tree.preOrderIterative(key_printer);
+ 
+  cout << "Printing tree copy, tree2. tree2.preOrderIterative(key_printer) = \n";
+
+  tree2.preOrderIterative(key_printer);
 }
