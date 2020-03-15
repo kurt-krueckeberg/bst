@@ -1,4 +1,8 @@
 TODO
 ====
 
-Test node_preOrderIterative and implement and test post-order iterative methods. Change the name of the current stack-based versions to indicate they are stack-based.
+The result of copy_tree() is incorrectly ordered.
+
+Does reverse_iterator<iterator_inorder> prints the last value twice?
+
+Test post-order iterative methods. 
