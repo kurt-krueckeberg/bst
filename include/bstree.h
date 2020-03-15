@@ -251,6 +251,7 @@ template<class Key, class Value> class bstree {
 
     // private Node visitation iterative traversals 
     template<typename Functor> void node_postOrderIterative(Functor f, std::unique_ptr<Node>& root) noexcept; 
+    template<typename Functor> void node_preOrderIterative(Functor f, const std::unique_ptr<Node>& root) const noexcept; 
 
     constexpr Node *min(std::unique_ptr<Node>& current) const noexcept
     {
@@ -1596,6 +1597,57 @@ void bstree<Key, Value>::preOrderIterative(Functor f, const std::unique_ptr<Node
         tracer.print();
     } 
 }
+
+template<class Key, class Value>
+template<typename Functor>
+void bstree<Key, Value>::node_preOrderIterative(Functor f, const std::unique_ptr<Node>& root_in) const noexcept
+{
+   if (!root_in) return;
+
+   Node *__y = root_in.get();
+    
+   do {
+        f(__y);
+
+        
+        Node *prior = __y;
+
+        if (__y->left)          // Prefer left child
+            __y = __y->left.get();
+        else if (__y->right)       // otherwise, the right 
+            __y = __y->right.get();
+      
+        else  { // else __y is a leaf
+      
+           // If leaf is a left child and it's parent has a right child, make it prior
+           if (prior == prior->parent->left.get() && prior->parent->right) 
+               
+                  __y = prior->parent->right.get();
+             
+           else {// leaf is a right child (or a left child whose parent does not have a right child).
+                 // Ascend the parent chain until we find a parent whose right child's key > prior->key()
+             
+             for(auto parent = __y->parent; 1; parent = parent->parent) {
+      
+                // When parent's key is > prior->key(), we are high enough in the parent chain to determine if the
+                // parent's right child's key > prior->key(). If it is, this is the preorder successor for the leaf node prior. 
+
+                // Note: we combine all three tests--right child of parent exits, parent key is > prior's,
+                // and parent's right child's key > prior's--into one if-test. 
+                if (parent->right && parent->key() > prior->key() && parent->right->key() > prior->key()) { 
+                     __y = parent->right.get();
+                     break; 
+                } 
+                if (parent == root_in.get()) {
+                    __y = root_in.get(); // There is no pre-order successor because we ascended to the root,
+                    //break;             // and the root's right child is < prior->key().
+                }
+             } 
+           } 
+        }
+    } while(__y != root_in.get()); 
+}
+
 
 /*
 post order iterative implementations
