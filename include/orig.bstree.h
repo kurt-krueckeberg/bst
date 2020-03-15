@@ -275,14 +275,7 @@ template<class Key, class Value> class bstree {
 
     std::unique_ptr<Node>& find(Key key, std::unique_ptr<Node>&) const noexcept;
 
-    Node *find__(Key key, const std::unique_ptr<Node>&) const noexcept;
-
-    Node *find__(Key key) const noexcept
-    {
-       return find__(key, root);
-    }
-
-    bstree<Key, Value> copy_tree(const std::unique_ptr<Node>& src) const noexcept;
+    void copy_tree(const std::unique_ptr<Node>& src) noexcept;
 
     constexpr Node *get_floor(Key key) const noexcept
     {
@@ -1278,7 +1271,7 @@ template<class Key, class Value> typename bstree<Key, Value>::Node&  bstree<Key,
 
    node_postOrderIterative(f, root);
 
-   *this = copy_tree(lhs.root);
+   copy_tree(lhs.root);
 
    return *this;
 }
@@ -1293,7 +1286,7 @@ template<class Key, class Value> inline bstree<Key, Value>::bstree(const bstree<
 { 
    if (!lhs.root) return;
     
-   *this = copy_tree(lhs.root);
+   copy_tree(lhs.root);
 }
 
 template<class Key, class Value> inline void bstree<Key, Value>::move(bstree<Key, Value>&& lhs) noexcept  
@@ -1315,7 +1308,7 @@ template<class Key, class Value> bstree<Key, Value>& bstree<Key, Value>::operato
   
   node_postOrderIterative(f, root);
   
-  *this = copy_tree(lhs.root);
+  copy_tree(lhs.root);
  
   size = lhs.size; 
 
@@ -1706,43 +1699,34 @@ void bstree<Key, Value>::preOrderIterative(Functor f, const std::unique_ptr<Node
 }
 
 template<class Key, class Value>
+template<typename Functor>
+//--void bstree<Key, Value>::node_preOrderIterative(Functor f, const std::unique_ptr<Node>& root_in) const noexcept
 bstree<Key, Value> bstree<Key, Value>::copy_tree(const std::unique_ptr<Node>& root_in) const noexcept
 {
   bstree<Key, Value> new_tree;
-  
-  //--int debug_counter = 0;
 
-   if (!root_in) return new_tree;
+   if (!root_in) return;
 
    Node *__y = root_in.get();
     
    Node *new_node_parent = nullptr; 
-   
+
    do {   
-        std::unique_ptr<Node> new_node = std::make_unique<Node>(*__y);
+        std::unique_ptr<Node> new_node = std::make_unique<Node>(__y);
 
-        if (!new_node_parent) {// __y was the root, so set parent of new_node to nullptr.
-            
+        if (!new_node_parent) // __y was the root, so set parent of new_node to nullptr.
            new_node->parent = new_node_parent;
-           
-           new_tree.root = std::move(new_node);
-           
-           new_node_parent = new_tree.root.get();
 
-        }  else { // parent is not the root
+        else { // parent is not the root
 
-           if (new_node_parent->key() > new_node->key()) {
-               
-               new_node_parent->connectLeft(new_node); 
-               new_node_parent = new_node_parent->left.get();
-               
-           } else {
-               
-               new_node_parent->connectRight(new_node); 
-               new_node_parent = new_node_parent->right.get();
-           }
+           if (new_node_parent->key() > new_node->key()) 
+                new_node_parent->connectLeft(std::move(new_node)); 
+           else
+                new_node_parent->connectRight(std::move(new_node)); 
         } 
-        
+
+        auto prior_new_node = new_node.get();
+
         if (__y->left)          // Prefer left child
             __y = __y->left.get();
         else if (__y->right)       // otherwise, the right 
@@ -1754,11 +1738,12 @@ bstree<Key, Value> bstree<Key, Value>::copy_tree(const std::unique_ptr<Node>& ro
            if (__y == __y->parent->left.get() && __y->parent->right)  { // TODO: Could parent be nullptr, say, if root_in is the only node in the input tree? 
                
                   __y = __y->parent->right.get();
+
+                  new_node_parent = prior_new_node;   
              
            } else {// Leaf is a right child (or a left child whose parent does not have a right child).
                   // We must ascend the parent chain until we find a parent whose right child's key > prior->key()
-              //--std::cout << "debug count = " << ++debug_counter << std::endl;
-              
+
              for(auto parent = __y->parent; 1; parent = parent->parent) {
         
                 // When parent's key is > prior->key(), we are high enough in the parent chain to determine if the
@@ -1770,21 +1755,18 @@ bstree<Key, Value> bstree<Key, Value>::copy_tree(const std::unique_ptr<Node>& ro
 
                      __y = parent->right.get();
 
-                     new_node_parent = new_tree.find__(parent->key());   
+                     new_node_parent = new_tree.find(parent->key());                      
+
                      break; 
                 } 
-                
                 if (parent == root_in.get()) {
                     __y = root_in.get(); // There is no pre-order successor because we ascended to the root,
-                    break;             // and the root's right child is < prior->key().
+                    //break;             // and the root's right child is < prior->key().
                 }
-                
              } 
            } 
         }
     } while(__y != root_in.get()); 
-  
-    return new_tree;
 }
 
 /*
@@ -1938,7 +1920,6 @@ void bstree<Key, Value>::postOrderTraverse(Functor f, const std::unique_ptr<Node
    f(current->__get_value()); 
 }
 
-// TODO: What if not found? Is this even a concern?
 template<class Key, class Value> std::unique_ptr<typename bstree<Key, Value>::Node>& bstree<Key, Value>::find(Key key, std::unique_ptr<Node>& current) const noexcept
 {
   if (!current || current->key() == key)
@@ -1948,16 +1929,6 @@ template<class Key, class Value> std::unique_ptr<typename bstree<Key, Value>::No
   else return find(key, current->right);
 }
 
-template<class Key, class Value> typename bstree<Key, Value>::Node *bstree<Key, Value>::find__(Key key, const std::unique_ptr<typename bstree<Key, Value>::Node>& current) const noexcept
-{
-  if (!current) return nullptr; // not found
-
-  if (current->key() == key)
-     return current.get();
-  if (key < current->key())
-     return find__(key, current->left);
-  else return find__(key, current->right);
-}
 /*
  * Returns pair<bool, const Node *>, where
  * If key found, {true, Node * of found node}

@@ -51,6 +51,7 @@ void test(std::initializer_list<int>& test_lst)
   cout << '\n' << flush;
   
   decltype(iter) iter2;
+
   iter2 = iter;
   
   iter = test_tree.begin();
@@ -109,5 +110,11 @@ void test(std::initializer_list<int>& test_lst)
       cout << key << ",\n" << flush; 
   
   }
+
+  cout << "Test bstree copy ctor\n";
+
+  decltype(test_tree) tree2 = test_tree;
+
+  cout << tree2;
  
 }
