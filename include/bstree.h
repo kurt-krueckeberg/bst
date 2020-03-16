@@ -282,7 +282,7 @@ template<class Key, class Value> class bstree {
        return find__(key, root);
     }
 
-    bstree<Key, Value> copy_tree(const std::unique_ptr<Node>& src) const noexcept;
+    bstree<Key, Value> copy_tree(const bstree<Key, Value>& tree_in) const noexcept;
 
     constexpr Node *get_floor(Key key) const noexcept
     {
@@ -729,7 +729,7 @@ template<class Key, class Value> class bstree {
            else {// leaf is a right child (or a left child whose parent does not have a right child).
                  // Ascend the parent chain until we find a parent whose right child's key > current->key()
               
-             for(auto parent = __y->parent; 1; parent = parent->parent) {// TODO: Could parent be nullptr, say, when root is only node?          
+             for(auto parent = __y->parent; 1; parent = parent->parent) {
       
                 // When parent's key is > current->key(), we are high enough in the parent chain to determine if the
                 // parent's right child's key > current->key(). If it is, this is the preorder successor for the leaf node current. 
@@ -753,7 +753,7 @@ template<class Key, class Value> class bstree {
 
         return __y;
      }     
-      
+
      public:
    
       using difference_type  = std::ptrdiff_t; 
@@ -770,11 +770,6 @@ template<class Key, class Value> class bstree {
       
       iterator_preorder(const iterator_preorder& lhs) : current{lhs.current}, tree{lhs.tree}
       {
-      }
-      
-      iterator_preorder(iterator_preorder&& lhs) : current{lhs.current}, tree{lhs.tree}
-      {
-          lhs.current = nullptr;
       }
       
       iterator_preorder& operator++() noexcept 
@@ -815,6 +810,67 @@ template<class Key, class Value> class bstree {
       }
    };
 
+   class const_iterator_preorder {
+
+     iterator_preorder iter; 
+
+     public:
+   
+      using difference_type  = std::ptrdiff_t; 
+      using value_type       = bstree<Key, Value>::value_type; 
+      using reference        = const value_type&; 
+      using pointer          = const value_type*;
+          
+      using iterator_category = std::bidirectional_iterator_tag; 
+                       
+      explicit const_iterator_preorder(const bstree<Key, Value>& tree_in) : \
+                        iter{ const_cast< bstree<Key, Value>& >(tree_in) }
+      {
+
+      }
+      
+      const_iterator_preorder(const const_iterator_preorder& lhs) : iter{lhs.iter} 
+      {
+      }
+      
+      const_iterator_preorder& operator++() noexcept 
+      {
+         iter.operator++();
+         return *this;
+      } 
+      
+      const_iterator_preorder operator++(int) noexcept
+      {
+         const_iterator_preorder tmp(*this);
+   
+         iter.operator++();
+   
+         return tmp;
+      } 
+         
+      reference operator*() const noexcept 
+      { 
+          return iter.current->__get_value(); 
+      } 
+      
+      pointer operator->() const noexcept
+      { 
+         return &(iter.operator*()); 
+      } 
+      
+      struct sentinel {}; // Use for determining "at the end" in 'bool operator==(const iterator_preorder&) const' below
+   
+      bool operator==(const const_iterator_preorder::sentinel& sent) noexcept
+      {
+          return iter.at_end; 
+      }
+      
+      bool operator!=(const const_iterator_preorder::sentinel& lhs) noexcept
+      {
+        return !operator==(lhs);    
+      }
+   };
+
    iterator_preorder begin_pre() noexcept
    {
       iterator_preorder iter{*this}; 
@@ -826,6 +882,19 @@ template<class Key, class Value> class bstree {
        typename iterator_preorder::sentinel sent;
        return sent;
    }
+
+   const_iterator_preorder cbegin_pre() const noexcept
+   {
+      const_iterator_preorder iter{*this}; 
+      return iter; 
+   }
+   
+   const_iterator_preorder::sentinel cend_pre() const noexcept 
+   {
+       typename const_iterator_preorder::sentinel sent;
+       return sent;
+   }
+
    /*
      Source for post-order successor logic w/o stack:
      https://www.geeksforgeeks.org/postorder-successor-node-binary-tree/      
@@ -1278,7 +1347,7 @@ template<class Key, class Value> typename bstree<Key, Value>::Node&  bstree<Key,
 
    node_postOrderIterative(f, root);
 
-   *this = copy_tree(lhs.root);
+   *this = copy_tree(lhs);
 
    return *this;
 }
@@ -1293,7 +1362,7 @@ template<class Key, class Value> inline bstree<Key, Value>::bstree(const bstree<
 { 
    if (!lhs.root) return;
     
-   *this = copy_tree(lhs.root);
+   *this = copy_tree(lhs);
 }
 
 template<class Key, class Value> inline void bstree<Key, Value>::move(bstree<Key, Value>&& lhs) noexcept  
@@ -1315,7 +1384,7 @@ template<class Key, class Value> bstree<Key, Value>& bstree<Key, Value>::operato
   
   node_postOrderIterative(f, root);
   
-  *this = copy_tree(lhs.root);
+  *this = copy_tree(lhs);
  
   size = lhs.size; 
 
@@ -1649,18 +1718,18 @@ void bstree<Key, Value>::preOrderIterative(Functor f, const std::unique_ptr<Node
 }
 
 template<class Key, class Value>
-bstree<Key, Value> bstree<Key, Value>::copy_tree(const std::unique_ptr<Node>& root_in) const noexcept
+bstree<Key, Value> bstree<Key, Value>::copy_tree(const bstree<Key, Value>& tree) const noexcept
 {
    bstree<Key, Value> new_tree;
    
-   if (!root_in) 
+   if (!tree.root) 
        return new_tree;
  
    Node *new_node_parent = nullptr; 
    
    Node *new_node = nullptr;
    
-   Node *__y = root_in.get();
+   Node *__y = tree.root.get();
     
    do {   
        
@@ -1697,11 +1766,13 @@ bstree<Key, Value> bstree<Key, Value>::copy_tree(const std::unique_ptr<Node>& ro
            if (__y == __y->parent->left.get() && __y->parent->right)  {
                
                   __y = __y->parent->right.get();
+
                   new_node_parent = new_node->parent;
                 
            } else {// Leaf is a right child (or a left child whose parent does not have a right child).
                   // We must ascend the parent chain until we find a parent whose right child's key > prior->key()
-             auto new_xxx = new_node->parent;  
+
+             new_node_parent = new_node->parent;
 
              for(auto parent = __y->parent; 1; parent = parent->parent) {
         
@@ -1713,26 +1784,22 @@ bstree<Key, Value> bstree<Key, Value>::copy_tree(const std::unique_ptr<Node>& ro
                 if (parent->right && parent->key() > __y->key() && parent->right->key() > __y->key()) { 
  
                      __y = parent->right.get();
-
-                     new_xxx = new_xxx->right.get(); //--
-                     
-                     new_node_parent = new_tree.find__(parent->key()); //TODO: Can I speed this up?   
                      break; 
                 } 
                 
-                if (parent == root_in.get()) {
-                    __y = root_in.get(); // There is no pre-order successor because we ascended to the root,
+                if (parent == tree.root.get()) {
+                    __y = tree.root.get(); // There is no pre-order successor because we ascended to the root,
                     break;             // and the root's right child is < prior->key().
                 }
-                new_xxx = new_xxx->parent;   
+                new_node_parent = new_node_parent->parent;   
              } 
            } 
         }
-    } while(__y != root_in.get()); 
+    } while(__y != tree.root.get()); 
    
     return new_tree;
- }
- 
+}
+
 /*
 post order iterative implementations
  
