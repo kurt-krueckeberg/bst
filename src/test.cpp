@@ -65,9 +65,9 @@ void test(std::initializer_list<int>& test_lst)
  
   test_preorder(test_tree);
  /* 
-  cout << "\ntest_tree.postOrderIterative(key_printer) = ";
+  cout << "\ntest_tree.postOrderStackIterative(key_printer) = ";
   
-  test_tree.postOrderIterative(key_printer);
+  test_tree.postOrderStackIterative(key_printer);
   
   cout << '\n' << flush;
 
@@ -133,13 +133,13 @@ void test_tree_assignment(bstree<Key, Value>& tree)
       cout << setw(3) << key << '\n';
   };
    
-  cout << "Printing input tree.inOrderIterative(key_printer) = \n";
+  cout << "Printing input tree.inOrderStackIterative(key_printer) = \n";
 
-  tree.inOrderIterative(key_printer);
+  tree.inOrderStackIterative(key_printer);
  
-  cout << "Printing tree copy, tree2. tree2.inOrderIterative(key_printer) = \n";
+  cout << "Printing tree copy, tree2. tree2.inOrderStackIterative(key_printer) = \n";
 
-  tree2.inOrderIterative(key_printer);
+  tree2.inOrderStackIterative(key_printer);
 
   cout << "Print input tree using iterator_inorder =\n";
   for (const auto& pr : tree) {

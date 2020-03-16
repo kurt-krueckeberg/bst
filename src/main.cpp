@@ -35,7 +35,7 @@ int main(int argc, char** argv)
 /*
   t2 = test_tree;
   
-  cout << "\ntest_tree.inOrderIterative(key_printer) = ";
+  cout << "\ntest_tree.inOrderStackIterative(key_printer) = ";
 
   auto key_printer = [](const auto& pr) {
       const auto&[key, value] = pr;
@@ -43,7 +43,7 @@ int main(int argc, char** argv)
       cout << setw(3) << key << '\n';
   };
 
-  test_tree.inOrderIterative(key_printer);
+  test_tree.inOrderStackIterative(key_printer);
 
   cout << flush << "\ntest_tree.preOrderIterative(key_printer) = " ;
   
@@ -56,9 +56,9 @@ int main(int argc, char** argv)
   for (const auto& i : lst) 
       bal_tree.insert(i, i);
   
-  cout << "bal_tree.inOrderIterative(key_printer) = \n";
+  cout << "bal_tree.inOrderStackIterative(key_printer) = \n";
   
-  bal_tree.inOrderIterative(key_printer);
+  bal_tree.inOrderStackIterative(key_printer);
   cout << "\nUsing range loop\n";
   
   for (const auto& vt : bal_tree) {
@@ -71,7 +71,7 @@ int main(int argc, char** argv)
   
   cout << "bal_tree::preorder_stack_iterator loop: for(iter =..; iter != iter_end; ++iter) = \n";
   
-  bal_tree.inOrderIterative(key_printer);
+  bal_tree.inOrderStackIterative(key_printer);
 
   cout << "\n--------------\nPrinting tree_copy, a copy of the above bal_tree.\n"; 
 

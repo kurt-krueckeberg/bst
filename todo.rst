@@ -1,4 +1,4 @@
 TODO
 ====
 
-Do some more testing.
+Add to ~/d/notes

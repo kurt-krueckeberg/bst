@@ -244,14 +244,14 @@ template<class Key, class Value> class bstree {
     template<typename Functor> void inOrderTrace(Functor f, const std::unique_ptr<Node>& current, stack_tracer<Key>& tracer, int depth=1) const noexcept;
     template<typename Functor> void preOrderTrace(Functor f, const std::unique_ptr<Node>& current, stack_tracer<Key>& tracer, int depth=1) const noexcept;
 
-    template<typename Functor> void inOrderIterative(Functor f, const std::unique_ptr<Node>& root) const noexcept;
-    template<typename Functor> void postOrderIterative(Functor f, const std::unique_ptr<Node>& root) const;
+    template<typename Functor> void inOrderStackIterative(Functor f, const std::unique_ptr<Node>& root) const noexcept;
+    template<typename Functor> void postOrderStackIterative(Functor f, const std::unique_ptr<Node>& root) const;
 
     template<typename Functor> void preOrderIterative(Functor f, const std::unique_ptr<Node>&) const noexcept;
     template<typename Functor> void preOrderStackIterative(Functor f, const std::unique_ptr<Node>&) const noexcept;
 
     // private Node visitation iterative traversals 
-    template<typename Functor> void node_postOrderIterative(Functor f, std::unique_ptr<Node>& root) noexcept; 
+    template<typename Functor> void node_postOrderStackIterative(Functor f, std::unique_ptr<Node>& root) noexcept; 
     template<typename Functor> void node_preOrderIterative(Functor f, const std::unique_ptr<Node>& root) const noexcept; 
 
     constexpr Node *min(std::unique_ptr<Node>& current) const noexcept
@@ -315,7 +315,7 @@ template<class Key, class Value> class bstree {
           node.reset();
        };
     
-       node_postOrderIterative(f, root);
+       node_postOrderStackIterative(f, root);
     } 
 
     bstree(std::initializer_list<value_type>& list) noexcept; 
@@ -426,9 +426,9 @@ template<class Key, class Value> class bstree {
     }
 
     // Depth-first traversals
-    template<typename Functor> void inOrderIterative(Functor f) const noexcept
+    template<typename Functor> void inOrderStackIterative(Functor f) const noexcept
     { 
-      return inOrderIterative(f, root); 
+      return inOrderStackIterative(f, root); 
     }
     
     template<typename Functor> void preOrderIterative(Functor f) const noexcept
@@ -441,9 +441,9 @@ template<class Key, class Value> class bstree {
       return preOrderStackIterative(f, root); 
     }
 
-    template<typename Functor> void postOrderIterative(Functor f) const noexcept
+    template<typename Functor> void postOrderStackIterative(Functor f) const noexcept
     { 
-      return postOrderIterative(f, root); 
+      return postOrderStackIterative(f, root); 
     }
 
     template<typename Functor> void preOrderTraverse(Functor f) const noexcept  
@@ -1345,7 +1345,7 @@ template<class Key, class Value> typename bstree<Key, Value>::Node&  bstree<Key,
       node.reset();
    };
 
-   node_postOrderIterative(f, root);
+   node_postOrderStackIterative(f, root);
 
    *this = copy_tree(lhs);
 
@@ -1382,7 +1382,7 @@ template<class Key, class Value> bstree<Key, Value>& bstree<Key, Value>::operato
       ptr.reset();
   };
   
-  node_postOrderIterative(f, root);
+  node_postOrderStackIterative(f, root);
   
   *this = copy_tree(lhs);
  
@@ -1487,7 +1487,7 @@ void bstree<Key, Value>::inOrderTraverse(Functor f, const std::unique_ptr<Node>&
 
 template<class Key, class Value>
 template<typename Functor>
-void bstree<Key, Value>::inOrderIterative(Functor f, const std::unique_ptr<Node>& root_in) const noexcept
+void bstree<Key, Value>::inOrderStackIterative(Functor f, const std::unique_ptr<Node>& root_in) const noexcept
 {
    if (!root_in) return;
    
@@ -1724,55 +1724,54 @@ bstree<Key, Value> bstree<Key, Value>::copy_tree(const bstree<Key, Value>& tree)
    
    if (!tree.root) 
        return new_tree;
+
+   Node *__y = tree.root.get(); // The node to copy
  
-   Node *new_node_parent = nullptr; 
+   Node *node_parent = nullptr; // The parent of the node we copy. Used to call connectLeft/connectRight 
+                                // to attach it to the new tree.
+   Node *dest_node = nullptr;   // Raw pointer to 
    
-   Node *new_node = nullptr;
-   
-   Node *__y = tree.root.get();
-    
    do {   
        
-        std::unique_ptr<Node> new_uptr = std::make_unique<Node>(__y->__vt);
+        std::unique_ptr<Node> dest_ptr = std::make_unique<Node>(__y->__vt);
         
-        new_node = new_uptr.get();
+        dest_node = dest_ptr.get();
  
-        if (!__y->parent) {// __y was the root, so set parent of new_node to nullptr.
+        if (!__y->parent) {// Since __y was the root, we set parent of dest_node to nullptr.
            
-            new_tree.root = std::move(new_uptr);
-            new_node_parent = new_tree.root.get();
+            new_tree.root = std::move(dest_ptr);
+            node_parent = new_tree.root.get();
  
-        }  else if (new_node_parent->key() > new_uptr->key()) {
+        }  else if (node_parent->key() > dest_ptr->key()) { // new node is left child  
                
-            new_node_parent->connectLeft(new_uptr); 
-            new_node_parent = new_node_parent->left.get();
+            node_parent->connectLeft(dest_ptr); 
+            node_parent = node_parent->left.get();
                
-        } else {
+        } else {    // new node is a right child
                
-            new_node_parent->connectRight(new_uptr); 
-            new_node_parent = new_node_parent->right.get();
+            node_parent->connectRight(dest_ptr); 
+            node_parent = node_parent->right.get();
         }
         
-        std::cout << new_tree << std::endl;
-        
-        if (__y->left)          // Prefer left child
+        if (__y->left)          // We traversal left first
             __y = __y->left.get();
         else if (__y->right)       // otherwise, the right 
             __y = __y->right.get();
       
-        else  { // else __y is a leaf
+        else  { // __y is a leaf
  
-           // If leaf is a left child and it's parent has a right child, make that right child the pre-order successor.
+           // If the leaf is a left child and it's parent has a right child, that right child is the pre-order successor.
            if (__y == __y->parent->left.get() && __y->parent->right)  {
                
                   __y = __y->parent->right.get();
 
-                  new_node_parent = new_node->parent;
+                  node_parent = dest_node->parent;
                 
-           } else {// Leaf is a right child (or a left child whose parent does not have a right child).
-                  // We must ascend the parent chain until we find a parent whose right child's key > prior->key()
+           } else {// The leaf is a right child (or a left child whose parent does not have a right child).
+                  // So we must ascend the parent chain until we find a parent whose right child's key > __y->key()
 
-             new_node_parent = new_node->parent;
+             node_parent = dest_node->parent; // node_parent paralell's the role of parent below. node_parent will be the
+                                              // parent of the next node to be created when make_unique<Node> gets called again.
 
              for(auto parent = __y->parent; 1; parent = parent->parent) {
         
@@ -1791,7 +1790,7 @@ bstree<Key, Value> bstree<Key, Value>::copy_tree(const bstree<Key, Value>& tree)
                     __y = tree.root.get(); // There is no pre-order successor because we ascended to the root,
                     break;             // and the root's right child is < prior->key().
                 }
-                new_node_parent = new_node_parent->parent;   
+                node_parent = node_parent->parent;   
              } 
            } 
         }
@@ -1843,7 +1842,7 @@ post order iterative implementations
  */
 template<class Key, class Value>
 template<typename Functor>
-void bstree<Key, Value>::postOrderIterative(Functor f, const std::unique_ptr<Node>& root_in) const
+void bstree<Key, Value>::postOrderStackIterative(Functor f, const std::unique_ptr<Node>& root_in) const
 {
   //TODO: Rewrite without stack.
   const Node *pnode = root_in.get();
@@ -1893,7 +1892,7 @@ An efficient solution is based on below observations.
  */
 template<class Key, class Value>
 template<typename Functor>
-void bstree<Key, Value>::node_postOrderIterative(Functor f, std::unique_ptr<Node>& root_in) noexcept
+void bstree<Key, Value>::node_postOrderStackIterative(Functor f, std::unique_ptr<Node>& root_in) noexcept
 {
    if (!root_in) return;
 
