@@ -17,5 +17,5 @@ xxx.txt
 *.bat
 *.sh
 *.cmd
-x
+x*
 .dep.in
