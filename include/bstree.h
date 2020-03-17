@@ -1727,7 +1727,7 @@ bstree<Key, Value> bstree<Key, Value>::copy_tree(const bstree<Key, Value>& tree)
 
    Node *__y = tree.root.get(); // The node to copy
  
-   Node *node_parent = nullptr; // The parent of the node we copy. Used to call connectLeft/connectRight 
+   Node *dest_parent = nullptr; // The parent of the node we copy. Used to call connectLeft/connectRight 
                                 // to attach it to the new tree.
    Node *dest_node = nullptr;   // Raw pointer to 
    
@@ -1735,22 +1735,22 @@ bstree<Key, Value> bstree<Key, Value>::copy_tree(const bstree<Key, Value>& tree)
        
         std::unique_ptr<Node> dest_ptr = std::make_unique<Node>(__y->__vt);
         
-        dest_node = dest_ptr.get();
+        dest_node = dest_ptr.get(); //TODO: This is dest_parent also in the else-if and else
  
         if (!__y->parent) {// Since __y was the root, we set parent of dest_node to nullptr.
            
             new_tree.root = std::move(dest_ptr);
-            node_parent = new_tree.root.get();
+            dest_parent = new_tree.root.get();
  
-        }  else if (node_parent->key() > dest_ptr->key()) { // new node is left child  
+        }  else if (dest_parent->key() > dest_ptr->key()) { // dest_node is left child  
                
-            node_parent->connectLeft(dest_ptr); 
-            node_parent = node_parent->left.get();
+            dest_parent->connectLeft(dest_ptr); 
+            dest_parent = dest_parent->left.get();
                
         } else {    // new node is a right child
                
-            node_parent->connectRight(dest_ptr); 
-            node_parent = node_parent->right.get();
+            dest_parent->connectRight(dest_ptr); 
+            dest_parent = dest_parent->right.get();
         }
         
         if (__y->left)          // We traversal left first
@@ -1765,12 +1765,12 @@ bstree<Key, Value> bstree<Key, Value>::copy_tree(const bstree<Key, Value>& tree)
                
                   __y = __y->parent->right.get();
 
-                  node_parent = dest_node->parent;
+                  dest_parent = dest_node->parent;
                 
            } else {// The leaf is a right child (or a left child whose parent does not have a right child).
                   // So we must ascend the parent chain until we find a parent whose right child's key > __y->key()
 
-             node_parent = dest_node->parent; // node_parent paralell's the role of parent below. node_parent will be the
+             dest_parent = dest_node->parent; // dest_parent paralell's the role of parent below. dest_parent will be the
                                               // parent of the next node to be created when make_unique<Node> gets called again.
 
              for(auto parent = __y->parent; 1; parent = parent->parent) {
@@ -1790,7 +1790,7 @@ bstree<Key, Value> bstree<Key, Value>::copy_tree(const bstree<Key, Value>& tree)
                     __y = tree.root.get(); // There is no pre-order successor because we ascended to the root,
                     break;             // and the root's right child is < prior->key().
                 }
-                node_parent = node_parent->parent;   
+                dest_parent = dest_parent->parent;   
              } 
            } 
         }
@@ -1844,7 +1844,6 @@ template<class Key, class Value>
 template<typename Functor>
 void bstree<Key, Value>::postOrderStackIterative(Functor f, const std::unique_ptr<Node>& root_in) const
 {
-  //TODO: Rewrite without stack.
   const Node *pnode = root_in.get();
 
   std::stack<const Node *> stack; 
