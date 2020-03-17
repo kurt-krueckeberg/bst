@@ -486,7 +486,7 @@ template<class Key, class Value> class bstree {
     
        const bstree<Key, Value>& tree;
     
-       stack_iterator_inorder& increment() noexcept // Go to next node.
+       stack_iterator_inorder& successor() noexcept // Go to next node.
        {
           if (stack.empty()) {
     
@@ -526,7 +526,7 @@ template<class Key, class Value> class bstree {
        {
           push_leftmost(tree.root.get());
 
-          increment();  // go to first Node
+          successor();  // go to first Node
        }
        
        stack_iterator_inorder(const stack_iterator_inorder& lhs) : current{lhs.current}, stack{lhs.stack}, tree{lhs.tree}
@@ -540,7 +540,7 @@ template<class Key, class Value> class bstree {
        
        stack_iterator_inorder& operator++() noexcept 
        {
-          increment();
+          successor();
           return *this;
        } 
        
@@ -548,7 +548,7 @@ template<class Key, class Value> class bstree {
        {
           stack_iterator_inorder tmp(*this);
     
-          increment();
+          successor();
     
           return tmp;
        } 
@@ -597,7 +597,7 @@ template<class Key, class Value> class bstree {
     
        const bstree<Key, Value>& tree; // TODO: const is only needed for a const_iterator.
     
-       preorder_stack_iterator& increment() 
+       preorder_stack_iterator& successor() 
        {
           if (stack.empty())
                 throw std::logic_error("No such element"); 
@@ -629,7 +629,7 @@ template<class Key, class Value> class bstree {
           if (tree.root) {
     
               stack.push(tree.root.get());
-              increment();  // Sets current
+              successor();  // Sets current
           }
        }
         
@@ -644,7 +644,7 @@ template<class Key, class Value> class bstree {
        
        preorder_stack_iterator& operator++() 
        {
-          increment();
+          successor();
           return *this;
        } 
        
@@ -652,7 +652,7 @@ template<class Key, class Value> class bstree {
        {
           preorder_stack_iterator tmp(*this);
        
-          increment();
+          successor();
        
           return tmp;
        } 
@@ -705,53 +705,50 @@ template<class Key, class Value> class bstree {
       bool at_end = false;
    
       bstree<Key, Value>& tree;
-   
-      Node *increment() 
+
+      Node *successor() 
       {
         if (at_end) return current;
 
         Node *__y = current;
       
-        if (__y->left) // Prefer left child
+        if (__y->left) 		// Prefer left child
             __y = __y->left.get();
-        else if (__y->right) // otherwise, the right 
+        else if (__y->right)   // otherwise, the right 
             __y = __y->right.get();
       
-        else  { // current is a leaf node
+        else  { // If current is a leaf node...
       
-           // If leaf is a left child and it's parent has a right child, make it current
+           // ...and it's parent has a right child, make it current
            if (current == current->parent->left.get() && current->parent->right) 
                
                   __y = current->parent->right.get();
              
-           else {// leaf is a right child (or a left child whose parent does not have a right child).
-                 // Ascend the parent chain until we find a parent whose right child's key > current->key()
-              
+           else {
+             // else the leaf is a right child or a left child whose parent does not have a right child,
+             // and we ascend the parent chain until we find a parent whose right child's key > current->key()
+             // When parent's key is > current->key(), then we are high enough in the parent chain to determine if the
+             // parent's right child's key > current->key(). If it is, this is the preorder successor for the leaf node current. 
+             // If not, continue up the parent chain....
              for(auto parent = __y->parent; 1; parent = parent->parent) {
       
-                // When parent's key is > current->key(), we are high enough in the parent chain to determine if the
-                // parent's right child's key > current->key(). If it is, this is the preorder successor for the leaf node current. 
-
                 // Note: we combine all three tests--right child of parent exits, parent key is > current's,
                 // and parent's right child's key > current's--into one if-test. 
-                //--if (parent->right && parent->key() > current->key() && parent->right->key() > current->key()) { 
-
                 if (parent->right && parent->key() > __y->key() && parent->right->key() > __y->key()) { 
                      __y = parent->right.get();
                      break; 
                 } 
+                //...if we ascend to the root, there is no further pre-order successor. We are done.
                 if (parent == tree.root.get()) {
-                    //--__y = current; // There is no pre-order successor because we ascended to the root, and the root's right child is < current->key().
                     at_end = true;
                     break; 
                 }
              } 
            } 
         } 
-
         return __y;
-     }     
-
+      } 
+   
      public:
    
       using difference_type  = std::ptrdiff_t; 
@@ -772,7 +769,7 @@ template<class Key, class Value> class bstree {
       
       iterator_preorder& operator++() noexcept 
       {
-         current = increment();
+         current = successor();
          return *this;
       } 
       
@@ -780,7 +777,7 @@ template<class Key, class Value> class bstree {
       {
          iterator_preorder tmp(*this);
    
-         current = increment();
+         current = successor();
    
          return tmp;
       } 
@@ -909,7 +906,7 @@ template<class Key, class Value> class bstree {
   
       bstree<Key, Value> *ptree;
     
-      Node *increment() 
+      Node *successor() 
       {
           if (current == nullptr || pos == position::at_end) return current;
            
@@ -990,7 +987,7 @@ template<class Key, class Value> class bstree {
            case position::at_beg:
            case position::between:
            {
-               auto next = increment();
+               auto next = successor();
 
                if (current == next) 
                    pos = position::at_end;
@@ -1036,7 +1033,7 @@ template<class Key, class Value> class bstree {
      enum class position {at_beg, between, at_end};
      position pos;
     
-     Node *increment()
+     Node *successor()
      {
          if (current == nullptr || pos == position::at_end) return current;
          
@@ -1070,13 +1067,13 @@ template<class Key, class Value> class bstree {
          return __y;
      }
      
-     Node *decrement()
+     Node *predecessor()
      {
         if (current == nullptr || pos == position::at_beg) return current;
   
         Node *__x = current; 
       
-        if (__x->left) { // Unlike increment() we check left child before right child. 
+        if (__x->left) { // Unlike successor() we check left child before right child. 
        
              auto __y = __x->left.get();
        
@@ -1173,7 +1170,7 @@ template<class Key, class Value> class bstree {
            case position::at_beg:
            case position::between:
            {
-               auto next = increment();
+               auto next = successor();
   
                if (current == next) pos = position::at_end;
                else
@@ -1209,7 +1206,7 @@ template<class Key, class Value> class bstree {
      
              case position::between: 
              {     
-               auto prev = decrement();
+               auto prev = predecessor();
             
               if (prev == current) pos = position::at_beg;
               else
