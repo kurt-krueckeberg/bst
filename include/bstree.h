@@ -111,9 +111,7 @@ template<class Key, class Value> class bstree {
         /*
           '~Node() = default;' would implictily invoke the Node destructor for left and right, resulting in recursive destruction of the entire trees. This could
            cause stack overflow. To avoid this, ~bstree() calls 
-
                  node_postOrderIterator([](std::unique_ptr<Node>& ptr){ ptr.reset(); }, root)
-
            which does an iterative post-order traversal, calling std::unique_ptr<Node>::reset(). 
          */
 
@@ -1115,8 +1113,6 @@ template<class Key, class Value> class bstree {
 
       Node *min(Node *__y)  
       {
-         if (__y == nullptr) return __y;
-
          while(__y->left) 
             __y = __y->left.get();
 
@@ -1581,14 +1577,12 @@ template<typename Functor>
 void bstree<Key, Value>::preOrderStackIterative(Functor f, const std::unique_ptr<Node>& lhs) const noexcept
 {
     stack_tracer<Key> tracer; 
-
    if (!lhs) return;
   
     std::stack<const node_type *> stack; 
     stack.push(root.get()); 
   
     tracer.push(root->key());
-
     //
     //  Pop all items one by one, and do the following for every popped item:
     // 
@@ -1599,25 +1593,20 @@ void bstree<Key, Value>::preOrderStackIterative(Functor f, const std::unique_ptr
     // Note: the right child is pushed first so that left is processed first 
      
     while (!stack.empty()) { 
-
         // Pop the top item from stack and print it 
         const node_type *node = stack.top(); 
         stack.pop(); 
-
         Key key = tracer.peek();
-
         std::cout << key << " is top of stack. Stack after pop() = ";
         tracer.pop();
         tracer.print();
        
         f(node->__get_value()); 
-
         // Push right and left non-null children of the popped node to stack 
         if (node->right) { 
             tracer.push(node->right->key());
             stack.push(node->right.get()); 
         }
-
         if (node->left) {
             tracer.push(node->left->key());
             stack.push(node->left.get()); 
@@ -1808,31 +1797,19 @@ post order iterative implementations
  
   Traversl implement in multiple prog. languages
   http://rosettacode.org/wiki/Tree_traversal
-
   Tree traversal without recursion: the tree as a state machine
   https://www.perlmonks.org/?node_id=600456
-
 2. implementation using one stack:
-
   In C:
-
   https://www.geeksforgeeks.org/iterative-postorder-traversal-using-stack/
-
   In Python. Throroughly discussed:
-
   https://stackoverflow.com/questions/54635756/iterative-postorder-traversal-of-a-binary-tree-with-a-single-stack-how-to-appro       
-
   https://www.java67.com/2017/05/binary-tree-post-order-traversal-in-java-without-recursion.html
-
 3. implementation using two stacks:
-
   In Java:
-
   https://www.geeksforgeeks.org/iterative-postorder-traversal/
   https://algorithmsandme.com/iterative-postorder-traversal/
-
   In C++:
-
   https://www.techiedelight.com/postorder-tree-traversal-iterative-recursive/
 */
 
@@ -1880,11 +1857,8 @@ void bstree<Key, Value>::postOrderStackIterative(Functor f, const std::unique_pt
 
 /*
 This method visits the Node
-
 From https://www.geeksforgeeks.org/postorder-successor-node-binary-tree/:
-
 An efficient solution is based on below observations.
-
    If given node is root, then postorder successor is NULL, since the root is the last node print in a postorder traversal
    If given node is a right child of its parent, or the right child of parent is NULL, then parent is postorder successor.
    If given node is left child of parent and right child of parent is not NULL, then postorder successor is the leftmost node of parent’s right subtree
