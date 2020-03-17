@@ -716,7 +716,7 @@ template<class Key, class Value> class bstree {
             __y = __y->left.get();
         else if (__y->right)   // otherwise, the right 
             __y = __y->right.get();
-      
+        else if (__y->parent == nullptr) {} // root is a leaf node, take no action. loop will exit.   
         else  { // If current is a leaf node...
       
            // ...and it's parent has a right child, make it current
@@ -1707,7 +1707,7 @@ bstree<Key, Value> bstree<Key, Value>::copy_tree(const bstree<Key, Value>& tree)
             __y = __y->left.get();
         else if (__y->right)       // otherwise, the right 
             __y = __y->right.get();
-      
+        else if (__y->parent == nullptr) {} // root is leaf. Do nothing. Loop will terminate 
         else  { // __y is a leaf
  
            // If the leaf is a left child and it's parent has a right child, that right child is the pre-order successor.
