@@ -252,6 +252,9 @@ template<class Key, class Value> class bstree {
     template<typename Functor> void node_postOrderStackIterative(Functor f, std::unique_ptr<Node>& root) noexcept; 
     template<typename Functor> void node_preOrderIterative(Functor f, const std::unique_ptr<Node>& root) const noexcept; 
 
+    const Node *preorder_next(const Node *) const noexcept; 
+    std::pair<const Node *, Node *> preorder_copy_next(const Node *__src, const Node *__dest, Node *__parent) const noexcept; 
+
     constexpr Node *min(std::unique_ptr<Node>& current) const noexcept
     {
         return min(current.get());
@@ -1621,15 +1624,17 @@ template<class Key, class Value>
 template<typename Functor>
 void bstree<Key, Value>::preOrderIterative(Functor f, const std::unique_ptr<Node>& root_in) const noexcept
 {
-
    if (!root_in) return;
 
-   Node *__y = root_in.get();
+   const Node *__y = root_in.get();
 
    do {   
        
         f(__y->__get_value());  
 
+        __y = preorder_next(__y);
+        
+/* Original code
         if (__y->left)          // Prefer left child
             __y = __y->left.get();
         else if (__y->right)       // otherwise, the right 
@@ -1664,7 +1669,48 @@ void bstree<Key, Value>::preOrderIterative(Functor f, const std::unique_ptr<Node
              } 
            } 
         }
+*/
     } while(__y != root_in.get()); 
+}
+
+template<class Key, class Value>
+const typename bstree<Key, Value>::Node *bstree<Key, Value>::preorder_next(const typename bstree<Key, Value>::Node *__src) const noexcept
+{ 
+   if (__src->left)            // traversal left first
+       __src = __src->left.get();
+   else if (__src->right)       // otherwise, the right 
+       __src = __src->right.get();
+   else if (__src->parent == nullptr) {} 
+   else  {  // __src is a leaf
+
+      // If the leaf is a left child and it's parent has a right child, that right child is the pre-order successor.
+      if (__src == __src->parent->left.get() && __src->parent->right)  {
+          
+             __src = __src->parent->right.get();
+           
+      } else {// The leaf is a right child (or a left child whose parent does not have a right child).
+             // So we must ascend the parent chain until we find a parent whose right child's key > __src->key()
+
+        for(auto parent = __src->parent; 1; parent = parent->parent) {
+   
+           // When parent's key is > prior->key(), we are high enough in the parent chain to determine if the
+           // parent's right child's key > prior->key(). If it is, this is the preorder successor for the leaf node prior. 
+
+           // Note: we combine all three tests--right child of parent exits, parent key is > prior's,
+           // and parent's right child's key > prior's--into one if-test. 
+           if (parent->right && parent->key() > __src->key() && parent->right->key() > __src->key()) { 
+
+                __src = parent->right.get();
+                break; 
+           } 
+           if (parent->parent == nullptr) { // Then parent is root.
+               __src = parent; // There is no pre-order successor because we ascended to the root,
+               break;          // and the root's right child is < prior->key().
+           }
+        } 
+      } 
+   }
+   return __src;
 }
 
 template<class Key, class Value>
@@ -1702,7 +1748,7 @@ bstree<Key, Value> bstree<Key, Value>::copy_tree(const bstree<Key, Value>& tree)
             dest_parent->connectRight(dest_ptr); 
             dest_parent = dest_parent->right.get();
         }
-        
+        // TODO: Replace the remaining code with preorder_copy_next()          
         if (__y->left)          // We traversal left first
             __y = __y->left.get();
         else if (__y->right)       // otherwise, the right 
@@ -1749,6 +1795,57 @@ bstree<Key, Value> bstree<Key, Value>::copy_tree(const bstree<Key, Value>& tree)
     return new_tree;
 }
 
+template<class Key, class Value>
+std::pair<const typename bstree<Key, Value>::Node *,  typename bstree<Key, Value>::Node *> bstree<Key, Value>::preorder_copy_next(const  typename bstree<Key, Value>::Node *__src, const  typename bstree<Key, Value>::Node *__dest, typename bstree<Key, Value>::Node* __parent) const noexcept
+{ 
+   if (__src->left)            // traversal left first
+       __src = __src->left.get();
+   else if (__src->right)       // otherwise, the right 
+       __src = __src->right.get();
+   else if (__src->parent == nullptr) {} 
+   else  {  // __src is a leaf
+
+      // If the leaf is a left child and it's parent has a right child, that right child is the pre-order successor.
+      if (__src == __src->parent->left.get() && __src->parent->right)  {
+          
+             __src = __src->parent->right.get();
+
+             __parent = __dest->parent;
+           
+      } else {// The leaf is a right child (or a left child whose parent does not have a right child).
+             // So we must ascend the parent chain until we find a parent whose right child's key > __src->key()
+
+        __parent = __dest->parent; // __parent paralell's the role of parent below. __parent will be the
+                                   // parent of the next node to be created when make_unique<Node> gets called again.
+
+        for(auto parent = __src->parent; 1; parent = parent->parent) {
+   
+           // When parent's key is > prior->key(), we are high enough in the parent chain to determine if the
+           // parent's right child's key > prior->key(). If it is, this is the preorder successor for the leaf node prior. 
+
+           // Note: we combine all three tests--right child of parent exits, parent key is > prior's,
+           // and parent's right child's key > prior's--into one if-test. 
+           if (parent->right && parent->key() > __src->key() && parent->right->key() > __src->key()) { 
+
+                __src = parent->right.get();
+                break; 
+           }
+           if (parent->parent == nullptr) { // Then parent is root
+               __src = parent;   // There is no pre-order successor because we ascended to the root,
+               break;            // and the root's right child is < prior->key().
+           }
+           /*
+           if (parent == tree.root.get()) {
+               __src = tree.root.get(); // There is no pre-order successor because we ascended to the root,
+               break;             // and the root's right child is < prior->key().
+           }
+           */ 
+           __parent = __parent->parent;   
+        } 
+      } 
+   }
+   return {__src, __parent};
+}
 /*
 post order iterative implementations
  

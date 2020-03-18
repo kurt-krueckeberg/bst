@@ -1,4 +1,4 @@
 TODO
 ====
 
-Started on include/copy-iter.h
+Test preorder_copy() and preorder_copy_next().
