@@ -1,25 +1,26 @@
 #ifndef __copy_iterators_h_
 #define __copy_iterators_h_
 
-std::pair<copy_source,iterator, copy_dest_iterator> make_copy_iterators_begin(bstree<Key, Value>& dest_tree) // <-- Maye just one function to create both iterators.
-{
-
-
-}
 /*
-    New code to replace copy_tree() with:
+bstree methods to create iterators for copying trees:
 
-      siter = tree.begin_copy(???);
+  copy_dest_iterator make_dest_iterator_begin(bstree<Key, Value>& dest_tree); 
+  copy_dest_iterator make_dest_iterator_end(bstree<Key, Value>& dest_tree); 
+
+Then destination iterator is created from the source iterator:
+
+  copy_source_iterator copy_source_iterator(const copy_dest_iterator& dest_iter); 
+
+New code to replace copy_tree() with:
+
+      copy_dest_iterator make_dest_iterator_begin(bstree<Key, Value>& dest_tree); 
+      copy_dest_iterator make_dest_iterator_end(bstree<Key, Value>& dest_tree); 
     
-      siter_end = tree.end_copy();
-    
-      diter = siter.make_dest_iterator();
-    
+      copy_source_iterator copy_source_iterator(const copy_dest_iterator& dest_iter); 
+         
       copy(siter, siter_end, diter);
       OR
       move(siter, siter_end, diter);
-    }
-
 */
 
 template<typename Key, typename Value>
