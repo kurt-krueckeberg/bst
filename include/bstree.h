@@ -1721,7 +1721,7 @@ bstree<Key, Value> bstree<Key, Value>::copy_tree(const bstree<Key, Value>& tree)
    if (!tree.root) 
        return new_tree;
 
-   Node *__y = tree.root.get(); // The node to copy
+   const Node *__y = tree.root.get(); // The node to copy
  
    Node *dest_parent = nullptr; // The parent of the node we copy. Used to call connectLeft/connectRight 
                                 // to attach it to the new tree.
@@ -1748,7 +1748,9 @@ bstree<Key, Value> bstree<Key, Value>::copy_tree(const bstree<Key, Value>& tree)
             dest_parent->connectRight(dest_ptr); 
             dest_parent = dest_parent->right.get();
         }
+
         // TODO: Replace the remaining code with preorder_copy_next()          
+        /*
         if (__y->left)          // We traversal left first
             __y = __y->left.get();
         else if (__y->right)       // otherwise, the right 
@@ -1790,6 +1792,11 @@ bstree<Key, Value> bstree<Key, Value>::copy_tree(const bstree<Key, Value>& tree)
              } 
            } 
         }
+        */
+        const auto& [next_node, next_parent] = preorder_copy_next(__y, dest_node, dest_parent); 
+        __y = next_node;
+        dest_parent = next_parent;
+  
     } while(__y != tree.root.get()); 
    
     return new_tree;
