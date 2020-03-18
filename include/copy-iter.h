@@ -2,7 +2,10 @@
 #define __copy_iterators_h_
 
 /*
-bstree methods to create iterators for copying trees:
+1. option 1: one iterator that is both source annd destination with an assignment operator that copies a source node and connects it to the destination tree. <--
+2. option 2:
+
+ bstree methods to create iterators for copying trees:
 
 pair<copy_dest_iterator, copy_srouce_iterator> make_copy_iterators_begin(bstree<Key, Value>& dest_tree); 
 
