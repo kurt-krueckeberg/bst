@@ -1,5 +1,11 @@
 #ifndef __copy_iterators_h_
 #define __copy_iterators_h_
+
+std::pair<copy_source,iterator, copy_dest_iterator> make_copy_iterators_begin(bstree<Key, Value>& dest_tree) // <-- Maye just one function to create both iterators.
+{
+
+
+}
 /*
     New code to replace copy_tree() with:
 
@@ -20,14 +26,14 @@ template<typename Key, typename Value>
 class copy_source_iterator output_iterator_tag {
 
   private:
+      bstree<Key, Value>&  src_tree;
       bstree<Key, Value>&  dest_tree;
-      copy_source_iterator<Key, Value>& __src; // Can we eliminate this?
       
   public:
      
-  using iterator_category = std::output_iterator_tag; 
+  using iterator_category = std::forward_iterator_tag; 
 
-  copy_source_iterator(copy_src_iterator& src_iter) : __src{src_iter}, dest_tree{__src.dest_tree}
+  copy_source_iterator(const bstree<Key, Value>& src_tree, bstree<Key, Value>& dest_tree) : __src{src_iter}, dest_tree{__src.dest_tree}
   {
   }
 
