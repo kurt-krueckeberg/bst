@@ -19,7 +19,7 @@ class copy_source_iterator  {
   {
       if (__src_node->left) {
           __src_node = __src_node->left.get();
-          dest_parent = ?? 
+          dest_parent =?/ 
       } else if (__src_node->right) {       // otherwise, the right 
           __src_node = __src_node->right.get();
           dest_parent = ?? 
@@ -72,7 +72,6 @@ class copy_source_iterator  {
   copy_source_iterator(bstree<Key, Value>& dest_tree) : __src{src_iter}, dest_tree{__src.dest_tree}, dest_parent{nullptr}
   {
      __src_node = this->root.get(); // Initial value is root
-     __dest_node = dest_tree.root.get();
   }
 
   // Copy constructor.
@@ -80,40 +79,24 @@ class copy_source_iterator  {
   { 
   }
 
-  copy_source_iterator& operator=(const Node * __src_node)
+  const Node *operator*()
   {
-     std::unique_ptr<Node> ptr = std::make_unique<Node>(__src_node->__vt); // copy source node
- 
-    if (!__src_node->parent) // If _y is the root of the source tree, we know ptr set to nullptr above by ctor.
-       
-        dest_tree.root = std::move(ptr); 
- 
-    else if (__src.dest_parent->key() > ptr->key()) // dest_node is left child  
-           
-        __src.dest_parent->connectLeft(ptr); 
-           
-    else // new node is a right child
-           
-        __src.dest_parent->connectRight(ptr); 
- 
-    __src.dest_parent->key() 
-
-    return *this;
-  }
-
-  copy_source_iterator&
-  operator*()
-  {
+     return __src_node;
   }
 
   copy_source_iterator&
   operator++()
   {
+     next(); 
+     return *this;   
   }
 
-  copy_source_iterator&
+  copy_source_iterator
   operator++(int)
   {
+    copy_source_iterator tmp{*this};
+    next(); 
+    return tmp;
   }
 };
 

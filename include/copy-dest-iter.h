@@ -36,7 +36,8 @@ public:
 
     private:
       bstree<Key, Value>&  dest_tree;
-      copy_source_iterator<Key, Value>& __src_it; // Can we eliminate this?
+
+      //--copy_source_iterator<Key, Value>& __src_it; // Can we eliminate this?
 
       Node *&dest_parent;
       
@@ -44,12 +45,12 @@ public:
      
   using iterator_category = std::output_iterator_tag; 
 
-  copy_dest_iterator(copy_src_iterator& src_iter) : __src_it{src_iter}, dest_tree{__src_it.dest_tree}, dest_parent{___src_it.dest_parent}
+  copy_dest_iterator(copy_src_iterator& src_iter) : /*__src_it{src_iter,*/ dest_tree{__src_it.dest_tree}, dest_parent{___src_it.dest_parent}
   {
   }
 
   // Copy constructor.
-  copy_dest_iterator(const copy_dest_iterator& __obj) : __src_it{__obj.__src_it}, dest_tree{__obj.dest_tree}, dest_parent{___src_it.dest_parent}
+  copy_dest_iterator(const copy_dest_iterator& __obj) : /* __src_it{__obj.__src_it}, */ dest_tree{__obj.dest_tree}, dest_parent{___src_it.dest_parent}
   { 
   }
 
@@ -67,11 +68,12 @@ public:
            
     else // new node is a right child
            
-        dest_parent->connectRight(dest_ptr); 
+        dest_parent->connectRight(ptr); 
 
     return *this;
   }
-  // no ops.
+
+  // Other methods are no ops.
   copy_dest_iterator& operator*() { return *this; }
 
   copy_dest_iterator& operator++() { return *this; }
