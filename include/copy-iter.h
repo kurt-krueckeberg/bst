@@ -37,6 +37,25 @@ class copy_source_iterator  {
       bstree<Key, Value>&  dest_tree;
       const Node *__y; 
 
+  xxx_iterator& operator=(const Node* __y)
+  {
+    std::unique_ptr<Node> ptr = std::make_unique<Node>(__y->__vt);
+    
+    if (!__y->parent) {// Since __y was the root, we set parent of dest_node to nullptr.
+       
+        dest_tree.root = std::move(ptr);
+
+    } else if (dest_parent->key() > ptr->key()) { // dest_node is left child  
+           
+        dest_parent->connectLeft(ptr); 
+           
+    else // new node is a right child
+           
+        dest_parent->connectRight(dest_ptr); 
+
+    return *this;
+  }
+
   void successor()
   {
    if (!dest_tree.root) 
