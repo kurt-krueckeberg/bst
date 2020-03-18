@@ -4,23 +4,26 @@
 /*
 bstree methods to create iterators for copying trees:
 
-  copy_dest_iterator make_dest_iterator_begin(bstree<Key, Value>& dest_tree); 
-  copy_dest_iterator make_dest_iterator_end(bstree<Key, Value>& dest_tree); 
+pair<copy_dest_iterator, copy_srouce_iterator> make_copy_iterators_begin(bstree<Key, Value>& dest_tree); 
 
-Then destination iterator is created from the source iterator:
+copy_dest_iterator make_dest_iterator_end(bstree<Key, Value>& dest_tree); 
+
+But then destination iterator is created from the source iterator:
 
   copy_source_iterator copy_source_iterator(const copy_dest_iterator& dest_iter); 
 
+So make_copy_iterators_begin() will invoke the copy_source_iterator constructor.
+
 New code to replace copy_tree() with:
 
-      copy_dest_iterator make_dest_iterator_begin(bstree<Key, Value>& dest_tree); 
-      copy_dest_iterator make_dest_iterator_end(bstree<Key, Value>& dest_tree); 
+      auto&[src_iter, dest_iter] = make_dest_iterator_begin(bstree<Key, Value>& dest_tree); 
+      auto src_iter_end = make_dest_iterator_end(bstree<Key, Value>& dest_tree); 
     
       copy_source_iterator copy_source_iterator(const copy_dest_iterator& dest_iter); 
          
-      copy(siter, siter_end, diter);
+      copy(src_iter, src_iter_end, dest_iter);
       OR
-      move(siter, siter_end, diter);
+      move(src_iter, src_iter_end, dest_iter);
 */
 
 template<typename Key, typename Value>
