@@ -865,10 +865,8 @@ template<class Key, class Value> class bstree {
           
       using iterator_category = std::bidirectional_iterator_tag; 
                        
-      explicit const_iterator_preorder(const bstree<Key, Value>& tree_in) : \
-                        iter{ const_cast< bstree<Key, Value>& >(tree_in) }
+      explicit const_iterator_preorder(const bstree<Key, Value>& tree_in) : iter{ const_cast< bstree<Key, Value>& >(tree_in) }
       {
-
       }
       
       const_iterator_preorder(const const_iterator_preorder& lhs) : iter{lhs.iter} 
@@ -884,9 +882,7 @@ template<class Key, class Value> class bstree {
       const_iterator_preorder operator++(int) noexcept
       {
          const_iterator_preorder tmp(*this);
-   
          iter.operator++();
-   
          return tmp;
       } 
          
