@@ -255,7 +255,8 @@ template<class Key, class Value> class bstree {
     template<typename Functor> void node_preOrderIterative(Functor f, const std::unique_ptr<Node>& root) const noexcept; 
 
     const Node *preorder_next(const Node *) const noexcept; 
-    std::pair<const Node *, Node *> preorder_copy_next(const Node *__src, const Node *__dest, Node *__parent) const noexcept; 
+    //--std::pair<const Node *, Node *> preorder_copy_next(const Node *__src, const Node *__dest, Node *__parent) const noexcept; 
+    std::pair<const Node *, Node *> preorder_copy_next(const Node *__src, Node *__dest) const noexcept; 
 
     constexpr Node *min(std::unique_ptr<Node>& current) const noexcept
     {
@@ -1696,28 +1697,31 @@ bstree<Key, Value> bstree<Key, Value>::copy_tree(const bstree<Key, Value>& tree)
    do {   
        
         std::unique_ptr<Node> ptr = std::make_unique<Node>(__y->__vt);
-        
-        dest_node = ptr.get(); //TODO: This is dest_parent also in the else-if and else
+
+        //*TOD*O: This is dest_parent also in the else-if and else
+        dest_node = ptr.get(); 
  
         if (!__y->parent) {// Since __y was the root, we set parent of dest_node to nullptr.
            
             dest_tree.root = std::move(ptr);
-            dest_parent = dest_tree.root.get();
+            //--dest_parent = dest_tree.root.get();
  
         }  else if (dest_parent->key() > ptr->key()) { // dest_node is left child  
                
             dest_parent->connectLeft(ptr); 
-            dest_parent = dest_parent->left.get();
+            //--dest_parent = dest_parent->left.get();
                
         } else {    // new node is a right child
                
             dest_parent->connectRight(ptr); 
-            dest_parent = dest_parent->right.get();
+            //--dest_parent = dest_parent->right.get();
         }
 
-        assert(dest_node == dest_parent);
+        //--assert(dest_node == dest_parent);
 
-        const auto& [next_node, next_parent] = preorder_copy_next(__y, dest_node, dest_parent); 
+        //--const auto& [next_node, next_parent] = preorder_copy_next(__y, dest_node, dest_parent); 
+        const auto& [next_node, next_parent] = preorder_copy_next(__y, dest_node); 
+
         __y = next_node;
         dest_parent = next_parent;
  
@@ -1771,8 +1775,12 @@ bstree<Key, Value> bstree<Key, Value>::copy_tree(const bstree<Key, Value>& tree)
 }
 
 template<class Key, class Value>
-std::pair<const typename bstree<Key, Value>::Node *,  typename bstree<Key, Value>::Node *> bstree<Key, Value>::preorder_copy_next(const  typename bstree<Key, Value>::Node *__src, const  typename bstree<Key, Value>::Node *__dest, typename bstree<Key, Value>::Node* __parent) const noexcept
+std::pair<const typename bstree<Key, Value>::Node *,  typename bstree<Key, Value>::Node *> bstree<Key, Value>::preorder_copy_next(const  typename bstree<Key, Value>::Node *__src, typename bstree<Key, Value>::Node *__dest) const noexcept
+//--std::pair<const typename bstree<Key, Value>::Node *,  typename bstree<Key, Value>::Node *> bstree<Key, Value>::preorder_copy_next(const  typename bstree<Key, Value>::Node *__src, const  typename bstree<Key, Value>::Node *__dest, typename bstree<Key, Value>::Node* __parent) const noexcept
 { 
+   // TODO: Do we only need __dest? after we initially do '__parent = __dest'    
+   auto __parent = __dest; // next parent is prior node just added by caller to new tree.
+
    if (__src->left)            // traversal left first
        __src = __src->left.get();
    else if (__src->right)       // otherwise, the right 

@@ -104,6 +104,15 @@ void test_preorder(const bstree<Key, Value>& tree)
   tree.preOrderIterative(key_printer);
   
   cout << '\n';
+  cout << "\ntree pre-order using iterator_preorder = ";
+ 
+  for(auto preiter = tree.cbegin_pre(); tree.cend_pre() != preiter; ++preiter) { 
+      
+       const auto& [key, value] = *preiter; 
+       cout <<  setw(3) << key << '\n';
+  }
+  
+  cout << endl;
 }
 
 template<typename Key, typename Value>

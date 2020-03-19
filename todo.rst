@@ -6,4 +6,6 @@ TODO
 
    Once the above is done, remove the  assert() at around line 1716.
 
+ Working on the above. Get rid of compile error.
+
 2. Test preorder_copy() and preorder_copy_next().
