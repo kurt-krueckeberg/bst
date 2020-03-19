@@ -1634,42 +1634,6 @@ void bstree<Key, Value>::preOrderIterative(Functor f, const std::unique_ptr<Node
 
         __y = preorder_next(__y);
         
-/* Original code
-        if (__y->left)          // Prefer left child
-            __y = __y->left.get();
-        else if (__y->right)       // otherwise, the right 
-            __y = __y->right.get();
-      
-        else  { // else __y is a leaf
-
-           // If leaf is a left child and it's parent has a right child, make that right child the pre-order successor.
-           if (__y == __y->parent->left.get() && __y->parent->right)  { // TODO: Could parent be nullptr, say, if root_in is the only node in the input tree? 
-               
-                  __y = __y->parent->right.get();
-             
-           } else {// Leaf is a right child (or a left child whose parent does not have a right child).
-                  // We must ascend the parent chain until we find a parent whose right child's key > prior->key()
-
-             for(auto parent = __y->parent; 1; parent = parent->parent) {
-        
-                // When parent's key is > prior->key(), we are high enough in the parent chain to determine if the
-                // parent's right child's key > prior->key(). If it is, this is the preorder successor for the leaf node prior. 
-
-                // Note: we combine all three tests--right child of parent exits, parent key is > prior's,
-                // and parent's right child's key > prior's--into one if-test. 
-                if (parent->right && parent->key() > __y->key() && parent->right->key() > __y->key()) { 
-
-                     __y = parent->right.get();
-                     break; 
-                } 
-                if (parent == root_in.get()) {
-                    __y = root_in.get(); // There is no pre-order successor because we ascended to the root,
-                    break;              // and the root's right child is < prior->key().
-                }
-             } 
-           } 
-        }
-*/
     } while(__y != root_in.get()); 
 }
 
