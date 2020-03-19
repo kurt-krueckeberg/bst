@@ -105,13 +105,18 @@ void test_preorder(const bstree<Key, Value>& tree)
   
   cout << '\n';
   cout << "\ntree pre-order using iterator_preorder = ";
- 
+
+  auto preiter = tree.cbegin_pre(); 
+  
+  auto b = tree.cend_pre() == preiter;
+  
+  /*
   for(auto preiter = tree.cbegin_pre(); tree.cend_pre() != preiter; ++preiter) { 
       
        const auto& [key, value] = *preiter; 
        cout <<  setw(3) << key << '\n';
   }
-  
+  */
   cout << endl;
 }
 

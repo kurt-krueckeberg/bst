@@ -580,6 +580,16 @@ template<class Key, class Value> class bstree {
        {
          return !operator==(lhs);    
        }
+ 
+       friend bool operator==(const stack_iterator_inorder::sentinel& sent, const stack_iterator_inorder& citer) noexcept
+       {
+          return citer.operator==(sent); // We are done iterating when the stack becomes empty.
+       }
+       
+       friend bool operator!=(const stack_iterator_inorder::sentinel& sent, const stack_iterator_inorder& citer) noexcept
+       {
+         return citer.operator!=(sent);    
+       }
     };
     
     
@@ -662,7 +672,18 @@ template<class Key, class Value> class bstree {
        
           return tmp;
        } 
-         
+
+       reference operator*() noexcept 
+       { 
+           return current->__get_value();
+       } 
+       
+       pointer operator->() noexcept
+       { 
+          return &(operator*()); 
+       } 
+
+       /*  
        reference operator*() const noexcept 
        { 
            return current->__get_value();
@@ -672,7 +693,7 @@ template<class Key, class Value> class bstree {
        { 
           return &(operator*()); 
        } 
-    
+       */
        struct sentinel {};
     
        bool operator==(const sentinel& sent) const noexcept
@@ -685,9 +706,14 @@ template<class Key, class Value> class bstree {
           return !operator==(sent);
        }
     
-       value_type& operator*() 
+       friend bool operator==(const sentinel& sent, const preorder_stack_iterator& iter) noexcept
        {
-           return current->__get_value();
+          return iter.operator==(sent);
+       }
+    
+       friend bool operator!=(const sentinel& sent, const preorder_stack_iterator& iter) noexcept
+       {
+          return iter.operator!=(sent);
        }
     };  
     
@@ -778,6 +804,11 @@ template<class Key, class Value> class bstree {
          current = successor();
          return *this;
       } 
+
+      operator bool() const 
+      {
+         return at_end;
+      }
       
       iterator_preorder operator++(int) noexcept
       {
@@ -800,14 +831,24 @@ template<class Key, class Value> class bstree {
       
       struct sentinel {}; // Use for determining "at the end" in 'bool operator==(const iterator_preorder&) const' below
    
-      bool operator==(const iterator_preorder::sentinel& sent) noexcept
+      bool operator==(const iterator_preorder::sentinel& sent) const noexcept
       {
           return at_end; 
       }
       
-      bool operator!=(const iterator_preorder::sentinel& lhs) noexcept
+      bool operator!=(const iterator_preorder::sentinel& lhs) const noexcept
       {
         return !operator==(lhs);    
+      }
+ 
+      friend bool operator==(const iterator_preorder::sentinel& sent, const iterator_preorder& iter) noexcept
+      {
+          return iter.operator==(sent); 
+      }
+      
+      friend bool operator!=(const iterator_preorder::sentinel& lhs, const iterator_preorder& iter) noexcept
+      {
+        return iter.operator!=(lhs);    
       }
    };
 
@@ -861,15 +902,27 @@ template<class Key, class Value> class bstree {
       
       struct sentinel {}; // Use for determining "at the end" in 'bool operator==(const iterator_preorder&) const' below
    
-      bool operator==(const const_iterator_preorder::sentinel& sent) noexcept
+      bool operator==(const const_iterator_preorder::sentinel& sent) const noexcept
       {
-          return iter.at_end; 
+          return iter; 
       }
       
-      bool operator!=(const const_iterator_preorder::sentinel& lhs) noexcept
+      bool operator!=(const const_iterator_preorder::sentinel& lhs) const noexcept
       {
         return !operator==(lhs);    
       }
+
+      friend bool
+      operator==(const const_iterator_preorder::sentinel& sent, const const_iterator_preorder& __y) noexcept
+      {
+         return __y.operator==(sent);
+      } 
+
+      friend bool
+      operator!=(const const_iterator_preorder::sentinel& sent, const const_iterator_preorder& __y) noexcept
+      {
+         return !__y.operator==(sent);    
+      } 
    };
 
    iterator_preorder begin_pre() noexcept
@@ -1019,14 +1072,24 @@ template<class Key, class Value> class bstree {
       
       struct sentinel {}; // Use for determining "at the end" in 'bool operator==(const iterator_postorder&) const' below
    
-      bool operator==(const iterator_postorder::sentinel& sent) noexcept
+      bool operator==(const iterator_postorder::sentinel& sent) const noexcept
       {
           return (pos == position::at_end) ? true : false; 
       }
       
-      bool operator!=(const iterator_postorder::sentinel& lhs) noexcept
+      bool operator!=(const iterator_postorder::sentinel& lhs) const noexcept
       {
         return !operator==(lhs);    
+      }
+ 
+      friend bool operator==(const iterator_postorder::sentinel& sent, const iterator_postorder& iter) noexcept
+      {
+          return iter.operator==(sent); 
+      }
+      
+      friend bool operator!=(const iterator_postorder::sentinel& sent, const iterator_postorder& iter) noexcept
+      {
+        return iter.operator!=(sent); 
       }
    };
 
@@ -1698,87 +1761,44 @@ bstree<Key, Value> bstree<Key, Value>::copy_tree(const bstree<Key, Value>& tree)
        
         std::unique_ptr<Node> ptr = std::make_unique<Node>(__y->__vt);
 
-        //*TOD*O: This is dest_parent also in the else-if and else
         dest_node = ptr.get(); 
  
-        if (!__y->parent) {// Since __y was the root, we set parent of dest_node to nullptr.
+        if (!__y->parent) // Since __y was the root, we set parent of dest_node to nullptr.
            
             dest_tree.root = std::move(ptr);
-            //--dest_parent = dest_tree.root.get();
  
-        }  else if (dest_parent->key() > ptr->key()) { // dest_node is left child  
-               
+        else if (dest_parent->key() > ptr->key())  // dest_node is left child  
+
             dest_parent->connectLeft(ptr); 
-            //--dest_parent = dest_parent->left.get();
                
-        } else {    // new node is a right child
+        else // new node is a right child
                
             dest_parent->connectRight(ptr); 
-            //--dest_parent = dest_parent->right.get();
-        }
 
-        //--assert(dest_node == dest_parent);
-
-        //--const auto& [next_node, next_parent] = preorder_copy_next(__y, dest_node, dest_parent); 
         const auto& [next_node, next_parent] = preorder_copy_next(__y, dest_node); 
 
         __y = next_node;
+
         dest_parent = next_parent;
- 
-        /*
-        if (__y->left)          // We traversal left first
-            __y = __y->left.get();
-        else if (__y->right)       // otherwise, the right 
-            __y = __y->right.get();
-        else if (__y->parent == nullptr) {} // root is leaf. Do nothing. Loop will terminate 
-        else  { // __y is a leaf
- 
-           // If the leaf is a left child and it's parent has a right child, that right child is the pre-order successor.
-           if (__y == __y->parent->left.get() && __y->parent->right)  {
-               
-                  __y = __y->parent->right.get();
-
-                  dest_parent = dest_node->parent;
-                
-           } else {// The leaf is a right child (or a left child whose parent does not have a right child).
-                  // So we must ascend the parent chain until we find a parent whose right child's key > __y->key()
-
-             dest_parent = dest_node->parent; // dest_parent paralell's the role of parent below. dest_parent will be the
-                                              // parent of the next node to be created when make_unique<Node> gets called again.
-
-             for(auto parent = __y->parent; 1; parent = parent->parent) {
-        
-                // When parent's key is > prior->key(), we are high enough in the parent chain to determine if the
-                // parent's right child's key > prior->key(). If it is, this is the preorder successor for the leaf node prior. 
- 
-                // Note: we combine all three tests--right child of parent exits, parent key is > prior's,
-                // and parent's right child's key > prior's--into one if-test. 
-                if (parent->right && parent->key() > __y->key() && parent->right->key() > __y->key()) { 
- 
-                     __y = parent->right.get();
-                     break; 
-                } 
-                
-                if (parent == tree.root.get()) {
-                    __y = tree.root.get(); // There is no pre-order successor because we ascended to the root,
-                    break;             // and the root's right child is < prior->key().
-                }
-                dest_parent = dest_parent->parent;   
-             } 
-           } 
-        }
-        */
  
     } while(__y != tree.root.get()); 
    
     return dest_tree;
 }
 
+/*
+ input:
+  __src is the node (in 'this') that was just copied by the caller. 
+  __dest the node in the destination tree that has already been copied in the caller.
+
+ output:
+  __src is altered to be the next source node to be copied by the caller.
+  __parent is the next parent of the destination node that will be created next in the caller when __src is copied.
+
+*/
 template<class Key, class Value>
 std::pair<const typename bstree<Key, Value>::Node *,  typename bstree<Key, Value>::Node *> bstree<Key, Value>::preorder_copy_next(const  typename bstree<Key, Value>::Node *__src, typename bstree<Key, Value>::Node *__dest) const noexcept
-//--std::pair<const typename bstree<Key, Value>::Node *,  typename bstree<Key, Value>::Node *> bstree<Key, Value>::preorder_copy_next(const  typename bstree<Key, Value>::Node *__src, const  typename bstree<Key, Value>::Node *__dest, typename bstree<Key, Value>::Node* __parent) const noexcept
 { 
-   // TODO: Do we only need __dest? after we initially do '__parent = __dest'    
    auto __parent = __dest; // next parent is prior node just added by caller to new tree.
 
    if (__src->left)            // traversal left first
@@ -1817,12 +1837,7 @@ std::pair<const typename bstree<Key, Value>::Node *,  typename bstree<Key, Value
                __src = parent;   // There is no pre-order successor because we ascended to the root,
                break;            // and the root's right child is < prior->key().
            }
-           /*
-           if (parent == tree.root.get()) {
-               __src = tree.root.get(); // There is no pre-order successor because we ascended to the root,
-               break;             // and the root's right child is < prior->key().
-           }
-           */ 
+            
            __parent = __parent->parent;   
         } 
       } 
@@ -1832,7 +1847,7 @@ std::pair<const typename bstree<Key, Value>::Node *,  typename bstree<Key, Value
 /*
 post order iterative implementations
  
-1. post-order iterative pseudocode and discussions: <-------
+1. post-order iterative pseudocode and discussions: 
  
   https://en.wikipedia.org/wiki/Tree_traversal
  
