@@ -15,6 +15,8 @@
 #include <exception>
 #include <iterator>
 
+#include <cassert> // <-- Remove later
+
 template<typename Key> class stack_tracer {
 
     std::list<Key> list;
@@ -1622,11 +1624,11 @@ void bstree<Key, Value>::preOrderStackIterative(Functor f, const std::unique_ptr
  */
 template<class Key, class Value>
 template<typename Functor>
-void bstree<Key, Value>::preOrderIterative(Functor f, const std::unique_ptr<Node>& root_in) const noexcept
+void bstree<Key, Value>::preOrderIterative(Functor f, const std::unique_ptr<Node>& root__) const noexcept
 {
-   if (!root_in) return;
+   if (!root__) return;
 
-   const Node *__y = root_in.get();
+   const Node *__y = root__.get();
 
    do {   
        
@@ -1634,7 +1636,7 @@ void bstree<Key, Value>::preOrderIterative(Functor f, const std::unique_ptr<Node
 
         __y = preorder_next(__y);
         
-    } while(__y != root_in.get()); 
+    } while(__y != root__.get()); 
 }
 
 template<class Key, class Value>
@@ -1680,40 +1682,45 @@ const typename bstree<Key, Value>::Node *bstree<Key, Value>::preorder_next(const
 template<class Key, class Value>
 bstree<Key, Value> bstree<Key, Value>::copy_tree(const bstree<Key, Value>& tree) const noexcept
 {
-   bstree<Key, Value> new_tree;
+   bstree<Key, Value> dest_tree;
    
    if (!tree.root) 
-       return new_tree;
+       return dest_tree;
 
    const Node *__y = tree.root.get(); // The node to copy
  
    Node *dest_parent = nullptr; // The parent of the node we copy. Used to call connectLeft/connectRight 
                                 // to attach it to the new tree.
-   Node *dest_node = nullptr;   // Raw pointer to 
+   Node *dest_node = nullptr;   // Raw pointer to  
    
    do {   
        
-        std::unique_ptr<Node> dest_ptr = std::make_unique<Node>(__y->__vt);
+        std::unique_ptr<Node> ptr = std::make_unique<Node>(__y->__vt);
         
-        dest_node = dest_ptr.get(); //TODO: This is dest_parent also in the else-if and else
+        dest_node = ptr.get(); //TODO: This is dest_parent also in the else-if and else
  
         if (!__y->parent) {// Since __y was the root, we set parent of dest_node to nullptr.
            
-            new_tree.root = std::move(dest_ptr);
-            dest_parent = new_tree.root.get();
+            dest_tree.root = std::move(ptr);
+            dest_parent = dest_tree.root.get();
  
-        }  else if (dest_parent->key() > dest_ptr->key()) { // dest_node is left child  
+        }  else if (dest_parent->key() > ptr->key()) { // dest_node is left child  
                
-            dest_parent->connectLeft(dest_ptr); 
+            dest_parent->connectLeft(ptr); 
             dest_parent = dest_parent->left.get();
                
         } else {    // new node is a right child
                
-            dest_parent->connectRight(dest_ptr); 
+            dest_parent->connectRight(ptr); 
             dest_parent = dest_parent->right.get();
         }
 
-        // TODO: Replace the remaining code with preorder_copy_next()          
+        assert(dest_node == dest_parent);
+
+        const auto& [next_node, next_parent] = preorder_copy_next(__y, dest_node, dest_parent); 
+        __y = next_node;
+        dest_parent = next_parent;
+ 
         /*
         if (__y->left)          // We traversal left first
             __y = __y->left.get();
@@ -1757,13 +1764,10 @@ bstree<Key, Value> bstree<Key, Value>::copy_tree(const bstree<Key, Value>& tree)
            } 
         }
         */
-        const auto& [next_node, next_parent] = preorder_copy_next(__y, dest_node, dest_parent); 
-        __y = next_node;
-        dest_parent = next_parent;
-  
+ 
     } while(__y != tree.root.get()); 
    
-    return new_tree;
+    return dest_tree;
 }
 
 template<class Key, class Value>
