@@ -7,7 +7,7 @@ Binary Search Trees
 Discussion Links
 ----------------
 
-* See discussion of implementing B trees [using shared pointers](https://codereview.stackexchange.com/questions/191211/binary-search-tree-data-structure-implementation-in-c11-using-smart-pointers)
+* See discussion of implementing B trees `using shared pointers <https://codereview.stackexchange.com/questions/191211/binary-search-tree-data-structure-implementation-in-c11-using-smart-pointers>`_
 
 * `Algorithms 4th Edition by Sedgewich & Wayne <https://algs4.cs.princeton.edu/32bst/>`_ performance problems of Hibbard deletion. 
 * `Sedgwich Powerpoint Slides <https://algs4.cs.princeton.edu/lectures/32BinarySearchTrees.pdf>`_ and why Hibbard deletion is an unsatisfactory solution. 
